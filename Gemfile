@@ -63,3 +63,9 @@ gem 'rspec'
 gem 'rspec-rails'
 gem "json", ">= 2.3.0"
 gem 'puma', '~> 5.0'
+
+# These libraries were extracted from Ruby's standard library starting in Ruby 3.1, so they need to be explicitly added.
+# Even if not actively using ActionMailer, Rails still loads it in production and requires these dependencies.
+gem 'net-smtp', require: false
+gem 'net-imap', require: false
+gem 'net-pop', require: false

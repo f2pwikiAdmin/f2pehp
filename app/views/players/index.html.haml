@@ -163,7 +163,7 @@
       %h6
         = link_to "Clans", clans_path
         = "have now been released! Please contact us at"
-        = link_to "f2posrsranks@gmail.com", "mailto:f2posrsranks@gmail.com"
+        = link_to "#{ENV["CONTACT_US_EMAIL"]}", "mailto:#{ENV["CONTACT_US_EMAIL"]}"
         = "if you wish to add a F2P clan."
       %br
       %hr

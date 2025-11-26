@@ -76,6 +76,10 @@ GEM
     crass (1.0.6)
     date (3.5.0)
     diff-lcs (1.4.4)
+    dotenv (3.1.8)
+    dotenv-rails (3.1.8)
+      dotenv (= 3.1.8)
+      railties (>= 6.1)
     erubi (1.10.0)
     erubis (2.7.0)
     execjs (2.8.1)
@@ -265,6 +269,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   coffee-rails (~> 4.2.2)
+  dotenv-rails
   guard-rspec
   haml
   haml-rails

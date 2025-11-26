@@ -15,7 +15,8 @@
     = link_to_unless_current "Links", links_path
   = content_tag(:div, nil, class: ["bar", "changelog", "selected-link"]) do
     = link_to_unless_current "Changelog", changelog_path
-  = content_tag(:div, nil, class: ["bar", "donate", "selected-link"]) do
-    = link_to_unless_current "About Us/Donate", donate_path
+  -# Temporarily removed until donations are implemented.
+  -# = content_tag(:div, nil, class: ["bar", "donate", "selected-link"]) do
+  -#   = link_to_unless_current "About Us/Donate", donate_path
   = content_tag(:div, nil, class: ["bar", "faqs", "selected-link"]) do
     = link_to_unless_current "FAQs", faqs_path

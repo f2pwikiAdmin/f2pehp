@@ -51,27 +51,27 @@
     = "- text on your F2P account's page or a custom name styling/flair: $5"
     %br
     %br
-    = content_tag(:div, nil, class: "container", style: "width: 100px;") do 
-      <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-      <input type="hidden" name="cmd" value="_s-xclick" />
-      <input type="hidden" name="hosted_button_id" value="84AASHE6BLF8E" />
-      <input type="hidden" name="currency_code" value="USD" />
-      <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynow_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Buy Now" />
-      </form>
+    -# Temporarily hide PayPal button until we figure it out.
+    -# = content_tag(:div, nil, class: "container", style: "width: 100px;") do
+    -#   <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+    -#   <input type="hidden" name="cmd" value="_s-xclick" />
+    -#   <input type="hidden" name="hosted_button_id" value="84AASHE6BLF8E" />
+    -#   <input type="hidden" name="currency_code" value="USD" />
+    -#   <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynow_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Buy Now" />
+    -#   </form>
     = content_tag(:div, nil, class: "container", style: "text-align: center; width: 430px;") do 
-      = "after donating, please email your F2P account name, transaction ID, and your request to f2posrsranks@gmail.com. If you are requesting a custom flair, please make sure it is 30x30 pixels or less."
+      = "after donating, please email your F2P account name, transaction ID, and your request to #{ENV["CONTACT_US_EMAIL"]}. If you are requesting a custom flair, please make sure it is 30x30 pixels or less."
       %br
       %br
       = "Additionally, check out these shirts made by Pawz"
       = link_to "here.", "https://teespring.com/f2p-wiki", target: "_blank", rel: "noopener noreferrer"
-      = "F2P.wiki receives half of all proceeds."
-      
+
   = content_tag(:div, nil, class: ["container", "left"], style: "margin-left: 10px; width: 240px;") do 
     = content_tag(:div, nil, style: "text-align:center; width:220px; padding: 5px; margin-bottom: 10px; margin-top: 0px; padding-bottom: 20px;") do 
       %h1 Contact Us
-      = link_to "Email us: f2posrsranks@gmail.com", "mailto:f2posrsranks@gmail.com"
+      = link_to "Email us: #{ENV["CONTACT_US_EMAIL"]}", "mailto:#{ENV["CONTACT_US_EMAIL"]}"
       %br
       %br
-      = "Discord: level"
+      = "Discord: bim bro"
 
 = render :partial => "supporters.html.haml"

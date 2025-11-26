@@ -72,7 +72,7 @@
       %br
       = "I have created a"
       = link_to "sheet", "https://docs.google.com/spreadsheets/d/1DTBUhxe4CSZqrUV9nNAGTEe0RlWmsWmvsPlP_Knje3k/edit?usp=sharing", target: "_blank", rel: "noopener noreferrer"
-      = "to view the max hit of each of the weapons at each strength level. Please contact me to update the sheet in any way by emailing f2posrsranks@gmail.com."
+      = "to view the max hit of each of the weapons at each strength level. Please contact me to update the sheet in any way by emailing #{ENV["CONTACT_US_EMAIL"]}."
     %details
       %summary
         = "Can I do Dragon Slayer at level _?"

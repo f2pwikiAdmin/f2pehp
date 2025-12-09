@@ -8,59 +8,45 @@
 = content_tag(:div, nil, class: ["container", "scroll", "wide-scroll-middle"], style: "margin-bottom: 0px;") do
   = content_tag(:div, nil, class: "container", style: "width: 460px; text-align: left;") do
     %h1{:align => "center"} Frequently Asked Questions
-    = content_tag(:p, nil, style: "text-align:center; margin: auto; margin-top: 0px; margin-bottom: 0px; color: none; background-color: transparent; border: none") do 
-      = "Please visit "
-      = link_to "this reddit post", "https://www.reddit.com/r/W385/comments/fdqw8p/what_is_f2pwiki/", target: "_blank", rel: "noopener noreferrer"
-      = "for our general site philosophy, specifically on what is F2P, and what this site is meant for."
+    %h2
+      = "Fundamental Philosophy"
+    %ol{:style => "color: black;"}
+      %li
+        = "Present the truest representation of our community, with an emphasis on skilling highscores"
       %br
+      %li
+        = "Help foster the best possible community for everyone"
       %br
+      %li
+        = "Empower players to discover the play-style that is most fun or fitting for them"
+    %p
+      = "There are no ads, and there never will be ads. The site’s code is open source, with full transparency and accountability."
+    %p
+      = "All important decisions (such as EHP rates) are intended to be unbiased, democratic, and if applicable, thoroughly tested with peer-reviewed statistics to back it up."
 
     %h2
-      = "F2P Wiki"
+      = "F2P.wiki Philosophies"
     %details
       %summary
-        = "How can I submit a question for the FAQ?"
-      = "You can submit a question by contacting us "
-      = link_to_unless_current "here.", donate_path
+        = "F2P Spirit"
+      = "As part of the “F2P Spirit”, the site encourages players to explore the surprising depth and diversity of F2P, but most importantly, to have fun. This definition is intentionally vague, in order to accommodate the breadth of opinions of what truly is F2P."
+      %br
+      %br
+      = "The site promotes many play-styles and restrictive modes even within F2P, but maintains one single unyielding rule in order to maintain a position on the hiscores. This is that the player must not obtain any advantages for skilling from P2P. They must skill entirely within F2P worlds and F2P methods, have 0 experience in all P2P skills, and have no skilling-related items from P2P. The F2P skilling hiscores is just that: a hiscores of players who have skilled in F2P…"
     %details
       %summary
-        = "Why does F2P Wiki sometimes show a 500 error?"
-      = "F2P Wiki collects data by making requests to the official Oldschool Runescape Hiscores. These Hiscores are inconsistant in uptime and response time which makes it difficult for F2P Wiki."
-      %br
-      %br
-      = "We are currently working on improving this by migrating the server and improving the request handling code."
+        = "Truth and Objectivity"
+      = "…there is no official Jagex hiscores value for accounts being P2P aside from P2P XP and minigame scores, then there cannot be any determination about a possible fake F2P purely from a name and all F2P stats. Therefore, since even Jagex does not have an objective and rigorous measure of F2P, then we must consider all accounts F2P simply if they have no P2P xp and minigame scores, until they are proven fake via screenshots of them skilling on P2P worlds or P2P methods, on a case-by-case basis..."
     %details
       %summary
-        = "Why are gains/records not working?"
-      = "Gains and records are only available for players with 250 EHP or more, or players who have "
-      = link_to_unless_current "supported the wiki.", donate_path
-    %details
-      %summary
-        = "When does F2P Wiki get updated?"
-      = "F2P Wiki is currently run by a single developer with a full time job and other life responsibilities. I release updates when I have time to work on the Wiki but anyone can contribute through "
-      = link_to "open source on GitHub.", "https://github.com/vmeow/f2pehp", target: "_blank", rel: "noopener noreferrer"
-    %details{:id => 'why-clans-use-temple'}
-      %summary
-        = "Why do clans use Temple OSRS for EHP rates instead of F2P Wiki?"
-      = "Temple OSRS has the most accurate representation of EHP for F2P account types. This is not to do with the rates that are set on the wiki, but rather how the bonus XP is working on Temple compared to F2P wiki."
+        = "Inclusivity, Fun, and Anti-elitism"
+      = "...Self-imposed F2P-only (meaning a strict preference of playing F2P, rather than a question of having the GP or $ to pay for P2P) is an extremely niche community. We cannot afford to alienate players…"
       %br
       %br
-      = "With more database records costing more money, and the goal of the wiki to be able to track EHP with limited uptime cost, the database design was simple but efficient and allowed us to have less than 10k records per table giving us the free database tier on our hosting provider, Heroku."
+      = "…F2P.wiki is here for the betterment of the F2P community…"
       %br
       %br
-      = "However, this simple way does come with a lot of limitations. We don't track data points, but rather update set values on your page every time you update. The weekly values get reset every week and etc. This means that we can't go back in time to any point with your character, or display graphs."
-      %br
-      %br
-      = "This has been fine for the most part. But when it comes to how to calculate bonus xp, we run into a lot of complications. This is why even though our rates are actually pretty accurate and representative of what xp/h should be, it's not 100% accurate of what the EHP should be."
-      %br
-      %br
-      = "So why don't you change the way bonus XP is calculated? The simple answer is... it's a lot of work. To get the same rates as Temple we would likely have to rebuild the entire way EHP is calculated, and redesign the database. Then migrate all of our current data across. This would be like rewriting half of the application which I am not in any hurry to do."
-      %br
-      %br
-      = "I hope you understand the situation the wiki is in. I'm glad a lot of you still enjoy using the wiki, but there are no plans in the future to redesign it and therefore no plans for this to be used for clans. I will still strive to update the rates on wiki when a method or meta is used, but EHP will always be a little bit off in comparison to Temple."
-
-
-
+      = "The present F2P.wiki team has a dedication to these ideals set out by the founder of F2P.wiki. We strive to preserve these core values while maintaining a hub of resources for F2P Old School RuneScape aimed at meritorious display. Thanks for being legendary and doing so many cool things for us to keep up with!"
 
     %h2
       = "Combat"

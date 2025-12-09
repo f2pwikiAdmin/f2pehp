@@ -8,12 +8,45 @@
 = content_tag(:div, nil, class: ["container", "scroll", "wide-scroll-middle"], style: "margin-bottom: 0px;") do
   = content_tag(:div, nil, class: "container", style: "width: 460px; text-align: left;") do
     %h1{:align => "center"} Frequently Asked Questions
-    = content_tag(:p, nil, style: "text-align:center; margin: auto; margin-top: 0px; margin-bottom: 0px; color: none; background-color: transparent; border: none") do 
-      = "Please visit "
-      = link_to "this reddit post", "https://www.reddit.com/r/W385/comments/fdqw8p/what_is_f2pwiki/", target: "_blank", rel: "noopener noreferrer"
-      = "for our general site philosophy, specifically on what is F2P, and what this site is meant for."
+    %h2
+      = "Fundamental Philosophy"
+    %ol{:style => "color: black;"}
+      %li
+        = "Present the truest representation of our community, with an emphasis on skilling highscores"
+      %br
+      %li
+        = "Help foster the best possible community for everyone"
+      %br
+      %li
+        = "Empower players to discover the play-style that is most fun or fitting for them"
+    %p
+      = "There are no ads, and there never will be ads. The site’s code is open source, with full transparency and accountability."
+    %p
+      = "All important decisions (such as EHP rates) are intended to be unbiased, democratic, and if applicable, thoroughly tested with peer-reviewed statistics to back it up."
+
+    %h2
+      = "F2P.wiki Philosophies"
+    %details
+      %summary
+        = "F2P Spirit"
+      = "As part of the “F2P Spirit”, the site encourages players to explore the surprising depth and diversity of F2P, but most importantly, to have fun. This definition is intentionally vague, in order to accommodate the breadth of opinions of what truly is F2P."
       %br
       %br
+      = "The site promotes many play-styles and restrictive modes even within F2P, but maintains one single unyielding rule in order to maintain a position on the hiscores. This is that the player must not obtain any advantages for skilling from P2P. They must skill entirely within F2P worlds and F2P methods, have 0 experience in all P2P skills, and have no skilling-related items from P2P. The F2P skilling hiscores is just that: a hiscores of players who have skilled in F2P…"
+    %details
+      %summary
+        = "Truth and Objectivity"
+      = "…there is no official Jagex hiscores value for accounts being P2P aside from P2P XP and minigame scores, then there cannot be any determination about a possible fake F2P purely from a name and all F2P stats. Therefore, since even Jagex does not have an objective and rigorous measure of F2P, then we must consider all accounts F2P simply if they have no P2P xp and minigame scores, until they are proven fake via screenshots of them skilling on P2P worlds or P2P methods, on a case-by-case basis..."
+    %details
+      %summary
+        = "Inclusivity, Fun, and Anti-elitism"
+      = "...Self-imposed F2P-only (meaning a strict preference of playing F2P, rather than a question of having the GP or $ to pay for P2P) is an extremely niche community. We cannot afford to alienate players…"
+      %br
+      %br
+      = "…F2P.wiki is here for the betterment of the F2P community…"
+      %br
+      %br
+      = "The present F2P.wiki team has a dedication to these ideals set out by the founder of F2P.wiki. We strive to preserve these core values while maintaining a hub of resources for F2P Old School RuneScape aimed at meritorious display. Thanks for being legendary and doing so many cool things for us to keep up with!"
 
     %h2
       = "F2P Wiki"
@@ -58,9 +91,6 @@
       %br
       %br
       = "I hope you understand the situation the wiki is in. I'm glad a lot of you still enjoy using the wiki, but there are no plans in the future to redesign it and therefore no plans for this to be used for clans. I will still strive to update the rates on wiki when a method or meta is used, but EHP will always be a little bit off in comparison to Temple."
-
-
-
 
     %h2
       = "Combat"

@@ -49,50 +49,6 @@
       = "The present F2P.wiki team has a dedication to these ideals set out by the founder of F2P.wiki. We strive to preserve these core values while maintaining a hub of resources for F2P Old School RuneScape aimed at meritorious display. Thanks for being legendary and doing so many cool things for us to keep up with!"
 
     %h2
-      = "F2P Wiki"
-    %details
-      %summary
-        = "How can I submit a question for the FAQ?"
-      = "You can submit a question by contacting us "
-      = link_to_unless_current "here.", donate_path
-    %details
-      %summary
-        = "Why does F2P Wiki sometimes show a 500 error?"
-      = "F2P Wiki collects data by making requests to the official Oldschool Runescape Hiscores. These Hiscores are inconsistant in uptime and response time which makes it difficult for F2P Wiki."
-      %br
-      %br
-      = "We are currently working on improving this by migrating the server and improving the request handling code."
-    %details
-      %summary
-        = "Why are gains/records not working?"
-      = "Gains and records are only available for players with 250 EHP or more, or players who have "
-      = link_to_unless_current "supported the wiki.", donate_path
-    %details
-      %summary
-        = "When does F2P Wiki get updated?"
-      = "F2P Wiki is currently run by a single developer with a full time job and other life responsibilities. I release updates when I have time to work on the Wiki but anyone can contribute through "
-      = link_to "open source on GitHub.", "https://github.com/vmeow/f2pehp", target: "_blank", rel: "noopener noreferrer"
-    %details{:id => 'why-clans-use-temple'}
-      %summary
-        = "Why do clans use Temple OSRS for EHP rates instead of F2P Wiki?"
-      = "Temple OSRS has the most accurate representation of EHP for F2P account types. This is not to do with the rates that are set on the wiki, but rather how the bonus XP is working on Temple compared to F2P wiki."
-      %br
-      %br
-      = "With more database records costing more money, and the goal of the wiki to be able to track EHP with limited uptime cost, the database design was simple but efficient and allowed us to have less than 10k records per table giving us the free database tier on our hosting provider, Heroku."
-      %br
-      %br
-      = "However, this simple way does come with a lot of limitations. We don't track data points, but rather update set values on your page every time you update. The weekly values get reset every week and etc. This means that we can't go back in time to any point with your character, or display graphs."
-      %br
-      %br
-      = "This has been fine for the most part. But when it comes to how to calculate bonus xp, we run into a lot of complications. This is why even though our rates are actually pretty accurate and representative of what xp/h should be, it's not 100% accurate of what the EHP should be."
-      %br
-      %br
-      = "So why don't you change the way bonus XP is calculated? The simple answer is... it's a lot of work. To get the same rates as Temple we would likely have to rebuild the entire way EHP is calculated, and redesign the database. Then migrate all of our current data across. This would be like rewriting half of the application which I am not in any hurry to do."
-      %br
-      %br
-      = "I hope you understand the situation the wiki is in. I'm glad a lot of you still enjoy using the wiki, but there are no plans in the future to redesign it and therefore no plans for this to be used for clans. I will still strive to update the rates on wiki when a method or meta is used, but EHP will always be a little bit off in comparison to Temple."
-
-    %h2
       = "Combat"
     %details
       %summary

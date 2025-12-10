@@ -477,7 +477,7 @@ class PlayersController < ApplicationController
     id = params[:search] || params[:id]
     @player = Player.find_player(id)
 
-    if not @player
+    unless @player
       redirect_to ranks_path, notice: "Player '#{id}' not found."
       return
     end

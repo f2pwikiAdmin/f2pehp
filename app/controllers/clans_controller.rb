@@ -130,7 +130,7 @@ class ClansController < ApplicationController
     id = params[:search] || params[:id]
     @clan = Clan.find_clan(id)
 
-    if not @clan
+    unless @clan
       redirect_to clans_path, notice: "Clan '#{id}' not found."
       return
     end

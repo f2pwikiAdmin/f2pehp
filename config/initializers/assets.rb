@@ -122,9 +122,7 @@ F2POSRSRanks::Application.configure do
                      "p2p_minigame"
                  ]
     
-    config.f2p_skills = ["attack", "strength", "defence", "hitpoints", "ranged", "prayer",
-                         "magic", "cooking", "woodcutting", "fishing", "firemaking", "crafting",
-                         "smithing", "mining", "runecraft"]
+    config.f2p_skills = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft]
                          
     config.xp_table = [0, 83, 174, 276, 388, 512, 650, 801, 969, 
         1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115, 3523, 3973, 

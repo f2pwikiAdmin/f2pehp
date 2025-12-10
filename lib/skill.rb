@@ -1,13 +1,8 @@
 class Skill
   #ORDER OF SKILLS ON http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=NAME
-  HISCORES_SKILLS = ["overall", "attack", "defence", "strength", "hitpoints", "ranged", "prayer",
-                   "magic", "cooking", "woodcutting", "p2p", "fishing", "firemaking", "crafting",
-                   "smithing", "mining", "p2p", "p2p", "p2p", "p2p", "p2p", "runecraft", "p2p", 
-                   "p2p", "p2p_minigame", "p2p_minigame", "p2p_minigame", "p2p_minigame", "p2p_minigame", "p2p_minigame", "p2p_minigame", "p2p_minigame", "lms"]
+  HISCORES_SKILLS = %w[overall attack defence strength hitpoints ranged prayer magic cooking woodcutting p2p fishing firemaking crafting smithing mining p2p p2p p2p p2p p2p runecraft p2p p2p p2p_minigame p2p_minigame p2p_minigame p2p_minigame p2p_minigame p2p_minigame p2p_minigame p2p_minigame lms].freeze
   
-  F2P_SKILLS = ["attack", "strength", "defence", "hitpoints", "ranged", "prayer",
-                "magic", "cooking", "woodcutting", "fishing", "firemaking", "crafting",
-                "smithing", "mining", "runecraft"]
+  F2P_SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft].freeze
                        
   XP_TABLE = [0, 83, 174, 276, 388, 512, 650, 801, 969, 
       1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115, 3523, 3973, 
@@ -18,7 +13,7 @@ class Skill
       273742, 302288, 333804, 368599, 407015, 449428, 496254, 547953, 605032, 668051, 
       737627, 814445, 899257, 992895, 1096278, 1210421, 1336443, 1475581, 1629200, 1798808, 
       1986068, 2192818, 2421087, 2673114, 2951373, 3258594, 3597792, 3972294, 4385776, 4842295, 
-      5346332, 5902831, 6517253, 71954629, 7944614, 8771558, 9684577, 10692629, 11805606, 13034431]
+      5346332, 5902831, 6517253, 71954629, 7944614, 8771558, 9684577, 10692629, 11805606, 13034431].freeze
 
   LVL_TIERS = [32, 45, 60, 75, 90, 105, 120, 135, 150, 165, 
       180, 195, 210, 225, 240, 255, 270, 285, 300, 315, 
@@ -29,7 +24,7 @@ class Skill
       930, 945, 960, 975, 990, 1005, 1020, 1035, 1050, 1065, 
       1080, 1095, 1110, 1125, 1140, 1155, 1170, 1185, 1200, 1215, 
       1230, 1245, 1260, 1275, 1290, 1305, 1320, 1335, 1350, 1365, 
-      1380, 1395, 1410, 1425, 1440, 1455, 1470, 1485]
+      1380, 1395, 1410, 1425, 1440, 1455, 1470, 1485].freeze
   
   LVL_XPS = [166, 522, 1104, 1940, 3072, 4550, 6408, 8721, 11540, 14938, 
       19008, 23829, 29498, 36165, 43936, 52955, 63414, 75487, 89400, 105378, 
@@ -40,7 +35,7 @@ class Skill
       20695848, 23221737, 26048960, 29212820, 32752764, 36712851, 41142176, 46095519, 51633890, 57825595, 
       64746504, 72481335, 81124572, 90781575, 101569668, 113619737, 127077600, 142105832, 158885440, 177618258, 
       198529134, 221868462, 247915332, 276980490, 309410112, 345589578, 385948288, 430964255, 481169880, 537157621, 
-      599587276, 6691780497, 746793716, 833298010, 929719392, 1037185013, 1156949388, 1290408669]
+      599587276, 6691780497, 746793716, 833298010, 929719392, 1037185013, 1156949388, 1290408669].freeze
 
   EHP_REG = Hash.new
   EHP_IRON = Hash.new

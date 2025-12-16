@@ -7,7 +7,7 @@ class Player < ActiveRecord::Base
 
   has_many :player_clan_links
   has_many :clans, through: :player_clan_links
-  SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft overall]
+  SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft sailing overall]
 
   TIMES = %w[day week month year]
 
@@ -1046,6 +1046,15 @@ class Player < ActiveRecord::Base
   end
 
   def check_p2p_stats(stats)
+    # Check if sailing indicates P2P (F2P players have sailing_lvl=1, sailing_xp=0)
+    sailing_lvl = stats["sailing_lvl"] || stats[:sailing_lvl]
+    sailing_xp = stats["sailing_xp"] || stats[:sailing_xp]
+
+    if (sailing_lvl && sailing_lvl > 1) || (sailing_xp && sailing_xp > 0)
+      update(:potential_p2p => 1)
+      return
+    end
+
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|
       actual_f2p_lvls += stats["#{skill}_lvl"]
@@ -1058,6 +1067,12 @@ class Player < ActiveRecord::Base
 
   def self.initial_p2p_check(stats)
     return true if stats[:potential_p2p] > 0
+
+    # Check if sailing indicates P2P (F2P players have sailing_lvl=1, sailing_xp=0)
+    sailing_lvl = stats["sailing_lvl"] || stats[:sailing_lvl]
+    sailing_xp = stats["sailing_xp"] || stats[:sailing_xp]
+
+    return true if (sailing_lvl && sailing_lvl > 1) || (sailing_xp && sailing_xp > 0)
 
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|

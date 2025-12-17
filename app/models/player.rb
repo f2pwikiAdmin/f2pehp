@@ -7,11 +7,9 @@ class Player < ActiveRecord::Base
 
   has_many :player_clan_links
   has_many :clans, through: :player_clan_links
-  SKILLS = ["attack", "strength", "defence", "hitpoints", "ranged", "prayer",
-            "magic", "cooking", "woodcutting", "fishing", "firemaking", "crafting",
-            "smithing", "mining", "runecraft", "overall"]
+  SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft sailing overall]
 
-  TIMES = ["day", "week", "month", "year"]
+  TIMES = %w[day week month year]
 
   ACCOUNT_TYPES = %w[Reg IM HCIM UIM]
   ACCOUNT_TYPE_ANCESTORS = {
@@ -21,11 +19,11 @@ class Player < ActiveRecord::Base
   }
 
   # This is the canonical list of supporter. It is used to generate the list
-  # of supporters on both home page and the about us page. It also contains
+  # of supporters on both the home page and the about us page. It also contains
   # the flair image and other styling applied to supporters names wherever
   # they appear.
   # Adding a new supporter:
-  #   1. Add a new entry this list as a hash {name: "supporter_name"}
+  #   1. Add a new entry this lists as a hash {name: "supporter_name"}
   #   2. Add an image after their name by adding the key :flair_after
   #   3. Add an image before their  name by adding the key :flair_before
   #   4. Apply arbitrary css by adding the key :other_css
@@ -421,7 +419,7 @@ class Player < ActiveRecord::Base
                 {name: "Disenthral"}, # pro bono tracking
                 {name: "Jingle Bells", flair_after: "flairs/santa.png"}, # devs are allowed their own customizations
                 {name: "Ironman260", flair_after: "skills/defence.png"},
-              ]
+              ].freeze
 
   CONTRIBUTORS = [{name: "Tannerdino"},
                 {name: "Pawz"},
@@ -430,30 +428,30 @@ class Player < ActiveRecord::Base
                 {name: "UncleTomas"},
                 {name: "oooosonasty"},
                 {name: "Quadrant Dub"},
-              ]
+              ].freeze
 
 
-  def self.skills()
+  def self.skills
     SKILLS
   end
 
-  def self.times()
+  def self.times
     TIMES
   end
 
-  def self.supporters_hashes()
+  def self.supporters_hashes
     SUPPORTERS
   end
 
-  def self.supporters()
+  def self.supporters
     SUPPORTERS.map{|supporter| supporter[:name]}
   end
 
-  def self.contributors_hashes()
+  def self.contributors_hashes
     CONTRIBUTORS
   end
 
-  def self.contributors()
+  def self.contributors
     CONTRIBUTORS.map{|contributor| contributor[:name]}
   end
 
@@ -465,12 +463,12 @@ class Player < ActiveRecord::Base
     ACCOUNT_TYPE_ANCESTORS
   end
 
-  def self.sql_supporters()
+  def self.sql_supporters
     quoted_names = supporters.map{ |name| "'#{name}'" }
     "(#{quoted_names.join(",")})"
   end
 
-  def self.sql_contributors()
+  def self.sql_contributors
     quoted_names = contributors.map{ |name| "'#{name}'" }
     "(#{quoted_names.join(",")})"
   end
@@ -628,7 +626,7 @@ class Player < ActiveRecord::Base
 
     if player_acc_type != account_type
       if overall_xp_year_start
-        ehp_diffs = get_gains_ehp_diffs()
+        ehp_diffs = get_gains_ehp_diffs
         update_attribute(:player_acc_type, account_type)
         fix_wrong_acc_type_gains_and_records(actual_stats, ehp_diffs)
       else
@@ -1048,6 +1046,15 @@ class Player < ActiveRecord::Base
   end
 
   def check_p2p_stats(stats)
+    # Check if sailing indicates P2P (F2P players have sailing_lvl=1, sailing_xp=0)
+    sailing_lvl = stats["sailing_lvl"] || stats[:sailing_lvl]
+    sailing_xp = stats["sailing_xp"] || stats[:sailing_xp]
+
+    if (sailing_lvl && sailing_lvl > 1) || (sailing_xp && sailing_xp > 0)
+      update(:potential_p2p => 1)
+      return
+    end
+
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|
       actual_f2p_lvls += stats["#{skill}_lvl"]
@@ -1060,6 +1067,12 @@ class Player < ActiveRecord::Base
 
   def self.initial_p2p_check(stats)
     return true if stats[:potential_p2p] > 0
+
+    # Check if sailing indicates P2P (F2P players have sailing_lvl=1, sailing_xp=0)
+    sailing_lvl = stats["sailing_lvl"] || stats[:sailing_lvl]
+    sailing_xp = stats["sailing_xp"] || stats[:sailing_xp]
+
+    return true if (sailing_lvl && sailing_lvl > 1) || (sailing_xp && sailing_xp > 0)
 
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|

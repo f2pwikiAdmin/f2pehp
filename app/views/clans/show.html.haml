@@ -192,7 +192,7 @@
             %td{:align => "left"}= number_with_delimiter(number_with_precision(avg_xp, :precision => 0), :delimiter => ",", :separator => ".")
             %td{:align => "left"}= number_with_delimiter(number_with_precision(avg_ehp, :precision => 2), :delimiter => ",", :separator => ".")
           - elsif @skill.include?("no_combats")
-            - noncombats = ["woodcutting", "firemaking", "fishing", "cooking", "mining", "smithing", "crafting", "runecraft"]
+            - noncombats = %w[woodcutting firemaking fishing cooking mining smithing crafting runecraft]
             - sum_xp = noncombats.each.map { |skill| @players.pluck("#{skill}_xp".to_sym).sum }.sum
             - sum_ehp = noncombats.each.map { |skill| @players.pluck("#{skill}_ehp".to_sym).sum }.sum
             - avg_xp = player_count == 0 ? 0 : sum_xp/player_count

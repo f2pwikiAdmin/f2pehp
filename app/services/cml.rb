@@ -32,16 +32,18 @@ class CML
     private
 
     def records_api_url(player_name)
+      encoded_name = URI.encode_www_form_component(player_name)
       URI.join(
         CML_BASE_URL,
-        "?type=recordsofplayer&player=#{player_name}"
+        "?type=recordsofplayer&player=#{encoded_name}"
       )
     end
 
     def datapoints_api_url(player_name, time)
+      encoded_name = URI.encode_www_form_component(player_name)
       URI.join(
         CML_BASE_URL,
-        "?type=datapoints&player=#{player_name}&time=#{time}"
+        "?type=datapoints&player=#{encoded_name}&time=#{time}"
       )
     end
 
@@ -70,7 +72,7 @@ class CML
 
     def parse_exp(records)
       return unless records
-      records = records.split(',')
+      xps = records.split(',')
       { 'overall_xp'     => xps[0],
         'attack_xp'      => xps[1],
         'defence_xp'     => xps[2],
@@ -86,7 +88,8 @@ class CML
         'crafting_xp'    => xps[13],
         'smithing_xp'    => xps[14],
         'mining_xp'      => xps[15],
-        'runecraft_xp'   => xps[21] }
+        'runecraft_xp'   => xps[21],
+        'sailing_xp'     => xps[28] }
     end
   end
 end

@@ -16,7 +16,7 @@ namespace :players do
       end
 
       # Sleep to avoid hitting API rate limits
-      sleep 0.25 if (index + 1) % 10 == 0
+      sleep 0.1 if (index + 1) % 10 == 0
     end
 
     puts "Done!"

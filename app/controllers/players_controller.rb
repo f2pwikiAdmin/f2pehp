@@ -435,32 +435,63 @@ class PlayersController < ApplicationController
       @players = @players.where("(overall_xp - overall_xp_month_start) > 0")
     end
 
-    @players = @players.where("potential_p2p <= 0")
-
-    if @skill.include?("99_count")
-      @players = @players.sort_by {|player| [player.count_99, player.overall_ehp] }.reverse
-    elsif @skill.include?("200m_count")
-      @players = @players.sort_by {|player| [player.count_200m, player.overall_ehp] }.reverse
-    elsif @skill.include?("lowest_lvl")
-      @players = @players.sort_by {|player| [player.lowest_lvl, player.overall_ehp] }.reverse
-    elsif @skill.include?("no_combats")
-      case @sort_by
-      when "ehp"
-        @players = @players.sort_by {|player| [player.fishing_ehp + player.cooking_ehp + player.woodcutting_ehp + player.firemaking_ehp + player.mining_ehp + player.smithing_ehp + player.crafting_ehp + player.runecraft_ehp, player.overall_ehp] }.reverse
-      when "lvl"
-        @players = @players.sort_by {|player| [player.fishing_lvl + player.cooking_lvl + player.woodcutting_lvl + player.firemaking_lvl + player.mining_lvl + player.smithing_lvl + player.crafting_lvl + player.runecraft_lvl, player.fishing_ehp + player.cooking_ehp + player.woodcutting_ehp + player.firemaking_ehp + player.mining_ehp + player.smithing_ehp + player.crafting_ehp + player.runecraft_ehp, player.overall_ehp] }.reverse
-      when "xp"
-        @players = @players.sort_by {|player| [player.fishing_xp + player.cooking_xp + player.woodcutting_xp + player.firemaking_xp + player.mining_xp + player.smithing_xp + player.crafting_xp + player.runecraft_xp, player.fishing_ehp + player.cooking_ehp + player.woodcutting_ehp + player.firemaking_ehp + player.mining_ehp + player.smithing_ehp + player.crafting_ehp + player.runecraft_ehp, player.overall_ehp] }.reverse
-      end
-    end
-
     if @skill == "obor_kc"
       @players = @players.where("obor_kc > 0")
     elsif @skill == "bryo_kc"
       @players = @players.where("bryo_kc > 0")
     end
 
-    @players = @players.paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    @players = @players.where("potential_p2p <= 0")
+
+    if @skill.include?("99_count")
+      @players = @players.sort_by {|player| [player.count_99, player.overall_ehp] }.reverse.paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    elsif @skill.include?("200m_count")
+      @players = @players.sort_by {|player| [player.count_200m, player.overall_ehp] }.reverse.paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    elsif @skill.include?("lowest_lvl")
+      @players = @players.sort_by {|player| [player.lowest_lvl, player.overall_ehp] }.reverse.paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    elsif @skill.include?("no_combats")
+      case @sort_by
+      when "ehp"
+        non_combat_ehp = proc do |player|
+          player.fishing_ehp + player.cooking_ehp + player.woodcutting_ehp +
+            player.firemaking_ehp + player.mining_ehp + player.smithing_ehp +
+            player.crafting_ehp + player.runecraft_ehp
+        end
+        @players = @players.sort_by { |player| [non_combat_ehp.call(player), player.overall_ehp] }
+                           .reverse
+                           .paginate(page: params[:page], per_page: @show_limit.to_i)
+      when "lvl"
+        non_combat_lvl = proc do |player|
+          player.fishing_lvl + player.cooking_lvl + player.woodcutting_lvl +
+            player.firemaking_lvl + player.mining_lvl + player.smithing_lvl +
+            player.crafting_lvl + player.runecraft_lvl
+        end
+        non_combat_ehp = proc do |player|
+          player.fishing_ehp + player.cooking_ehp + player.woodcutting_ehp +
+            player.firemaking_ehp + player.mining_ehp + player.smithing_ehp +
+            player.crafting_ehp + player.runecraft_ehp
+        end
+        @players = @players.sort_by do |player|
+          [non_combat_lvl.call(player), non_combat_ehp.call(player), player.overall_ehp]
+        end.reverse.paginate(page: params[:page], per_page: @show_limit.to_i)
+      when "xp"
+        non_combat_xp = proc do |player|
+          player.fishing_xp + player.cooking_xp + player.woodcutting_xp +
+            player.firemaking_xp + player.mining_xp + player.smithing_xp +
+            player.crafting_xp + player.runecraft_xp
+        end
+        non_combat_ehp = proc do |player|
+          player.fishing_ehp + player.cooking_ehp + player.woodcutting_ehp +
+            player.firemaking_ehp + player.mining_ehp + player.smithing_ehp +
+            player.crafting_ehp + player.runecraft_ehp
+        end
+        @players = @players.sort_by do |player|
+          [non_combat_xp.call(player), non_combat_ehp.call(player), player.overall_ehp]
+        end.reverse.paginate(page: params[:page], per_page: @show_limit.to_i)
+      end
+    else
+      @players = @players.paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    end
   end
 
   # GET /players/1

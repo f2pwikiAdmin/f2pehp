@@ -263,4 +263,10 @@
         %br
         = submit_tag 'Refresh', :id => "show_limit_submit"
 
-= will_paginate @players
+- if @players.respond_to?(:current_page)
+  .pagination
+    - if @players.previous_page
+      = link_to "Previous", ranks_path(page: @players.previous_page)
+    %span= "Page #{@players.current_page} of #{@players.total_pages}"
+    - if @players.next_page
+      = link_to "Next", ranks_path(page: @players.next_page)

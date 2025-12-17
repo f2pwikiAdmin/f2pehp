@@ -409,8 +409,7 @@ class PlayersController < ApplicationController
     clan_filter_clause = @clan_filters.keys
     clan_filter_clause += [nil] if @clan_filters["None"]
 
-    # Simplified query without distinct to avoid pagination issues
-    @players = Player.where(player_acc_type: @filters.keys).order(Arel.sql(ordering))
+    @players = Player.left_joins(:clans).merge(Clan.where(name: clan_filter_clause)).distinct.where(player_acc_type: @filters.keys).order(Arel.sql(ordering))
 
     if @skill.include?("ttm")
       @players = @players.where("ttm_lvl != 0 or ttm_xp != 0 or overall_ehp > 1000")

@@ -994,7 +994,7 @@ class Player < ActiveRecord::Base
       time_recs = {}
       (SKILLS - ["overall"]).each do |skill|
         xp_gain = recs["#{skill}_xp_#{time}_max"].to_i
-        curr_xp = self.read_attribute("#{skill}_xp")
+        curr_xp = self.read_attribute("#{skill}_xp") || 0
         before_xp = curr_xp - xp_gain
         before_ehp = calc_skill_ehp(before_xp, ehp["#{skill}_tiers"], ehp["#{skill}_xphrs"])
         curr_ehp = calc_skill_ehp(curr_xp, ehp["#{skill}_tiers"], ehp["#{skill}_xphrs"])
@@ -1060,7 +1060,7 @@ class Player < ActiveRecord::Base
       actual_f2p_lvls += stats["#{skill}_lvl"]
     end
 
-    if stats["overall_lvl"] > 1493 or (stats["overall_lvl"] - 8) > actual_f2p_lvls
+    if stats["overall_lvl"] > 1494 or (stats["overall_lvl"] - 9) > actual_f2p_lvls
       update(:potential_p2p => 1)
     end
   end
@@ -1079,7 +1079,7 @@ class Player < ActiveRecord::Base
       actual_f2p_lvls += (stats["#{skill}_lvl"] or 0)
     end
 
-    return true if (stats["overall_lvl"] - 8) > actual_f2p_lvls
+    return true if (stats["overall_lvl"] - 9) > actual_f2p_lvls
     return false
   end
 

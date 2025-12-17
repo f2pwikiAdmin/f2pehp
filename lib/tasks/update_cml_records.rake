@@ -23,11 +23,11 @@ namespace :players do
         end
 
         # Sleep to avoid hitting API rate limits
-        sleep 0.5
+        sleep 0.25
       end
 
       # Longer sleep between batches
-      sleep 2 unless batch_index == (total / 25.0).ceil - 1
+      sleep 1 unless batch_index == (total / 25.0).ceil - 1
     end
 
     puts "\nDone!"

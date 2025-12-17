@@ -1062,6 +1062,9 @@ class Player < ActiveRecord::Base
 
     if stats["overall_lvl"] > 1494 or (stats["overall_lvl"] - 9) > actual_f2p_lvls
       update(:potential_p2p => 1)
+    else
+      # Player passes F2P checks, ensure potential_p2p is set to 0
+      update(:potential_p2p => 0)
     end
   end
 

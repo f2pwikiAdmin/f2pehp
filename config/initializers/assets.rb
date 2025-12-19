@@ -41,6 +41,7 @@ F2POSRSRanks::Application.configure do
                      "sailing",  # Add sailing at its correct position.
                      "p2p",
                      "p2p",
+                     "p2p", # this is sailing
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",
@@ -123,7 +124,7 @@ F2POSRSRanks::Application.configure do
                      "p2p_minigame"
                  ]
     
-    config.f2p_skills = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft sailing]
+    config.f2p_skills = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft]
                          
     config.xp_table = [0, 83, 174, 276, 388, 512, 650, 801, 969, 
         1154, 1358, 1584, 1833, 2107, 2411, 2746, 3115, 3523, 3973, 
@@ -313,9 +314,6 @@ F2POSRSRanks::Application.configure do
   
     config.ehp_reg['runecraft_tiers'] = [0]
     config.ehp_reg['runecraft_xphrs'] = [65000]
-
-    config.ehp_reg['sailing_tiers'] = [0]
-    config.ehp_reg['sailing_xphrs'] = [0]
   
   
   
@@ -379,8 +377,6 @@ F2POSRSRanks::Application.configure do
     config.ehp_iron['runecraft_tiers'] = [0]
     config.ehp_iron['runecraft_xphrs'] = [5400]
 
-    config.ehp_iron['sailing_tiers'] = [0]
-    config.ehp_iron['sailing_xphrs'] = [0]
   
   
   
@@ -444,8 +440,6 @@ F2POSRSRanks::Application.configure do
     config.ehp_uim['runecraft_tiers'] = [0]
     config.ehp_uim['runecraft_xphrs'] = [5400]
 
-    config.ehp_uim['sailing_tiers'] = [0]
-    config.ehp_uim['sailing_xphrs'] = [0]
     
     # Bonus XP (End): 
     # 0.2500 Smithing:Mining from 0 to 200000000 Mining xp 

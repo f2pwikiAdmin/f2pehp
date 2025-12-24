@@ -38,9 +38,9 @@ F2POSRSRanks::Application.configure do
                      "p2p",
                      "p2p",
                      "runecraft",
-                     "sailing",  # Add sailing at its correct position.
+                     "p2p", 
                      "p2p",
-                     "p2p",
+                     "p2p", #this is sailing
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",

@@ -42,13 +42,14 @@
     
     %h3{:align => "center"} You will receive:
     &nbsp;
-    = "- XP/EHP tracking if you are below 250 EHP"
+    -# Temporarily hide this line until data tracking is solved
+    -# = "- XP/EHP tracking if you are below 250 EHP"
     %br
     &nbsp;
-    = "- your name on the F2P Supporters list and a special donator flair"
+    = "- Your name on the F2P Supporters list and a special donator flair"
     %br
     &nbsp;
-    = "- text on your F2P account's page or a custom name styling/flair: $5"
+    = "- Text on your F2P account's page or a custom name styling/flair: $5"
     %br
     %br
     -# Temporarily hide PayPal button until we figure it out.
@@ -60,7 +61,7 @@
     -#   <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynow_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Buy Now" />
     -#   </form>
     = content_tag(:div, nil, class: "container", style: "text-align: center; width: 430px;") do 
-      = "after donating, please email your F2P account name, transaction ID, and your request to #{ENV["CONTACT_US_EMAIL"]}. If you are requesting a custom flair, please make sure it is 30x30 pixels or less."
+      = "please email your F2P account name, transaction ID, and your request to #{ENV["CONTACT_US_EMAIL"]}. If you are requesting a custom flair, please make sure it is 30x30 pixels or less."
       %br
       %br
       = "Additionally, check out these shirts made by Pawz"

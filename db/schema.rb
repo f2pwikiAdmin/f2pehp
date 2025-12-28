@@ -389,26 +389,7 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.integer "failed_updates", default: 0
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer "sailing_xp"
-    t.integer "sailing_lvl"
-    t.float "sailing_ehp"
-    t.integer "sailing_rank"
-    t.integer "sailing_xp_day_start"
-    t.integer "sailing_xp_day_max"
-    t.float "sailing_ehp_day_start"
-    t.float "sailing_ehp_day_max"
-    t.integer "sailing_xp_week_start"
-    t.integer "sailing_xp_week_max"
-    t.float "sailing_ehp_week_start"
-    t.float "sailing_ehp_week_max"
-    t.integer "sailing_xp_month_start"
-    t.integer "sailing_xp_month_max"
-    t.float "sailing_ehp_month_start"
-    t.float "sailing_ehp_month_max"
-    t.integer "sailing_xp_year_start"
-    t.integer "sailing_xp_year_max"
-    t.float "sailing_ehp_year_start"
-    t.float "sailing_ehp_year_max"
+
   end
 
   create_table "users", id: :serial, force: :cascade do |t|

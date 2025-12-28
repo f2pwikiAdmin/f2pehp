@@ -121,8 +121,8 @@ class Skill
   EHP_REG['prayer_tiers'] = [0]
   EHP_REG['prayer_xphrs'] =[43000]
 
-  EHP_REG['magic_tiers'] = [0, 174, 1358, 3973, 5018, 166636]
-  EHP_REG['magic_xphrs'] = [5000, 15600, 25200, 34800, 72000, 199822941]
+  EHP_REG['magic_tiers'] = [0]
+  EHP_REG['magic_xphrs'] = [0]
 
   EHP_REG['cooking_tiers'] = [0, 7842, 37224, 737627]
   EHP_REG['cooking_xphrs'] = [40000, 130000, 175000, 480000]
@@ -176,11 +176,11 @@ class Skill
   EHP_IRON['prayer_tiers'] = [0, 10680000, 13034000, 163880000]
   EHP_IRON['prayer_xphrs'] = [9300, 2350000, 9300, 36120000]
 
-  # EHP_IRON['magic_tiers'] = [0, 3973, 247886, 3500000, 13034000, 53700000]
-  # EHP_IRON['magic_xphrs'] = [5000, 34800, 51700, 9534000, 51700, 146300000]
+  # EHP_IRON['magic_tiers'] = [0]
+  # EHP_IRON['magic_xphrs'] = [0]
 
-  EHP_IRON['magic_tiers'] = [0, 3973, 18247]
-  EHP_IRON['magic_xphrs'] = [5000, 34800, 199981753]
+  EHP_IRON['magic_tiers'] = [0]
+  EHP_IRON['magic_xphrs'] = [0]
 
   # EHP_IRON['cooking_tiers'] = [0, 101333]
   # EHP_IRON['cooking_xphrs'] = [40000, 120000]
@@ -241,8 +241,8 @@ class Skill
   # EHP_UIM['magic_tiers'] = [0, 3973, 247886, 3500000, 13034000, 53700000]
   # EHP_UIM['magic_xphrs'] = [5000, 34800, 51700, 9534000, 51700, 146300000]
 
-  EHP_UIM['magic_tiers'] = [0, 3973, 18247]
-  EHP_UIM['magic_xphrs'] = [5000, 34800, 199981753]
+  EHP_UIM['magic_tiers'] = [0]
+  EHP_UIM['magic_xphrs'] = [0]
 
   EHP_UIM['magic_tiers'] = [0, 3973, 247886, 3500000, 13034000, 53700000]
   EHP_UIM['magic_xphrs'] = [5000, 34800, 51700, 9534000, 51700, 146300000]

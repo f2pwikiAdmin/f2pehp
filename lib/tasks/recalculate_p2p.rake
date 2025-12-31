@@ -10,13 +10,7 @@ namespace :players do
       old_value = player.potential_p2p
 
       # Build stats hash from current player attributes
-      stats = {}
-      Player::SKILLS.each do |skill|
-        stats["#{skill}_lvl"] = player.send("#{skill}_lvl") || 1
-      end
-      stats["overall_lvl"] = player.overall_lvl || 0
-      stats["sailing_lvl"] = player.sailing_lvl || 1
-      stats["sailing_xp"] = player.sailing_xp || 0
+      
 
       # Call the p2p check method with current player stats
       player.check_p2p_stats(stats)

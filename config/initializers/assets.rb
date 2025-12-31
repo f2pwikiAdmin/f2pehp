@@ -279,8 +279,8 @@ F2POSRSRanks::Application.configure do
     config.ehp_reg['prayer_tiers'] = [0]
     config.ehp_reg['prayer_xphrs'] = [105000]
   
-    config.ehp_reg['magic_tiers'] = [0, 5018, 50339, 166636, 3258594]
-    config.ehp_reg['magic_xphrs'] = [15000, 60000, 100000, 165000, 180000]
+    config.ehp_reg['magic_tiers'] = [0]
+    config.ehp_reg['magic_xphrs'] = [0]
   
     config.ehp_reg['cooking_tiers'] = [0, 22406, 605032]
     config.ehp_reg['cooking_xphrs'] = [100000, 450000, 500000]

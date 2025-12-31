@@ -244,8 +244,8 @@ class Skill
   EHP_UIM['magic_tiers'] = [0]
   EHP_UIM['magic_xphrs'] = [0]
 
-  EHP_UIM['magic_tiers'] = [0, 3973, 247886, 3500000, 13034000, 53700000]
-  EHP_UIM['magic_xphrs'] = [5000, 34800, 51700, 9534000, 51700, 146300000]
+  EHP_UIM['magic_tiers'] = [0]
+  EHP_UIM['magic_xphrs'] = [0]
 
   # EHP_UIM['cooking_tiers'] = [0, 101333]
   # EHP_UIM['cooking_xphrs'] = [40000, 120000]

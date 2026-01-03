@@ -1,5 +1,4 @@
 require 'open-uri'
-require 'json'
 
 class Hiscores
   extend Base
@@ -130,11 +129,10 @@ class Hiscores
       res = fetch(stats_uri)
       if res
         begin
-          data = JSON.parse(res)
-          parsed_data = parse_stats(data)
+          parsed_data = parse_stats_csv(res)
           return parsed_data
-        rescue JSON::ParserError => e
-          Rails.logger.warn "Failed to parse JSON for #{player_name}: #{e.message}"
+        rescue => e
+          Rails.logger.warn "Failed to parse hiscores data for #{player_name}: #{e.message}"
           return false
         end
       else
@@ -179,12 +177,11 @@ class Hiscores
           next unless res
 
           begin
-            data = JSON.parse(res)
-            parsed_data = parse_stats(data)
+            parsed_data = parse_stats_csv(res)
             stats_mutex.synchronize { stats << [parsed_data, mode_idx] }
-          rescue JSON::ParserError => e
-            Rails.logger.warn "Failed to parse JSON for #{player_name} mode #{modes[mode_idx]}: #{e.message}"
-            # Skip this mode on JSON parse failure
+          rescue => e
+            Rails.logger.warn "Failed to parse hiscores data for #{player_name} mode #{modes[mode_idx]}: #{e.message}"
+            # Skip this mode on parse failure
             next
           end
         end
@@ -277,6 +274,138 @@ class Hiscores
         "m=#{path}#{path_suffix[account_type.to_sym]}/overall.ws",
         "?user=#{url_friendly_name(player_name)}"
       )
+    end
+
+    # Parses CSV hiscores data from OSRS API.
+    # The API returns newline-separated CSV values in a fixed order.
+    # Each line contains: rank,level,xp for skills or rank,score for activities/bosses.
+    #
+    # @param csv_data [String] CSV response from OSRS hiscores API
+    # @return [Hash, false] Parsed stats hash or false if data is invalid
+    def parse_stats_csv(csv_data)
+      return false unless csv_data && csv_data.is_a?(String)
+      
+      lines = csv_data.strip.split("\n")
+      return false if lines.empty?
+      
+      stats = { potential_p2p: 0 }
+      
+      # CSV line order matches this skill/activity order
+      # Lines 0-24: Skills (Overall, Attack, Defence, ..., Construction, Sailing)
+      # Lines 25+: Activities (Clue Scrolls, Bounty Hunter, LMS, Bosses, etc.)
+      csv_skill_order = [
+        'Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer', 'Magic',
+        'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing',
+        'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer', 'Farming', 'Runecraft', 'Hunter',
+        'Construction', 'Sailing'
+      ]
+      
+      # Activities and bosses order (after skills)
+      csv_activity_order = [
+        'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
+        'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
+        'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
+        'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
+        'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
+        'Bryophyta', 'Callisto', 'Calvar\'ion', 'Cerberus', 'Chambers of Xeric',
+        'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic', 'Commander Zilyana',
+        'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
+        'Dagannoth Supreme', 'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
+        'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon',
+        'Kraken', 'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
+        'Phosani\'s Nightmare', 'Obor', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',
+        'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
+        'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode',
+        'Thermy', 'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad',
+        'Vardorvis', 'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
+      ]
+      
+      # Parse skills (first 25 lines)
+      csv_skill_order.each_with_index do |skill_name, idx|
+        next if idx >= lines.length
+        
+        line = lines[idx]
+        values = line.split(',').map(&:strip).map(&:to_i)
+        next if values.length < 3
+        
+        rank, lvl, xp = values[0], values[1], values[2]
+        
+        # Map to internal skill name using SKILL_NAME_MAP
+        internal_skill_name = SKILL_NAME_MAP[skill_name]
+        next unless internal_skill_name
+        
+        # Ensure non-negative values
+        rank = [rank, -1].max
+        lvl = [lvl, 1].max
+        xp = [xp, 0].max
+        
+        # Process based on skill type
+        case internal_skill_name
+        when 'p2p'
+          # Check if this is a real P2P skill (not unranked)
+          if rank != -1 || lvl > 1 || xp > 0
+            stats[:potential_p2p] += xp
+          end
+        when 'sailing'
+          # Store sailing stats for P2P detection
+          stats['sailing_lvl'] = lvl
+          stats['sailing_xp'] = xp
+          stats['sailing_rank'] = rank
+        when 'hitpoints'
+          stats["#{internal_skill_name}_lvl"] = [lvl, MIN_HITPOINTS_LEVEL].max
+          stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
+          stats["#{internal_skill_name}_rank"] = rank
+        else
+          # F2P skills
+          stats["#{internal_skill_name}_lvl"] = lvl
+          stats["#{internal_skill_name}_xp"] = xp
+          stats["#{internal_skill_name}_rank"] = rank
+        end
+      end
+      
+      # Parse activities and bosses (lines 25+)
+      activity_start_idx = csv_skill_order.length
+      csv_activity_order.each_with_index do |activity_name, idx|
+        line_idx = activity_start_idx + idx
+        next if line_idx >= lines.length
+        
+        line = lines[line_idx]
+        values = line.split(',').map(&:strip).map(&:to_i)
+        next if values.length < 2
+        
+        rank, score = values[0], values[1]
+        
+        # Map to internal activity name using SKILL_NAME_MAP
+        internal_activity_name = SKILL_NAME_MAP[activity_name]
+        next unless internal_activity_name
+        
+        # Ensure non-negative values
+        rank = [rank, -1].max
+        score = [score, 0].max
+        
+        # Process based on activity type
+        case internal_activity_name
+        when 'p2p_minigame'
+          # Check if this is a real P2P minigame (not unranked)
+          if rank != -1 || score > 0
+            stats[:potential_p2p] += score
+          end
+        when 'lms'
+          stats[:lms_score] = score
+          stats[:lms_rank] = rank
+        when 'obor_kc'
+          stats[:obor_kc] = score
+          stats[:obor_kc_rank] = rank
+        when 'bryophyta_kc'
+          stats[:bryo_kc] = score
+          stats[:bryo_kc_rank] = rank
+        when 'clues_all', 'clues_beginner'
+          stats[internal_activity_name] = score
+          stats["#{internal_activity_name}_rank"] = rank
+        end
+      end
+      
+      stats
     end
 
     # Parses JSON hiscores data using name-based skill lookups.

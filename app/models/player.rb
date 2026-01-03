@@ -1048,6 +1048,11 @@ class Player < ActiveRecord::Base
   def check_p2p_stats(stats)
     # The potential_p2p field is already set by the hiscores parser
     # which includes detection of trained P2P skills (including Sailing)
+    # Check if parser detected P2P skills/minigames first
+    if stats[:potential_p2p] && stats[:potential_p2p] > 0
+      update(:potential_p2p => 1)
+      return
+    end
     
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|

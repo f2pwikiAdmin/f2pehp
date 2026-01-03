@@ -1,6 +1,236 @@
 require 'rails_helper'
 
 RSpec.describe Hiscores do
+  describe '.parse_stats_csv' do
+    context 'with valid CSV data' do
+      it 'parses F2P player stats correctly' do
+        # Mock CSV response for a F2P player
+        # Format: rank,level,xp for skills; rank,score for activities
+        csv_data = [
+          '12345,750,15000000',    # Overall
+          '10000,60,300000',       # Attack
+          '10001,60,300000',       # Defence
+          '10002,60,300000',       # Strength
+          '10003,60,300000',       # Hitpoints
+          '10004,60,300000',       # Ranged
+          '10005,45,60000',        # Prayer
+          '10006,55,170000',       # Magic
+          '10007,70,800000',       # Cooking
+          '10008,60,300000',       # Woodcutting
+          '-1,1,0',                # Fletching (P2P, unranked)
+          '10009,65,450000',       # Fishing
+          '10010,50,100000',       # Firemaking
+          '10011,40,40000',        # Crafting
+          '10012,40,40000',        # Smithing
+          '10013,60,300000',       # Mining
+          '-1,1,0',                # Herblore (P2P, unranked)
+          '-1,1,0',                # Agility (P2P, unranked)
+          '-1,1,0',                # Thieving (P2P, unranked)
+          '-1,1,0',                # Slayer (P2P, unranked)
+          '-1,1,0',                # Farming (P2P, unranked)
+          '10014,44,55000',        # Runecraft
+          '-1,1,0',                # Hunter (P2P, unranked)
+          '-1,1,0',                # Construction (P2P, unranked)
+          '-1,1,0',                # Sailing (unranked)
+          # Activities start here
+          '-1,0',                  # Bounty Hunter - Hunter
+          '-1,0',                  # Bounty Hunter - Rogue
+          '-1,0',                  # Bounty Hunter (Legacy) - Hunter
+          '-1,0',                  # Bounty Hunter (Legacy) - Rogue
+          '5000,50',               # Clue Scrolls (all)
+          '5001,25',               # Clue Scrolls (beginner)
+          '-1,0',                  # Clue Scrolls (easy) - P2P
+          '-1,0',                  # Clue Scrolls (medium) - P2P
+          '-1,0',                  # Clue Scrolls (hard) - P2P
+          '-1,0',                  # Clue Scrolls (elite) - P2P
+          '-1,0',                  # Clue Scrolls (master) - P2P
+          '3000,500',              # LMS - Rank
+          '-1,0',                  # PvP Arena - Rank
+          '-1,0',                  # Soul Wars Zeal
+          '-1,0',                  # Rifts closed
+          '-1,0',                  # Colosseum Glory
+          '-1,0',                  # Abyssal Sire
+          '-1,0',                  # Alchemical Hydra
+          '-1,0',                  # Artio
+          '-1,0',                  # Barrows Chests
+          '2001,8',                # Bryophyta
+          '-1,0',                  # Callisto
+          '-1,0',                  # Calvar'ion
+          '-1,0',                  # Cerberus
+          '-1,0',                  # Chambers of Xeric
+          '-1,0',                  # Chambers of Xeric: Challenge Mode
+          '-1,0',                  # Chaos Elemental
+          '-1,0',                  # Chaos Fanatic
+          '-1,0',                  # Commander Zilyana
+          '-1,0',                  # Corporeal Beast
+          '-1,0',                  # Crazy Archaeologist
+          '-1,0',                  # Dagannoth Prime
+          '-1,0',                  # Dagannoth Rex
+          '-1,0',                  # Dagannoth Supreme
+          '-1,0',                  # Deranged Archaeologist
+          '-1,0',                  # Duke Sucellus
+          '-1,0',                  # General Graardor
+          '-1,0',                  # Giant Mole
+          '-1,0',                  # Grotesque Guardians
+          '-1,0',                  # Hespori
+          '-1,0',                  # Kalphite Queen
+          '-1,0',                  # King Black Dragon
+          '-1,0',                  # Kraken
+          '-1,0',                  # Kree'Arra
+          '-1,0',                  # K'ril Tsutsaroth
+          '-1,0',                  # Lunar Chests
+          '-1,0',                  # Mimic
+          '-1,0',                  # Nex
+          '-1,0',                  # Nightmare
+          '-1,0',                  # Phosani's Nightmare
+          '2000,10',               # Obor
+        ].join("\n")
+
+        result = Hiscores.send(:parse_stats_csv, csv_data)
+
+        # Check F2P skills are parsed
+        expect(result['attack_lvl']).to eq(60)
+        expect(result['attack_xp']).to eq(300000)
+        expect(result['attack_rank']).to eq(10000)
+        
+        expect(result['overall_lvl']).to eq(750)
+        expect(result['overall_xp']).to eq(15000000)
+        
+        # Check hitpoints has values
+        expect(result['hitpoints_lvl']).to eq(60)
+        expect(result['hitpoints_xp']).to eq(300000)
+        
+        # Check minigames
+        expect(result['clues_all']).to eq(50)
+        expect(result['clues_all_rank']).to eq(5000)
+        expect(result['clues_beginner']).to eq(25)
+        expect(result[:lms_score]).to eq(500)
+        expect(result[:obor_kc]).to eq(10)
+        expect(result[:bryo_kc]).to eq(8)
+        
+        # Most importantly: potential_p2p should be 0 for unranked P2P skills
+        expect(result[:potential_p2p]).to eq(0)
+      end
+
+      it 'detects P2P player with trained P2P skills' do
+        csv_data = [
+          '12345,850,20000000',    # Overall
+          '10000,60,300000',       # Attack
+          '10001,60,300000',       # Defence
+          '10002,60,300000',       # Strength
+          '10003,60,300000',       # Hitpoints
+          '10004,60,300000',       # Ranged
+          '10005,45,60000',        # Prayer
+          '10006,55,170000',       # Magic
+          '10007,70,800000',       # Cooking
+          '10008,60,300000',       # Woodcutting
+          '5000,50,100000',        # Fletching (P2P with XP - should be flagged!)
+          '10009,65,450000',       # Fishing
+          '10010,50,100000',       # Firemaking
+          '10011,40,40000',        # Crafting
+          '10012,40,40000',        # Smithing
+          '10013,60,300000',       # Mining
+          '-1,1,0',                # Herblore
+        ].join("\n")
+
+        result = Hiscores.send(:parse_stats_csv, csv_data)
+
+        # Should have P2P XP from Fletching
+        expect(result[:potential_p2p]).to eq(100000)
+      end
+
+      it 'detects sailing as P2P indicator' do
+        csv_data = [
+          '12345,750,15000000',    # Overall
+          '10000,60,300000',       # Attack
+          '10001,60,300000',       # Defence
+          '10002,60,300000',       # Strength
+          '10003,60,300000',       # Hitpoints
+          '10004,60,300000',       # Ranged
+          '10005,45,60000',        # Prayer
+          '10006,55,170000',       # Magic
+          '10007,70,800000',       # Cooking
+          '10008,60,300000',       # Woodcutting
+          '-1,1,0',                # Fletching
+          '10009,65,450000',       # Fishing
+          '10010,50,100000',       # Firemaking
+          '10011,40,40000',        # Crafting
+          '10012,40,40000',        # Smithing
+          '10013,60,300000',       # Mining
+          '-1,1,0',                # Herblore
+          '-1,1,0',                # Agility
+          '-1,1,0',                # Thieving
+          '-1,1,0',                # Slayer
+          '-1,1,0',                # Farming
+          '10014,44,55000',        # Runecraft
+          '-1,1,0',                # Hunter
+          '-1,1,0',                # Construction
+          '1000,30,15000',         # Sailing - with XP!
+        ].join("\n")
+
+        result = Hiscores.send(:parse_stats_csv, csv_data)
+
+        # Sailing stats should be stored for P2P detection
+        expect(result['sailing_lvl']).to eq(30)
+        expect(result['sailing_xp']).to eq(15000)
+      end
+
+      it 'handles unranked sailing correctly' do
+        csv_data = [
+          '12345,750,15000000',    # Overall
+          '10000,60,300000',       # Attack
+          '10001,60,300000',       # Defence
+          '10002,60,300000',       # Strength
+          '10003,60,300000',       # Hitpoints
+          '10004,60,300000',       # Ranged
+          '10005,45,60000',        # Prayer
+          '10006,55,170000',       # Magic
+          '10007,70,800000',       # Cooking
+          '10008,60,300000',       # Woodcutting
+          '-1,1,0',                # Fletching
+          '10009,65,450000',       # Fishing
+          '10010,50,100000',       # Firemaking
+          '10011,40,40000',        # Crafting
+          '10012,40,40000',        # Smithing
+          '10013,60,300000',       # Mining
+          '-1,1,0',                # Herblore
+          '-1,1,0',                # Agility
+          '-1,1,0',                # Thieving
+          '-1,1,0',                # Slayer
+          '-1,1,0',                # Farming
+          '10014,44,55000',        # Runecraft
+          '-1,1,0',                # Hunter
+          '-1,1,0',                # Construction
+          '-1,1,0',                # Sailing - unranked
+        ].join("\n")
+
+        result = Hiscores.send(:parse_stats_csv, csv_data)
+
+        # Unranked sailing should still be recorded
+        expect(result['sailing_lvl']).to eq(1)
+        expect(result['sailing_xp']).to eq(0)
+      end
+    end
+
+    context 'with invalid CSV data' do
+      it 'returns false when data is nil' do
+        result = Hiscores.send(:parse_stats_csv, nil)
+        expect(result).to eq(false)
+      end
+
+      it 'returns false when data is empty string' do
+        result = Hiscores.send(:parse_stats_csv, '')
+        expect(result).to eq(false)
+      end
+
+      it 'returns false when data is not a string' do
+        result = Hiscores.send(:parse_stats_csv, 12345)
+        expect(result).to eq(false)
+      end
+    end
+  end
+
+  # Keep the old parse_stats tests for backward compatibility
   describe '.parse_stats' do
     context 'with valid JSON data' do
       it 'parses F2P player stats correctly' do

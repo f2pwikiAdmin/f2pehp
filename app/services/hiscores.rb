@@ -8,6 +8,10 @@ class Hiscores
   IRONMAN_MODES = %w[UIM HCIM IM].freeze
   ALL_MODES = %w[UIM HCIM IM Reg].freeze
 
+  # Hitpoints minimum values - all accounts start with level 10 and 1154 XP
+  MIN_HITPOINTS_LEVEL = 10
+  MIN_HITPOINTS_XP = 1154
+
   # Skill name mapping from OSRS JSON API to internal representation
   # This dynamic approach allows handling any skill/activity that Jagex adds
   # Maps: JSON API skill name => internal skill identifier
@@ -301,7 +305,7 @@ class Hiscores
 
       # Log any unmapped skills for future consideration (only in development/debug)
       # This helps identify when Jagex adds new content to the API
-      if Rails.env.development? || Rails.logger&.level == Logger::DEBUG
+      if Rails.env.development? || (Rails.logger && Rails.logger.level <= Logger::DEBUG)
         unmapped_skills = skill_map.keys - SKILL_NAME_MAP.keys
         if unmapped_skills.any?
           Rails.logger.info "Found unmapped skills in hiscores API: #{unmapped_skills.join(', ')}"
@@ -362,8 +366,8 @@ class Hiscores
           stats[internal_skill_name] = lvl
           stats["#{internal_skill_name}_rank"] = rank
         when 'hitpoints'
-          stats["#{internal_skill_name}_lvl"] = [lvl, 10].max
-          stats["#{internal_skill_name}_xp"] = [xp, 1154].max
+          stats["#{internal_skill_name}_lvl"] = [lvl, MIN_HITPOINTS_LEVEL].max
+          stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
         else
           # F2P skills
           stats["#{internal_skill_name}_lvl"] = lvl

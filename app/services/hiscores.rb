@@ -351,7 +351,7 @@ class Hiscores
           stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
           stats["#{internal_skill_name}_rank"] = rank
         else
-          # F2P skills (Sailing is P2P, not F2P)
+          # F2P skills only (Attack, Defence, Strength, etc.)
           stats["#{internal_skill_name}_lvl"] = lvl
           stats["#{internal_skill_name}_xp"] = xp
           stats["#{internal_skill_name}_rank"] = rank

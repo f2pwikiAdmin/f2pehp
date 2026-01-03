@@ -176,6 +176,72 @@ RSpec.describe Hiscores do
         expect(result['defence_lvl']).to be_nil
       end
     end
+
+    context 'resilience to API changes' do
+      it 'handles skills in different order than expected' do
+        # Skills deliberately out of alphabetical or traditional order
+        json_data = {
+          'skills' => [
+            { 'name' => 'Mining', 'rank' => 10013, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
+            { 'name' => 'Defence', 'rank' => 10001, 'level' => 60, 'xp' => 300000 }
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # All skills should be parsed correctly regardless of order
+        expect(result['attack_lvl']).to eq(60)
+        expect(result['defence_lvl']).to eq(60)
+        expect(result['mining_lvl']).to eq(60)
+        expect(result['overall_lvl']).to eq(750)
+      end
+
+      it 'gracefully ignores unknown/unmapped skills' do
+        json_data = {
+          'skills' => [
+            { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
+            { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
+            # Hypothetical future skill that doesn't exist yet
+            { 'name' => 'Future Skill', 'rank' => 5000, 'level' => 50, 'xp' => 100000 },
+            { 'name' => 'Defence', 'rank' => 10001, 'level' => 60, 'xp' => 300000 }
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # Should parse known skills without error
+        expect(result['attack_lvl']).to eq(60)
+        expect(result['defence_lvl']).to eq(60)
+        expect(result['overall_lvl']).to eq(750)
+        
+        # Unknown skill should be ignored (not cause error)
+        expect(result).not_to have_key('future_skill_lvl')
+      end
+
+      it 'handles missing skill data fields with defaults' do
+        json_data = {
+          'skills' => [
+            { 'name' => 'Attack' },  # Missing rank, level, xp
+            { 'name' => 'Defence', 'rank' => 10001 },  # Missing level, xp
+            { 'name' => 'Strength', 'rank' => 10002, 'level' => 60 }  # Missing xp
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # Should use defaults for missing fields
+        expect(result['attack_lvl']).to eq(1)  # default level
+        expect(result['attack_xp']).to eq(0)   # default xp
+        expect(result['attack_rank']).to eq(-1)  # default rank
+        
+        expect(result['defence_lvl']).to eq(1)
+        expect(result['defence_xp']).to eq(0)
+        
+        expect(result['strength_xp']).to eq(0)
+      end
+    end
   end
 
   describe '.api_url' do

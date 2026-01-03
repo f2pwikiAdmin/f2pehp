@@ -181,9 +181,6 @@ class Hiscores
         skill_map[skill_name] = skill_data if skill_name
       end
 
-      # Get F2P skill list from configuration
-      f2p_skills = F2POSRSRanks::Application.config.f2p_skills
-
       # Define skill name mappings between JSON API and internal names
       # JSON API uses different capitalization/formatting
       skill_name_map = {
@@ -211,7 +208,7 @@ class Hiscores
         'Runecraft' => 'runecraft',
         'Hunter' => 'p2p',
         'Construction' => 'p2p',
-        'Sailing' => 'p2p',
+        'Sailing' => 'sailing',
         'Bounty Hunter - Hunter' => 'p2p_minigame',
         'Bounty Hunter - Rogue' => 'p2p_minigame',
         'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
@@ -322,6 +319,12 @@ class Hiscores
           if rank != -1 || lvl > 1 || xp > 0
             stats[:potential_p2p] += lvl
           end
+        when 'sailing'
+          # Store sailing stats for P2P detection in player model
+          # Sailing is checked separately in check_p2p_stats method
+          stats['sailing_lvl'] = lvl
+          stats['sailing_xp'] = xp
+          stats['sailing_rank'] = rank
         when 'lms'
           stats[:lms_score] = lvl
           stats[:lms_rank] = rank
@@ -343,19 +346,6 @@ class Hiscores
           stats["#{internal_skill_name}_xp"] = xp
           stats["#{internal_skill_name}_rank"] = rank
         end
-      end
-
-      # Add sailing detection for P2P check
-      if skill_map['Sailing']
-        sailing_data = skill_map['Sailing']
-        sailing_rank = sailing_data['rank'] || -1
-        sailing_lvl = sailing_data['level'] || 1
-        sailing_xp = sailing_data['xp'] || 0
-        
-        # Store sailing stats for P2P detection in player model
-        stats['sailing_lvl'] = sailing_lvl
-        stats['sailing_xp'] = sailing_xp
-        stats['sailing_rank'] = sailing_rank
       end
 
       stats

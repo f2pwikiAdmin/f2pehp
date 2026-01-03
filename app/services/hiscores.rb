@@ -351,7 +351,7 @@ class Hiscores
           stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
           stats["#{internal_skill_name}_rank"] = rank
         else
-          # F2P skills (including sailing)
+          # F2P skills (Sailing is P2P, not F2P)
           stats["#{internal_skill_name}_lvl"] = lvl
           stats["#{internal_skill_name}_xp"] = xp
           stats["#{internal_skill_name}_rank"] = rank
@@ -471,12 +471,6 @@ class Hiscores
           if rank != -1 || lvl > 1 || xp > 0
             stats[:potential_p2p] += lvl
           end
-        when 'sailing'
-          # Store sailing stats for P2P detection in player model
-          # Sailing is checked separately in check_p2p_stats method
-          stats['sailing_lvl'] = lvl
-          stats['sailing_xp'] = xp
-          stats['sailing_rank'] = rank
         when 'lms'
           stats[:lms_score] = lvl
           stats[:lms_rank] = rank

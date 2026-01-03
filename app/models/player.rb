@@ -1046,15 +1046,9 @@ class Player < ActiveRecord::Base
   end
 
   def check_p2p_stats(stats)
-    # Check if sailing indicates P2P (F2P players have sailing_lvl=1, sailing_xp=0)
-    sailing_lvl = stats["sailing_lvl"] || stats[:sailing_lvl]
-    sailing_xp = stats["sailing_xp"] || stats[:sailing_xp]
-
-    if (sailing_lvl && sailing_lvl > 1) || (sailing_xp && sailing_xp > 0)
-      update(:potential_p2p => 1)
-      return
-    end
-
+    # The potential_p2p field is already set by the hiscores parser
+    # which includes detection of trained P2P skills (including Sailing)
+    
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|
       actual_f2p_lvls += stats["#{skill}_lvl"]
@@ -1070,12 +1064,6 @@ class Player < ActiveRecord::Base
 
   def self.initial_p2p_check(stats)
     return true if stats[:potential_p2p] > 0
-
-    # Check if sailing indicates P2P (F2P players have sailing_lvl=1, sailing_xp=0)
-    sailing_lvl = stats["sailing_lvl"] || stats[:sailing_lvl]
-    sailing_xp = stats["sailing_xp"] || stats[:sailing_xp]
-
-    return true if (sailing_lvl && sailing_lvl > 1) || (sailing_xp && sailing_xp > 0)
 
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|

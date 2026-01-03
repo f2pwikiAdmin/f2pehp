@@ -165,14 +165,13 @@ RSpec.describe Hiscores do
           '10014,44,55000',        # Runecraft
           '-1,1,0',                # Hunter
           '-1,1,0',                # Construction
-          '1000,30,15000',         # Sailing - with XP!
+          '1000,30,15000',         # Sailing - with XP! (P2P skill)
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Sailing stats should be stored for P2P detection
-        expect(result['sailing_lvl']).to eq(30)
-        expect(result['sailing_xp']).to eq(15000)
+        # Sailing XP should contribute to P2P detection
+        expect(result[:potential_p2p]).to eq(15000)
       end
 
       it 'handles unranked sailing correctly' do
@@ -201,14 +200,13 @@ RSpec.describe Hiscores do
           '10014,44,55000',        # Runecraft
           '-1,1,0',                # Hunter
           '-1,1,0',                # Construction
-          '-1,1,0',                # Sailing - unranked
+          '-1,1,0',                # Sailing - unranked (P2P skill)
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Unranked sailing should still be recorded
-        expect(result['sailing_lvl']).to eq(1)
-        expect(result['sailing_xp']).to eq(0)
+        # Unranked sailing should not contribute to P2P detection
+        expect(result[:potential_p2p]).to eq(0)
       end
     end
 

@@ -43,7 +43,7 @@ class Hiscores
     'Runecraft' => 'runecraft',
     'Hunter' => 'p2p',
     'Construction' => 'p2p',
-    'Sailing' => 'sailing',
+    'Sailing' => 'p2p',
     'Bounty Hunter - Hunter' => 'p2p_minigame',
     'Bounty Hunter - Rogue' => 'p2p_minigame',
     'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
@@ -346,17 +346,12 @@ class Hiscores
           if rank != -1 || lvl > 1 || xp > 0
             stats[:potential_p2p] += xp
           end
-        when 'sailing'
-          # Store sailing stats for P2P detection
-          stats['sailing_lvl'] = lvl
-          stats['sailing_xp'] = xp
-          stats['sailing_rank'] = rank
         when 'hitpoints'
           stats["#{internal_skill_name}_lvl"] = [lvl, MIN_HITPOINTS_LEVEL].max
           stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
           stats["#{internal_skill_name}_rank"] = rank
         else
-          # F2P skills
+          # F2P skills (including sailing)
           stats["#{internal_skill_name}_lvl"] = lvl
           stats["#{internal_skill_name}_xp"] = xp
           stats["#{internal_skill_name}_rank"] = rank

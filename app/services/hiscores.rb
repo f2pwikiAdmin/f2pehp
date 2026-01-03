@@ -1,4 +1,5 @@
 require 'open-uri'
+require 'json'
 
 class Hiscores
   extend Base
@@ -12,17 +13,20 @@ class Hiscores
       stats_uri = api_url(account_type, player_name)
       res = fetch(stats_uri)
       if res
-        data = res.split("\n")
-        parsed_data = parse_stats(data)
-        return parsed_data
+        begin
+          data = JSON.parse(res)
+          parsed_data = parse_stats(data)
+          return parsed_data
+        rescue JSON::ParserError => e
+          Rails.logger.warn "Failed to parse JSON for #{player_name}: #{e.message}"
+          return false
+        end
       else
         return false
       end
     end
 
     def fetch_stats(player_name, account_type: nil)
-      parse_fields = [parse_fields] unless Array === parse_fields
-
       modes =
         if account_type
           # Retrieve a `modes` list of hierarchy to check total exps in order.
@@ -58,9 +62,15 @@ class Hiscores
           # No hiscores data for this mode, skip.
           next unless res
 
-          data = res.split("\n")
-          parsed_data = parse_stats(data, parse_fields)
-          stats_mutex.synchronize { stats << [parsed_data, mode_idx] }
+          begin
+            data = JSON.parse(res)
+            parsed_data = parse_stats(data)
+            stats_mutex.synchronize { stats << [parsed_data, mode_idx] }
+          rescue JSON::ParserError => e
+            Rails.logger.warn "Failed to parse JSON for #{player_name} mode #{modes[mode_idx]}: #{e.message}"
+            # Skip this mode on JSON parse failure
+            next
+          end
         end
       end
 
@@ -131,8 +141,8 @@ class Hiscores
       }
 
       URI.join(
-        'https://services.runescape.com',
-        "m=hiscore_oldschool#{path_suffix[account_type.to_sym]}/index_lite.ws",
+        'https://secure.runescape.com',
+        "m=hiscore_oldschool#{path_suffix[account_type.to_sym]}/index_lite.json",
         "?player=#{url_friendly_name(player_name)}"
       )
     end
@@ -156,29 +166,163 @@ class Hiscores
     def parse_stats(data, restrict_fields = [])
       stats = { potential_p2p: 0 }
 
-      fields = F2POSRSRanks::Application.config.skills.map.with_index
-
-      # Select field names and indices that need to be parsed in compliance
-      #  with optional whitelist from `restrict_fields`.
-      if restrict_fields.any?
-        fields = fields.select { |f, i| f.in? restrict_fields }
+      # Safety guard: ensure data has skills array
+      unless data && data['skills'] && data['skills'].is_a?(Array)
+        Rails.logger.warn "Invalid JSON hiscores data: missing or invalid 'skills' array"
+        return false
       end
 
-      fields.each do |skill, skill_idx|
-        rank, lvl, xp = data[skill_idx].split(',').map { |x| [x.to_i, 0].max }
-        rank = rank
-        lvl = lvl
-        xp = xp
+      # Build a skill map by name for efficient lookups
+      skill_map = {}
+      data['skills'].each do |skill_data|
+        skill_name = skill_data['name']
+        skill_map[skill_name] = skill_data if skill_name
+      end
 
-        if rank.nil? or lvl.nil?
-          raise ArgumentError, "invalid API stats"
+      # Define skill name mappings between JSON API and internal names
+      # JSON API uses different capitalization/formatting
+      skill_name_map = {
+        'Overall' => 'overall',
+        'Attack' => 'attack',
+        'Defence' => 'defence',
+        'Strength' => 'strength',
+        'Hitpoints' => 'hitpoints',
+        'Ranged' => 'ranged',
+        'Prayer' => 'prayer',
+        'Magic' => 'magic',
+        'Cooking' => 'cooking',
+        'Woodcutting' => 'woodcutting',
+        'Fletching' => 'p2p',
+        'Fishing' => 'fishing',
+        'Firemaking' => 'firemaking',
+        'Crafting' => 'crafting',
+        'Smithing' => 'smithing',
+        'Mining' => 'mining',
+        'Herblore' => 'p2p',
+        'Agility' => 'p2p',
+        'Thieving' => 'p2p',
+        'Slayer' => 'p2p',
+        'Farming' => 'p2p',
+        'Runecraft' => 'runecraft',
+        'Hunter' => 'p2p',
+        'Construction' => 'p2p',
+        'Sailing' => 'sailing',
+        'Bounty Hunter - Hunter' => 'p2p_minigame',
+        'Bounty Hunter - Rogue' => 'p2p_minigame',
+        'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
+        'Bounty Hunter (Legacy) - Rogue' => 'p2p_minigame',
+        'Clue Scrolls (all)' => 'clues_all',
+        'Clue Scrolls (beginner)' => 'clues_beginner',
+        'Clue Scrolls (easy)' => 'p2p_minigame',
+        'Clue Scrolls (medium)' => 'p2p_minigame',
+        'Clue Scrolls (hard)' => 'p2p_minigame',
+        'Clue Scrolls (elite)' => 'p2p_minigame',
+        'Clue Scrolls (master)' => 'p2p_minigame',
+        'LMS - Rank' => 'lms',
+        'PvP Arena - Rank' => 'p2p_minigame',
+        'Soul Wars Zeal' => 'p2p_minigame',
+        'Rifts closed' => 'p2p_minigame',
+        'Colosseum Glory' => 'p2p_minigame',
+        'Abyssal Sire' => 'p2p_minigame',
+        'Alchemical Hydra' => 'p2p_minigame',
+        'Artio' => 'p2p_minigame',
+        'Barrows Chests' => 'p2p_minigame',
+        'Bryophyta' => 'bryophyta_kc',
+        'Callisto' => 'p2p_minigame',
+        'Calvar\'ion' => 'p2p_minigame',
+        'Cerberus' => 'p2p_minigame',
+        'Chambers of Xeric' => 'p2p_minigame',
+        'Chambers of Xeric: Challenge Mode' => 'p2p_minigame',
+        'Chaos Elemental' => 'p2p_minigame',
+        'Chaos Fanatic' => 'p2p_minigame',
+        'Commander Zilyana' => 'p2p_minigame',
+        'Corporeal Beast' => 'p2p_minigame',
+        'Crazy Archaeologist' => 'p2p_minigame',
+        'Dagannoth Prime' => 'p2p_minigame',
+        'Dagannoth Rex' => 'p2p_minigame',
+        'Dagannoth Supreme' => 'p2p_minigame',
+        'Deranged Archaeologist' => 'p2p_minigame',
+        'Duke Sucellus' => 'p2p_minigame',
+        'General Graardor' => 'p2p_minigame',
+        'Giant Mole' => 'p2p_minigame',
+        'Grotesque Guardians' => 'p2p_minigame',
+        'Hespori' => 'p2p_minigame',
+        'Kalphite Queen' => 'p2p_minigame',
+        'King Black Dragon' => 'p2p_minigame',
+        'Kraken' => 'p2p_minigame',
+        'Kree\'Arra' => 'p2p_minigame',
+        'K\'ril Tsutsaroth' => 'p2p_minigame',
+        'Lunar Chests' => 'p2p_minigame',
+        'Mimic' => 'p2p_minigame',
+        'Nex' => 'p2p_minigame',
+        'Nightmare' => 'p2p_minigame',
+        'Phosani\'s Nightmare' => 'p2p_minigame',
+        'Obor' => 'obor_kc',
+        'Phantom Muspah' => 'p2p_minigame',
+        'Sarachnis' => 'p2p_minigame',
+        'Scorpia' => 'p2p_minigame',
+        'Scurrius' => 'p2p_minigame',
+        'Skotizo' => 'p2p_minigame',
+        'Sol Heredit' => 'p2p_minigame',
+        'Spindel' => 'p2p_minigame',
+        'Tempoross' => 'p2p_minigame',
+        'The Gauntlet' => 'p2p_minigame',
+        'The Corrupted Gauntlet' => 'p2p_minigame',
+        'The Leviathan' => 'p2p_minigame',
+        'The Whisperer' => 'p2p_minigame',
+        'Theatre of Blood' => 'p2p_minigame',
+        'Theatre of Blood: Hard Mode' => 'p2p_minigame',
+        'Thermy' => 'p2p_minigame',
+        'Tombs of Amascut' => 'p2p_minigame',
+        'Tombs of Amascut: Expert Mode' => 'p2p_minigame',
+        'TzKal-Zuk' => 'p2p_minigame',
+        'TzTok-Jad' => 'p2p_minigame',
+        'Vardorvis' => 'p2p_minigame',
+        'Venenatis' => 'p2p_minigame',
+        'Vet\'ion' => 'p2p_minigame',
+        'Vorkath' => 'p2p_minigame',
+        'Wintertodt' => 'p2p_minigame',
+        'Zalcano' => 'p2p_minigame',
+        'Zulrah' => 'p2p_minigame'
+      }
+
+      # Process each skill from the JSON data
+      skill_map.each do |json_skill_name, skill_data|
+        internal_skill_name = skill_name_map[json_skill_name]
+        next unless internal_skill_name  # Skip unmapped skills
+
+        # Skip if restrict_fields is provided and this skill is not in it
+        if restrict_fields.any? && !restrict_fields.include?(internal_skill_name)
+          next
         end
 
-        case skill
+        rank = skill_data['rank'] || -1
+        lvl = skill_data['level'] || 1
+        xp = skill_data['xp'] || 0
+
+        # Ensure non-negative values
+        rank = [rank, -1].max
+        lvl = [lvl, 1].max
+        xp = [xp, 0].max
+
+        case internal_skill_name
         when 'p2p'
-          stats[:potential_p2p] += xp
+          # Check if this is a real P2P skill (not unranked)
+          # Unranked means rank=-1, level=1, xp=0
+          if rank != -1 || lvl > 1 || xp > 0
+            stats[:potential_p2p] += xp
+          end
         when 'p2p_minigame'
-          stats[:potential_p2p] += lvl
+          # Check if this is a real P2P minigame (not unranked)
+          if rank != -1 || lvl > 1 || xp > 0
+            stats[:potential_p2p] += lvl
+          end
+        when 'sailing'
+          # Store sailing stats for P2P detection in player model
+          # Sailing is checked separately in check_p2p_stats method
+          stats['sailing_lvl'] = lvl
+          stats['sailing_xp'] = xp
+          stats['sailing_rank'] = rank
         when 'lms'
           stats[:lms_score] = lvl
           stats[:lms_rank] = rank
@@ -189,15 +333,16 @@ class Hiscores
           stats[:bryo_kc] = lvl
           stats[:bryo_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
-          stats[skill] = lvl
-          stats["#{skill}_rank"] = rank
+          stats[internal_skill_name] = lvl
+          stats["#{internal_skill_name}_rank"] = rank
         when 'hitpoints'
-          stats["#{skill}_lvl"] = [lvl, 10].max
-          stats["#{skill}_xp"] = [xp, 1154].max
+          stats["#{internal_skill_name}_lvl"] = [lvl, 10].max
+          stats["#{internal_skill_name}_xp"] = [xp, 1154].max
         else
-          stats["#{skill}_lvl"] = lvl
-          stats["#{skill}_xp"] = xp
-          stats["#{skill}_rank"] = rank
+          # F2P skills
+          stats["#{internal_skill_name}_lvl"] = lvl
+          stats["#{internal_skill_name}_xp"] = xp
+          stats["#{internal_skill_name}_rank"] = rank
         end
       end
 

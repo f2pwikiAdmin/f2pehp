@@ -1,7 +1,5 @@
 class Skill
-  #ORDER OF SKILLS ON http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=NAME
-  HISCORES_SKILLS = %w[overall attack defence strength hitpoints ranged prayer magic cooking woodcutting p2p fishing firemaking crafting smithing mining p2p p2p p2p p2p p2p runecraft p2p p2p p2p_minigame p2p_minigame p2p_minigame p2p_minigame p2p_minigame p2p_minigame p2p_minigame p2p_minigame lms].freeze
-  
+  # F2P skills available for training without membership
   F2P_SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft].freeze
                        
   XP_TABLE = [0, 83, 174, 276, 388, 512, 650, 801, 969, 

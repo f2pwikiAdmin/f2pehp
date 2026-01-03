@@ -8,6 +8,118 @@ class Hiscores
   IRONMAN_MODES = %w[UIM HCIM IM].freeze
   ALL_MODES = %w[UIM HCIM IM Reg].freeze
 
+  # Skill name mapping from OSRS JSON API to internal representation
+  # This dynamic approach allows handling any skill/activity that Jagex adds
+  # Maps: JSON API skill name => internal skill identifier
+  # Special identifiers:
+  #   - 'p2p': P2P-only skills (contribute to P2P detection via XP)
+  #   - 'p2p_minigame': P2P-only activities (contribute to P2P detection via score/KC)
+  #   - Specific names: F2P activities tracked individually (e.g., 'lms', 'obor_kc')
+  SKILL_NAME_MAP = {
+    'Overall' => 'overall',
+    'Attack' => 'attack',
+    'Defence' => 'defence',
+    'Strength' => 'strength',
+    'Hitpoints' => 'hitpoints',
+    'Ranged' => 'ranged',
+    'Prayer' => 'prayer',
+    'Magic' => 'magic',
+    'Cooking' => 'cooking',
+    'Woodcutting' => 'woodcutting',
+    'Fletching' => 'p2p',
+    'Fishing' => 'fishing',
+    'Firemaking' => 'firemaking',
+    'Crafting' => 'crafting',
+    'Smithing' => 'smithing',
+    'Mining' => 'mining',
+    'Herblore' => 'p2p',
+    'Agility' => 'p2p',
+    'Thieving' => 'p2p',
+    'Slayer' => 'p2p',
+    'Farming' => 'p2p',
+    'Runecraft' => 'runecraft',
+    'Hunter' => 'p2p',
+    'Construction' => 'p2p',
+    'Sailing' => 'sailing',
+    'Bounty Hunter - Hunter' => 'p2p_minigame',
+    'Bounty Hunter - Rogue' => 'p2p_minigame',
+    'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
+    'Bounty Hunter (Legacy) - Rogue' => 'p2p_minigame',
+    'Clue Scrolls (all)' => 'clues_all',
+    'Clue Scrolls (beginner)' => 'clues_beginner',
+    'Clue Scrolls (easy)' => 'p2p_minigame',
+    'Clue Scrolls (medium)' => 'p2p_minigame',
+    'Clue Scrolls (hard)' => 'p2p_minigame',
+    'Clue Scrolls (elite)' => 'p2p_minigame',
+    'Clue Scrolls (master)' => 'p2p_minigame',
+    'LMS - Rank' => 'lms',
+    'PvP Arena - Rank' => 'p2p_minigame',
+    'Soul Wars Zeal' => 'p2p_minigame',
+    'Rifts closed' => 'p2p_minigame',
+    'Colosseum Glory' => 'p2p_minigame',
+    'Abyssal Sire' => 'p2p_minigame',
+    'Alchemical Hydra' => 'p2p_minigame',
+    'Artio' => 'p2p_minigame',
+    'Barrows Chests' => 'p2p_minigame',
+    'Bryophyta' => 'bryophyta_kc',
+    'Callisto' => 'p2p_minigame',
+    'Calvar\'ion' => 'p2p_minigame',
+    'Cerberus' => 'p2p_minigame',
+    'Chambers of Xeric' => 'p2p_minigame',
+    'Chambers of Xeric: Challenge Mode' => 'p2p_minigame',
+    'Chaos Elemental' => 'p2p_minigame',
+    'Chaos Fanatic' => 'p2p_minigame',
+    'Commander Zilyana' => 'p2p_minigame',
+    'Corporeal Beast' => 'p2p_minigame',
+    'Crazy Archaeologist' => 'p2p_minigame',
+    'Dagannoth Prime' => 'p2p_minigame',
+    'Dagannoth Rex' => 'p2p_minigame',
+    'Dagannoth Supreme' => 'p2p_minigame',
+    'Deranged Archaeologist' => 'p2p_minigame',
+    'Duke Sucellus' => 'p2p_minigame',
+    'General Graardor' => 'p2p_minigame',
+    'Giant Mole' => 'p2p_minigame',
+    'Grotesque Guardians' => 'p2p_minigame',
+    'Hespori' => 'p2p_minigame',
+    'Kalphite Queen' => 'p2p_minigame',
+    'King Black Dragon' => 'p2p_minigame',
+    'Kraken' => 'p2p_minigame',
+    'Kree\'Arra' => 'p2p_minigame',
+    'K\'ril Tsutsaroth' => 'p2p_minigame',
+    'Lunar Chests' => 'p2p_minigame',
+    'Mimic' => 'p2p_minigame',
+    'Nex' => 'p2p_minigame',
+    'Nightmare' => 'p2p_minigame',
+    'Phosani\'s Nightmare' => 'p2p_minigame',
+    'Obor' => 'obor_kc',
+    'Phantom Muspah' => 'p2p_minigame',
+    'Sarachnis' => 'p2p_minigame',
+    'Scorpia' => 'p2p_minigame',
+    'Scurrius' => 'p2p_minigame',
+    'Skotizo' => 'p2p_minigame',
+    'Sol Heredit' => 'p2p_minigame',
+    'Spindel' => 'p2p_minigame',
+    'Tempoross' => 'p2p_minigame',
+    'The Gauntlet' => 'p2p_minigame',
+    'The Corrupted Gauntlet' => 'p2p_minigame',
+    'The Leviathan' => 'p2p_minigame',
+    'The Whisperer' => 'p2p_minigame',
+    'Theatre of Blood' => 'p2p_minigame',
+    'Theatre of Blood: Hard Mode' => 'p2p_minigame',
+    'Thermy' => 'p2p_minigame',
+    'Tombs of Amascut' => 'p2p_minigame',
+    'Tombs of Amascut: Expert Mode' => 'p2p_minigame',
+    'TzKal-Zuk' => 'p2p_minigame',
+    'TzTok-Jad' => 'p2p_minigame',
+    'Vardorvis' => 'p2p_minigame',
+    'Venenatis' => 'p2p_minigame',
+    'Vet\'ion' => 'p2p_minigame',
+    'Vorkath' => 'p2p_minigame',
+    'Wintertodt' => 'p2p_minigame',
+    'Zalcano' => 'p2p_minigame',
+    'Zulrah' => 'p2p_minigame'
+  }.freeze
+
   class << self
     def fetch_stats_by_acc(player_name, account_type)
       stats_uri = api_url(account_type, player_name)
@@ -163,6 +275,13 @@ class Hiscores
       )
     end
 
+    # Parses JSON hiscores data using name-based skill lookups.
+    # This approach is dynamic and reliable - it doesn't depend on array positions,
+    # making it resilient to Jagex adding/reordering skills in the API response.
+    #
+    # @param data [Hash] JSON response from OSRS hiscores API with 'skills' array
+    # @param restrict_fields [Array<String>] Optional list of internal skill names to parse
+    # @return [Hash, false] Parsed stats hash or false if data is invalid
     def parse_stats(data, restrict_fields = [])
       stats = { potential_p2p: 0 }
 
@@ -173,123 +292,30 @@ class Hiscores
       end
 
       # Build a skill map by name for efficient lookups
+      # This makes parsing order-independent and resilient to API changes
       skill_map = {}
       data['skills'].each do |skill_data|
         skill_name = skill_data['name']
         skill_map[skill_name] = skill_data if skill_name
       end
 
-      # Define skill name mappings between JSON API and internal names
-      # JSON API uses different capitalization/formatting
-      skill_name_map = {
-        'Overall' => 'overall',
-        'Attack' => 'attack',
-        'Defence' => 'defence',
-        'Strength' => 'strength',
-        'Hitpoints' => 'hitpoints',
-        'Ranged' => 'ranged',
-        'Prayer' => 'prayer',
-        'Magic' => 'magic',
-        'Cooking' => 'cooking',
-        'Woodcutting' => 'woodcutting',
-        'Fletching' => 'p2p',
-        'Fishing' => 'fishing',
-        'Firemaking' => 'firemaking',
-        'Crafting' => 'crafting',
-        'Smithing' => 'smithing',
-        'Mining' => 'mining',
-        'Herblore' => 'p2p',
-        'Agility' => 'p2p',
-        'Thieving' => 'p2p',
-        'Slayer' => 'p2p',
-        'Farming' => 'p2p',
-        'Runecraft' => 'runecraft',
-        'Hunter' => 'p2p',
-        'Construction' => 'p2p',
-        'Sailing' => 'sailing',
-        'Bounty Hunter - Hunter' => 'p2p_minigame',
-        'Bounty Hunter - Rogue' => 'p2p_minigame',
-        'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
-        'Bounty Hunter (Legacy) - Rogue' => 'p2p_minigame',
-        'Clue Scrolls (all)' => 'clues_all',
-        'Clue Scrolls (beginner)' => 'clues_beginner',
-        'Clue Scrolls (easy)' => 'p2p_minigame',
-        'Clue Scrolls (medium)' => 'p2p_minigame',
-        'Clue Scrolls (hard)' => 'p2p_minigame',
-        'Clue Scrolls (elite)' => 'p2p_minigame',
-        'Clue Scrolls (master)' => 'p2p_minigame',
-        'LMS - Rank' => 'lms',
-        'PvP Arena - Rank' => 'p2p_minigame',
-        'Soul Wars Zeal' => 'p2p_minigame',
-        'Rifts closed' => 'p2p_minigame',
-        'Colosseum Glory' => 'p2p_minigame',
-        'Abyssal Sire' => 'p2p_minigame',
-        'Alchemical Hydra' => 'p2p_minigame',
-        'Artio' => 'p2p_minigame',
-        'Barrows Chests' => 'p2p_minigame',
-        'Bryophyta' => 'bryophyta_kc',
-        'Callisto' => 'p2p_minigame',
-        'Calvar\'ion' => 'p2p_minigame',
-        'Cerberus' => 'p2p_minigame',
-        'Chambers of Xeric' => 'p2p_minigame',
-        'Chambers of Xeric: Challenge Mode' => 'p2p_minigame',
-        'Chaos Elemental' => 'p2p_minigame',
-        'Chaos Fanatic' => 'p2p_minigame',
-        'Commander Zilyana' => 'p2p_minigame',
-        'Corporeal Beast' => 'p2p_minigame',
-        'Crazy Archaeologist' => 'p2p_minigame',
-        'Dagannoth Prime' => 'p2p_minigame',
-        'Dagannoth Rex' => 'p2p_minigame',
-        'Dagannoth Supreme' => 'p2p_minigame',
-        'Deranged Archaeologist' => 'p2p_minigame',
-        'Duke Sucellus' => 'p2p_minigame',
-        'General Graardor' => 'p2p_minigame',
-        'Giant Mole' => 'p2p_minigame',
-        'Grotesque Guardians' => 'p2p_minigame',
-        'Hespori' => 'p2p_minigame',
-        'Kalphite Queen' => 'p2p_minigame',
-        'King Black Dragon' => 'p2p_minigame',
-        'Kraken' => 'p2p_minigame',
-        'Kree\'Arra' => 'p2p_minigame',
-        'K\'ril Tsutsaroth' => 'p2p_minigame',
-        'Lunar Chests' => 'p2p_minigame',
-        'Mimic' => 'p2p_minigame',
-        'Nex' => 'p2p_minigame',
-        'Nightmare' => 'p2p_minigame',
-        'Phosani\'s Nightmare' => 'p2p_minigame',
-        'Obor' => 'obor_kc',
-        'Phantom Muspah' => 'p2p_minigame',
-        'Sarachnis' => 'p2p_minigame',
-        'Scorpia' => 'p2p_minigame',
-        'Scurrius' => 'p2p_minigame',
-        'Skotizo' => 'p2p_minigame',
-        'Sol Heredit' => 'p2p_minigame',
-        'Spindel' => 'p2p_minigame',
-        'Tempoross' => 'p2p_minigame',
-        'The Gauntlet' => 'p2p_minigame',
-        'The Corrupted Gauntlet' => 'p2p_minigame',
-        'The Leviathan' => 'p2p_minigame',
-        'The Whisperer' => 'p2p_minigame',
-        'Theatre of Blood' => 'p2p_minigame',
-        'Theatre of Blood: Hard Mode' => 'p2p_minigame',
-        'Thermy' => 'p2p_minigame',
-        'Tombs of Amascut' => 'p2p_minigame',
-        'Tombs of Amascut: Expert Mode' => 'p2p_minigame',
-        'TzKal-Zuk' => 'p2p_minigame',
-        'TzTok-Jad' => 'p2p_minigame',
-        'Vardorvis' => 'p2p_minigame',
-        'Venenatis' => 'p2p_minigame',
-        'Vet\'ion' => 'p2p_minigame',
-        'Vorkath' => 'p2p_minigame',
-        'Wintertodt' => 'p2p_minigame',
-        'Zalcano' => 'p2p_minigame',
-        'Zulrah' => 'p2p_minigame'
-      }
+      # Log any unmapped skills for future consideration (only in development/debug)
+      # This helps identify when Jagex adds new content to the API
+      if Rails.env.development? || Rails.logger.level == Logger::DEBUG
+        unmapped_skills = skill_map.keys - SKILL_NAME_MAP.keys
+        if unmapped_skills.any?
+          Rails.logger.info "Found unmapped skills in hiscores API: #{unmapped_skills.join(', ')}"
+        end
+      end
 
-      # Process each skill from the JSON data
+      # Process each skill from the JSON data using the skill name mapping
       skill_map.each do |json_skill_name, skill_data|
-        internal_skill_name = skill_name_map[json_skill_name]
-        next unless internal_skill_name  # Skip unmapped skills
+        # Use our internal mapping to convert JSON skill names
+        internal_skill_name = SKILL_NAME_MAP[json_skill_name]
+        
+        # Skip skills not in our mapping (e.g., newly added activities we don't track yet)
+        # This makes the parser forward-compatible with API additions
+        next unless internal_skill_name
 
         # Skip if restrict_fields is provided and this skill is not in it
         if restrict_fields.any? && !restrict_fields.include?(internal_skill_name)

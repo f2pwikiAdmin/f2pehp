@@ -27,8 +27,6 @@ class Hiscores
     end
 
     def fetch_stats(player_name, account_type: nil)
-      parse_fields = [parse_fields] unless Array === parse_fields
-
       modes =
         if account_type
           # Retrieve a `modes` list of hierarchy to check total exps in order.
@@ -66,7 +64,7 @@ class Hiscores
 
           begin
             data = JSON.parse(res)
-            parsed_data = parse_stats(data, parse_fields)
+            parsed_data = parse_stats(data)
             stats_mutex.synchronize { stats << [parsed_data, mode_idx] }
           rescue JSON::ParserError => e
             Rails.logger.warn "Failed to parse JSON for #{player_name} mode #{modes[mode_idx]}: #{e.message}"

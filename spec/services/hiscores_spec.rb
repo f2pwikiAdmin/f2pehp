@@ -477,7 +477,7 @@ RSpec.describe Hiscores do
       url = Hiscores.send(:api_url, 'Reg', 'TestPlayer')
       
       expect(url.to_s).to include('secure.runescape.com')
-      expect(url.to_s).to include('index_lite.json')
+      expect(url.to_s).to include('index_lite.ws')
       expect(url.to_s).to include('player=TestPlayer')
       expect(url.to_s).not_to include('_ironman')
       expect(url.to_s).not_to include('_hardcore')
@@ -487,21 +487,21 @@ RSpec.describe Hiscores do
     it 'generates correct URL for ironman account' do
       url = Hiscores.send(:api_url, 'IM', 'TestPlayer')
       
-      expect(url.to_s).to include('index_lite.json')
+      expect(url.to_s).to include('index_lite.ws')
       expect(url.to_s).to include('_ironman')
     end
 
     it 'generates correct URL for hardcore ironman account' do
       url = Hiscores.send(:api_url, 'HCIM', 'TestPlayer')
       
-      expect(url.to_s).to include('index_lite.json')
+      expect(url.to_s).to include('index_lite.ws')
       expect(url.to_s).to include('_hardcore_ironman')
     end
 
     it 'generates correct URL for ultimate ironman account' do
       url = Hiscores.send(:api_url, 'UIM', 'TestPlayer')
       
-      expect(url.to_s).to include('index_lite.json')
+      expect(url.to_s).to include('index_lite.ws')
       expect(url.to_s).to include('_ultimate')
     end
   end

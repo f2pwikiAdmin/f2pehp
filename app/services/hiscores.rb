@@ -255,7 +255,7 @@ class Hiscores
 
       URI.join(
         'https://secure.runescape.com',
-        "m=hiscore_oldschool#{path_suffix[account_type.to_sym]}/index_lite.json",
+        "m=hiscore_oldschool#{path_suffix[account_type.to_sym]}/index_lite.ws",
         "?player=#{url_friendly_name(player_name)}"
       )
     end

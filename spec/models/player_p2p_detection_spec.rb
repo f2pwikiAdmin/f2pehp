@@ -6,10 +6,12 @@ RSpec.describe Player, type: :model do
     
     context 'when player has F2P boss kill counts but no P2P skills' do
       it 'does not flag player as P2P based on Obor KC' do
-        # Realistic test data: overall_lvl = sum of all skill levels (as Jagex reports)
-        # Sum: 60+60+60+60+60+45+55+70+60+65+50+40+40+60+44 = 829
+        # Realistic test data from Jagex API:
+        # F2P skills sum: 60+60+60+60+60+45+55+70+60+65+50+40+40+60+44 = 829
+        # P2P skills (all at base level 1): 9 × 1 = 9
+        # Overall from Jagex: 829 + 9 = 838
         stats = {
-          "overall_lvl" => 829,  # Must equal sum of skill levels
+          "overall_lvl" => 838,  # Includes 9 base P2P skill levels
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,
@@ -44,9 +46,9 @@ RSpec.describe Player, type: :model do
       end
       
       it 'does not flag player as P2P based on Bryophyta KC' do
-        # Realistic test data: overall_lvl = sum of all skill levels
+        # Realistic test data from Jagex API
         stats = {
-          "overall_lvl" => 829,  # Must equal sum of skill levels
+          "overall_lvl" => 838,  # F2P skills (829) + base P2P (9)
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,
@@ -81,9 +83,9 @@ RSpec.describe Player, type: :model do
       end
       
       it 'does not flag player as P2P based on both Obor and Bryophyta KCs' do
-        # Realistic test data: overall_lvl = sum of all skill levels
+        # Realistic test data from Jagex API
         stats = {
-          "overall_lvl" => 829,  # Must equal sum of skill levels
+          "overall_lvl" => 838,  # F2P skills (829) + base P2P (9)
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,
@@ -122,9 +124,9 @@ RSpec.describe Player, type: :model do
     
     context 'when player has trained P2P skills' do
       it 'flags player as P2P when parser detects P2P skills' do
-        # Player with P2P skills: F2P skills sum to 829, plus Fletching 50 = 879 total
+        # Player with trained P2P: F2P (829) + 8 base P2P (8) + Fletching (50) = 887
         stats = {
-          "overall_lvl" => 879,  # F2P (829) + P2P skills (e.g., Fletching 50)
+          "overall_lvl" => 887,  # F2P (829) + base P2P (8) + Fletching (50)
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,
@@ -157,10 +159,51 @@ RSpec.describe Player, type: :model do
       end
     end
     
+    context 'when player has maxed F2P account' do
+      it 'does not flag maxed F2P player as P2P' do
+        # Maxed F2P: all 15 F2P skills at 99 = 1485
+        # Plus base P2P skills: 9 × 1 = 9
+        # Total from Jagex: 1485 + 9 = 1494
+        stats = {
+          "overall_lvl" => 1494,  # Exactly at F2P maximum
+          "attack_lvl" => 99,
+          "strength_lvl" => 99,
+          "defence_lvl" => 99,
+          "hitpoints_lvl" => 99,
+          "ranged_lvl" => 99,
+          "prayer_lvl" => 99,
+          "magic_lvl" => 99,
+          "cooking_lvl" => 99,
+          "woodcutting_lvl" => 99,
+          "fishing_lvl" => 99,
+          "firemaking_lvl" => 99,
+          "crafting_lvl" => 99,
+          "smithing_lvl" => 99,
+          "mining_lvl" => 99,
+          "runecraft_lvl" => 99,
+          :potential_p2p => 0  # Parser correctly says F2P
+        }
+        
+        # Save player first
+        player.save(validate: false)
+        
+        # Call check_p2p_stats
+        player.check_p2p_stats(stats)
+        
+        # Reload to get updated value
+        player.reload
+        
+        # Maxed F2P player should NOT be flagged as P2P
+        expect(player.potential_p2p).to eq(0)
+      end
+    end
+    
     context 'when player has impossible F2P stats' do
       it 'flags player as P2P when overall level exceeds F2P maximum' do
+        # F2P max: 15 skills × 99 = 1485, plus base P2P (9) = 1494
+        # Any overall_lvl > 1494 means P2P skills trained
         stats = {
-          "overall_lvl" => 1500,  # Exceeds F2P max of 1494
+          "overall_lvl" => 1510,  # Exceeds max (1494)
           "attack_lvl" => 99,
           "strength_lvl" => 99,
           "defence_lvl" => 99,
@@ -197,9 +240,9 @@ RSpec.describe Player, type: :model do
   describe '.initial_p2p_check' do
     context 'when player has F2P boss kill counts but no P2P skills' do
       it 'returns false for F2P player with Obor KC' do
-        # Realistic test data: overall_lvl must equal sum of skill levels
+        # Realistic test data from Jagex API
         stats = {
-          "overall_lvl" => 829,  # Sum of F2P skills
+          "overall_lvl" => 838,  # F2P skills (829) + base P2P (9)
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,
@@ -226,9 +269,9 @@ RSpec.describe Player, type: :model do
     
     context 'when player has trained P2P skills' do
       it 'returns true when parser detects P2P skills' do
-        # Player with P2P skills trained
+        # Player with trained P2P skills
         stats = {
-          "overall_lvl" => 879,  # F2P (829) + P2P skills (50)
+          "overall_lvl" => 887,  # F2P (829) + base P2P (8) + Fletching (50)
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,

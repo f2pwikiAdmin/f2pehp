@@ -305,10 +305,10 @@ class Hiscores
 
       # Log any unmapped skills for future consideration (only in development/debug)
       # This helps identify when Jagex adds new content to the API
-      if Rails.env.development? || (Rails.logger && Rails.logger.level <= Logger::DEBUG)
+      if Rails.env.development? || (Rails.logger&.level && Rails.logger.level <= Logger::DEBUG)
         unmapped_skills = skill_map.keys - SKILL_NAME_MAP.keys
         if unmapped_skills.any?
-          Rails.logger.info "Found unmapped skills in hiscores API: #{unmapped_skills.join(', ')}"
+          Rails.logger&.info "Found unmapped skills in hiscores API: #{unmapped_skills.join(', ')}"
         end
       end
 

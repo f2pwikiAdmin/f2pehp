@@ -287,7 +287,7 @@
               %td= @player["#{skill}_lvl"]
               %td= number_with_delimiter(@player["#{skill}_xp"].to_i, :delimiter => ",") 
               %td= number_with_delimiter(@player["#{skill}_ehp"].to_f, :delimiter => ",", :separator => ".") 
-              %td= number_with_delimiter(@player["#{skill}_rank"].to_i, :delimiter => ",") 
+              %td= number_with_delimiter(display_rank(@player["#{skill}_rank"]), :delimiter => ",") 
               %td= number_with_delimiter(skill_f2p_rank, :delimiter => ",")
           %tr
             %th= image_tag "skills/combat.png"
@@ -337,7 +337,7 @@
             %th= link_to image_tag("skills/clue.png"), ranks_path(skill: "clues_beginner", show_limit: 25, page: (clue_beginner_f2p_rank.to_f / 25).ceil)
             %td= "Beginner"
             %td= @player["clues_beginner"]
-            %td= @player["clues_beginner_rank"]
+            %td= display_rank(@player["clues_beginner_rank"])
             %td= clue_beginner_f2p_rank
           %tr
             %td= ""
@@ -355,7 +355,7 @@
             %th= image_tag "skills/lms.png"
             %td= "Last Man Standing"
             %td= @player["lms_score"]
-            %td= @player["lms_rank"]
+            %td= display_rank(@player["lms_rank"])
           %tr
             %td= ""
           %tr
@@ -372,12 +372,12 @@
             %th= image_tag "skills/obor.png"
             %td= "Obor"
             %td= @player["obor_kc"]
-            %td= @player["obor_kc_rank"]
+            %td= display_rank(@player["obor_kc_rank"])
           %tr
             %th= image_tag "skills/bryo.png"
             %td= "Bryophyta"
             %td= @player["bryo_kc"]
-            %td= @player["bryo_kc_rank"]
+            %td= display_rank(@player["bryo_kc_rank"])
       - elsif @player.overall_ehp < 250 and (@display == "gains" or @display == "records") and !Player.supporters.include?(@player.player_name)
         %head
           %th= "This player is not being tracked. This will require 250 EHP or F2P Supporter status."

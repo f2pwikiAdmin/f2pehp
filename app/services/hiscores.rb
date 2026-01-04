@@ -467,9 +467,13 @@ class Hiscores
             stats[:potential_p2p] += xp
           end
         when 'p2p_minigame'
-          # Check if this is a real P2P minigame (not unranked)
-          if rank != -1 || lvl > 1 || xp > 0
-            stats[:potential_p2p] += lvl
+          # JSON activities/minigames use "score", not "level".
+          # Using lvl is wrong because many entries have no "level" key and we default lvl to 1,
+          # which incorrectly flags ranked accounts.
+          score = [(skill_data['score'] || 0).to_i, 0].max
+
+          if rank != -1 || score > 0
+            stats[:potential_p2p] += score
           end
         when 'lms'
           stats[:lms_score] = lvl

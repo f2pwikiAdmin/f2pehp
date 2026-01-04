@@ -1,3 +1,25 @@
+# Rake task to scan the false_p2p_flagged list for players with P2P boss KC
+#
+# Purpose:
+#   The false_p2p_flagged list in config/initializers/assets.rb contains players
+#   who were incorrectly flagged as P2P (members) by the detection system.
+#   This task helps identify players who actually have P2P boss kill counts,
+#   meaning they should be removed from the false_p2p_flagged list.
+#
+# Usage:
+#   bundle exec rake players:check_boss_kc
+#
+# What it does:
+#   1. Fetches hiscores data for each player in the false_p2p_flagged list
+#   2. Checks if they have kill counts for any P2P bosses
+#   3. Excludes F2P bosses (Obor and Bryophyta) from the check
+#   4. Reports which players should be removed from the list
+#
+# Output:
+#   - Players with P2P boss KC (should be removed from false_p2p_flagged)
+#   - Players not found in database (may need cleanup)
+#   - Summary with actionable recommendations
+
 namespace :players do
   desc "Check false_p2p_flagged list for players with P2P boss KC (excluding Obor and Bryophyta)"
   task check_boss_kc: :environment do

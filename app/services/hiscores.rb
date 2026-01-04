@@ -294,8 +294,7 @@ class Hiscores
         # helpers for deterministic reconciliation in Player model
         f2p_levels_sum: 0,
         members_skill_count: 0,
-        members_levels_sum: 0,
-        p2p_minigame_score_sum: 0
+        members_levels_sum: 0
       }
       
       # CSV line order matches this skill/activity order
@@ -442,8 +441,7 @@ class Hiscores
         # helpers for deterministic reconciliation in Player model
         f2p_levels_sum: 0,
         members_skill_count: 0,
-        members_levels_sum: 0,
-        p2p_minigame_score_sum: 0
+        members_levels_sum: 0
       }
 
       # Safety guard: ensure data has skills array

@@ -39,10 +39,11 @@
             %th{:class => @player_xp_header, :style => "text-decoration: underline;"}= link_to "Record XP", records_path(:sort_by => 'xp', :skill => @skill), :id => 'player_xp_header'
           - else
             %th{:class => @player_xp_header}= link_to "Record XP", records_path(:sort_by => 'xp', :skill => @skill), :id => 'player_xp_header'
-          - if @sort_by == "ehp"
-            %th{:class => @player_ehp_header, :style => "text-decoration: underline;"}= link_to "Record EHP", records_path(:sort_by => 'ehp', :skill => @skill), :id => 'player_ehp_header'
-          - else
-            %th{:class => @player_ehp_header}= link_to "Record EHP", records_path(:sort_by => 'ehp', :skill => @skill), :id => 'player_ehp_header'
+          - if @skill != "magic"
+            - if @sort_by == "ehp"
+              %th{:class => @player_ehp_header, :style => "text-decoration: underline;"}= link_to "Record EHP", records_path(:sort_by => 'ehp', :skill => @skill), :id => 'player_ehp_header'
+            - else
+              %th{:class => @player_ehp_header}= link_to "Record EHP", records_path(:sort_by => 'ehp', :skill => @skill), :id => 'player_ehp_header'
   
       %tbody
         - @players.each.with_index 1 do |player, index|
@@ -53,7 +54,8 @@
             %td{:align => "left"}= link_to player.player_name, "players/#{name}"
             %td{:align => "center"}= player.player_acc_type
             %td= number_with_delimiter(player["#{@skill}_xp_#{@time}_max"].to_i, :delimiter => ",") 
-            %td= number_with_delimiter(number_with_precision(player["#{@skill}_ehp_#{@time}_max"].to_f, precision: 2), :delimiter => ",", :separator => ".") 
+            - if @skill != "magic"
+              %td= number_with_delimiter(number_with_precision(player["#{@skill}_ehp_#{@time}_max"].to_f, precision: 2), :delimiter => ",", :separator => ".") 
             
     = content_tag(:div, nil, class: "container", id: "footerHiscores", style: "margin: auto; margin-top: 0px; width: 430px; height: 41px;") 
 

@@ -32,20 +32,20 @@ RSpec.describe Hiscores do
           '-1,1,0',                # Hunter (P2P, unranked)
           '-1,1,0',                # Construction (P2P, unranked)
           '-1,1,0',                # Sailing (unranked)
-          # Activities start here
+          # Activities start here (line 35 in CSV, index 0 in activities)
           '-1,0',                  # Bounty Hunter - Hunter
           '-1,0',                  # Bounty Hunter - Rogue
           '-1,0',                  # Bounty Hunter (Legacy) - Hunter
           '-1,0',                  # Bounty Hunter (Legacy) - Rogue
-          '-1,0',                  # Unknown Activity 1 (added 24/08/2023)
-          '5000,50',               # Clue Scrolls (all)
-          '5001,25',               # Clue Scrolls (beginner)
+          '-1,0',                  # Unknown Activity 1 (index 4)
+          '5000,50',               # Clue Scrolls (all) (index 5)
+          '5001,25',               # Clue Scrolls (beginner) (index 6)
           '-1,0',                  # Clue Scrolls (easy) - P2P
           '-1,0',                  # Clue Scrolls (medium) - P2P
           '-1,0',                  # Clue Scrolls (hard) - P2P
           '-1,0',                  # Clue Scrolls (elite) - P2P
           '-1,0',                  # Clue Scrolls (master) - P2P
-          '3000,500',              # LMS - Rank
+          '3000,500',              # LMS - Rank (index 12)
           '-1,0',                  # PvP Arena - Rank
           '-1,0',                  # Soul Wars Zeal
           '-1,0',                  # Rifts closed
@@ -54,13 +54,13 @@ RSpec.describe Hiscores do
           '-1,0',                  # Alchemical Hydra
           '-1,0',                  # Artio
           '-1,0',                  # Barrows Chests
-          '-1,0',                  # Chaos Elemental
           '-1,0',                  # Callisto
           '-1,0',                  # Calvar'ion
           '-1,0',                  # Cerberus
+          '2001,8',                # Bryophyta (index 24 - F2P boss)
           '-1,0',                  # Chambers of Xeric
           '-1,0',                  # Chambers of Xeric: Challenge Mode
-          '2001,8',                # Bryophyta
+          '-1,0',                  # Chaos Elemental
           '-1,0',                  # Chaos Fanatic
           '-1,0',                  # Commander Zilyana
           '-1,0',                  # Corporeal Beast
@@ -84,14 +84,33 @@ RSpec.describe Hiscores do
           '-1,0',                  # Nex
           '-1,0',                  # Nightmare
           '-1,0',                  # Phosani's Nightmare
-          '-1,0',                  # Spindel
           '-1,0',                  # Phantom Muspah
           '-1,0',                  # Sarachnis
           '-1,0',                  # Scorpia
           '-1,0',                  # Scurrius
+          '2000,10',               # Obor (index 55 - F2P boss)
           '-1,0',                  # Skotizo
           '-1,0',                  # Sol Heredit
-          '2000,10',               # Obor
+          '-1,0',                  # Spindel
+          '-1,0',                  # Tempoross
+          '-1,0',                  # The Gauntlet
+          '-1,0',                  # The Corrupted Gauntlet
+          '-1,0',                  # The Leviathan
+          '-1,0',                  # The Whisperer
+          '-1,0',                  # Theatre of Blood
+          '-1,0',                  # Theatre of Blood: Hard Mode
+          '-1,0',                  # Thermy
+          '-1,0',                  # Tombs of Amascut
+          '-1,0',                  # Tombs of Amascut: Expert Mode
+          '-1,0',                  # TzKal-Zuk
+          '-1,0',                  # TzTok-Jad
+          '-1,0',                  # Vardorvis
+          '-1,0',                  # Venenatis
+          '-1,0',                  # Vet'ion
+          '-1,0',                  # Vorkath
+          '-1,0',                  # Wintertodt
+          '-1,0',                  # Zalcano
+          '-1,0',                  # Zulrah
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)

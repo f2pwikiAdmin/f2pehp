@@ -44,6 +44,9 @@ class Hiscores
     'Hunter' => 'p2p',
     'Construction' => 'p2p',
     'Sailing' => 'p2p',
+    'Grid Points' => 'p2p_minigame',
+    'League Points' => 'p2p_minigame',
+    'Deadman Points' => 'p2p_minigame',
     'Bounty Hunter - Hunter' => 'p2p_minigame',
     'Bounty Hunter - Rogue' => 'p2p_minigame',
     'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
@@ -60,8 +63,11 @@ class Hiscores
     'Soul Wars Zeal' => 'p2p_minigame',
     'Rifts closed' => 'p2p_minigame',
     'Colosseum Glory' => 'p2p_minigame',
+    'Collections Logged' => 'p2p_minigame',
     'Abyssal Sire' => 'p2p_minigame',
     'Alchemical Hydra' => 'p2p_minigame',
+    'Amoxliatl' => 'p2p_minigame',
+    'Araxxor' => 'p2p_minigame',
     'Artio' => 'p2p_minigame',
     'Barrows Chests' => 'p2p_minigame',
     'Bryophyta' => 'bryophyta_kc',
@@ -79,6 +85,7 @@ class Hiscores
     'Dagannoth Rex' => 'p2p_minigame',
     'Dagannoth Supreme' => 'p2p_minigame',
     'Deranged Archaeologist' => 'p2p_minigame',
+    'Doom of Mokhaiotl' => 'p2p_minigame',
     'Duke Sucellus' => 'p2p_minigame',
     'General Graardor' => 'p2p_minigame',
     'Giant Mole' => 'p2p_minigame',
@@ -99,13 +106,16 @@ class Hiscores
     'Sarachnis' => 'p2p_minigame',
     'Scorpia' => 'p2p_minigame',
     'Scurrius' => 'p2p_minigame',
+    'Shellbane Gryphon' => 'p2p_minigame',
     'Skotizo' => 'p2p_minigame',
     'Sol Heredit' => 'p2p_minigame',
     'Spindel' => 'p2p_minigame',
     'Tempoross' => 'p2p_minigame',
     'The Gauntlet' => 'p2p_minigame',
     'The Corrupted Gauntlet' => 'p2p_minigame',
+    'The Hueycoatl' => 'p2p_minigame',
     'The Leviathan' => 'p2p_minigame',
+    'The Royal Titans' => 'p2p_minigame',
     'The Whisperer' => 'p2p_minigame',
     'Theatre of Blood' => 'p2p_minigame',
     'Theatre of Blood: Hard Mode' => 'p2p_minigame',
@@ -119,6 +129,7 @@ class Hiscores
     'Vet\'ion' => 'p2p_minigame',
     'Vorkath' => 'p2p_minigame',
     'Wintertodt' => 'p2p_minigame',
+    'Yama' => 'p2p_minigame',
     'Zalcano' => 'p2p_minigame',
     'Zulrah' => 'p2p_minigame'
   }.freeze
@@ -308,41 +319,28 @@ class Hiscores
       ]
       
       # Activities and bosses order (after skills)
-      # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API.
-      # The order must also match the config.skills array in config/initializers/assets.rb
+      # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API CSV.
+      # Note: This structure may differ from config.skills which follows the CML API structure.
+      # The SKILL_NAME_MAP links OSRS activity names to internal names used in config.skills.
       csv_activity_order = [
-        # Indices 0-3: Bounty Hunter activities (4 P2P minigames)
+        'Grid Points', 'League Points', 'Deadman Points',
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
-        'Bounty Hunter (Legacy) - Rogue',
-        # Indices 4-5: F2P Clue Scrolls (directly after Bounty Hunter activities)
-        'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
-        # Indices 6-10: P2P Clue Scrolls
+        'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
-        'Clue Scrolls (master)',
-        # Index 11: LMS (F2P)
-        'LMS - Rank',
-        # Indices 12-15: Other activities
-        'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed', 'Colosseum Glory',
-        # Indices 16-22: Bosses (alphabetical grouping)
-        'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests', 'Callisto', 'Calvar\'ion', 'Cerberus',
-        # Index 23: Bryophyta (F2P boss) - Position adjusted after removing Unknown Activity 1
-        'Bryophyta',
-        # Indices 24-29: More bosses (C-bosses continued)
-        'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic', 
-        'Commander Zilyana', 'Corporeal Beast',
-        # Indices 30-53: Bosses (D-N alphabetical)
-        'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex', 'Dagannoth Supreme',
-        'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor', 'Giant Mole',
-        'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon', 'Kraken',
-        'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
-        'Phosani\'s Nightmare', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',
-        # Index 54: Obor (F2P boss) - Position adjusted after removing Unknown Activity 1
-        'Obor',
-        # Indices 55-78: More bosses (S-Z alphabetical)
-        'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
-        'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
+        'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
+        'Colosseum Glory', 'Collections Logged', 'Abyssal Sire', 'Alchemical Hydra', 'Amoxliatl',
+        'Araxxor', 'Artio', 'Barrows Chests', 'Bryophyta', 'Callisto', 'Calvar\'ion', 'Cerberus',
+        'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic',
+        'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
+        'Dagannoth Supreme', 'Deranged Archaeologist', 'Doom of Mokhaiotl', 'Duke Sucellus',
+        'General Graardor', 'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen',
+        'King Black Dragon', 'Kraken', 'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic',
+        'Nex', 'Nightmare', 'Phosani\'s Nightmare', 'Obor', 'Phantom Muspah', 'Sarachnis', 'Scorpia',
+        'Scurrius', 'Shellbane Gryphon', 'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross',
+        'The Gauntlet', 'The Corrupted Gauntlet', 'The Hueycoatl', 'The Leviathan', 'The Royal Titans',
+        'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
         'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad', 'Vardorvis',
-        'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
+        'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Yama', 'Zalcano', 'Zulrah'
       ]
       
       # Parse skills (first 25 lines)

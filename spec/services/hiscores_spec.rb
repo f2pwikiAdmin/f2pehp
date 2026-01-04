@@ -33,12 +33,15 @@ RSpec.describe Hiscores do
           '-1,1,0',                # Construction (P2P, unranked)
           '-1,1,0',                # Sailing (unranked)
           # Activities start here (line 35 in CSV, index 0 in activities)
+          '-1,0',                  # Grid Points
+          '-1,0',                  # League Points
+          '-1,0',                  # Deadman Points
           '-1,0',                  # Bounty Hunter - Hunter
           '-1,0',                  # Bounty Hunter - Rogue
           '-1,0',                  # Bounty Hunter (Legacy) - Hunter
           '-1,0',                  # Bounty Hunter (Legacy) - Rogue
-          '5000,50',               # Clue Scrolls (all) (index 4 - directly after Bounty Hunters)
-          '5001,25',               # Clue Scrolls (beginner) (index 5)
+          '5000,50',               # Clue Scrolls (all)
+          '5001,25',               # Clue Scrolls (beginner)
           '-1,0',                  # Clue Scrolls (easy) - P2P
           '-1,0',                  # Clue Scrolls (medium) - P2P
           '-1,0',                  # Clue Scrolls (hard) - P2P
@@ -56,7 +59,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Callisto
           '-1,0',                  # Calvar'ion
           '-1,0',                  # Cerberus
-          '2001,8',                # Bryophyta (index 23 - F2P boss)
+          '2001,8',                # Bryophyta (activity index 25 - F2P boss)
           '-1,0',                  # Chambers of Xeric
           '-1,0',                  # Chambers of Xeric: Challenge Mode
           '-1,0',                  # Chaos Elemental
@@ -87,7 +90,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Sarachnis
           '-1,0',                  # Scorpia
           '-1,0',                  # Scurrius
-          '2000,10',               # Obor (index 54 - F2P boss)
+          '2000,10',               # Obor (activity index 56 - F2P boss)
           '-1,0',                  # Skotizo
           '-1,0',                  # Sol Heredit
           '-1,0',                  # Spindel

@@ -47,12 +47,15 @@ F2POSRSRanks::Application.configure do
                      "p2p", 
                      "p2p",
                      "p2p", #this is sailing
+                     "p2p_minigame", # Grid Points (seasonal)
+                     "p2p_minigame", # League Points (seasonal) 
+                     "p2p_minigame", # Deadman Points (seasonal)
                      "p2p_minigame", # Bounty Hunter - Hunter
                      "p2p_minigame", # Bounty Hunter - Rogue
                      "p2p_minigame", # Bounty Hunter (Legacy) - Hunter (added 26/05/2023)
                      "p2p_minigame", # Bounty Hunter (Legacy) - Rogue (added 26/05/2023)
-                     "clues_all", # Verified position with Pawz (1337 clues) and Lillie756 (967 clues)
-                     "clues_beginner", # Verified position with Pawz (1337 clues) and Lillie756 (967 clues)
+                     "clues_all", # Clue Scrolls (all) - Verified with say_f2p_ult (rank 33710)
+                     "clues_beginner", # Clue Scrolls (beginner) - Verified with say_f2p_ult (rank 445)
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",

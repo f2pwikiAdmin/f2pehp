@@ -109,7 +109,7 @@ RSpec.describe Hiscores do
         expect(result[:bryo_kc]).to eq(8)
         
         # Most importantly: potential_p2p should be 0 for unranked P2P skills
-        expect(result[:potential_p2p]).to eq(0)
+        expect(result["potential_p2p"]).to eq(0)
       end
 
       it 'detects P2P player with trained P2P skills' do
@@ -135,12 +135,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Should have P2P level evidence from Fletching (level 50, base is 1, so 49 points)
-        # Note: In this CSV we only have 2 P2P skills shown (Fletching + Herblore)
-        # members_levels_sum = 50 + 1 = 51
-        # members_skill_count = 2
-        # potential_p2p = (51 - 2) = 49
-        expect(result[:potential_p2p]).to eq(49)
+        # Should flag as P2P (value = 1) when Fletching has level 50
+        expect(result["potential_p2p"]).to eq(1)
       end
 
       it 'detects sailing as P2P indicator' do
@@ -174,12 +170,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Sailing level should contribute to P2P detection
-        # We have 9 P2P skills total (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction, Sailing)
-        # members_levels_sum = 1+1+1+1+1+1+1+1+30 = 38
-        # members_skill_count = 9
-        # potential_p2p = (38 - 9) = 29
-        expect(result[:potential_p2p]).to eq(29)
+        # Sailing level should flag as P2P (value = 1) when detected
+        expect(result["potential_p2p"]).to eq(1)
       end
 
       it 'handles unranked sailing correctly' do
@@ -214,7 +206,7 @@ RSpec.describe Hiscores do
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
         # Unranked sailing should not contribute to P2P detection
-        expect(result[:potential_p2p]).to eq(0)
+        expect(result["potential_p2p"]).to eq(0)
       end
     end
 
@@ -300,7 +292,7 @@ RSpec.describe Hiscores do
         expect(result[:bryo_kc]).to eq(8)
         
         # Most importantly: potential_p2p should be 0 for unranked P2P skills
-        expect(result[:potential_p2p]).to eq(0)
+        expect(result["potential_p2p"]).to eq(0)
       end
 
       it 'detects P2P player with trained P2P skills' do
@@ -330,11 +322,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Should have P2P level evidence from Fletching
-        # members_levels_sum = 50 + 1 = 51
-        # members_skill_count = 2
-        # potential_p2p = (51 - 2) = 49
-        expect(result[:potential_p2p]).to eq(49)
+        # Should flag as P2P (value = 1) when Fletching has level 50
+        expect(result["potential_p2p"]).to eq(1)
       end
 
       it 'detects sailing as P2P indicator' do
@@ -349,11 +338,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Sailing level should contribute to P2P detection
-        # members_levels_sum = 30
-        # members_skill_count = 1
-        # potential_p2p = (30 - 1) = 29
-        expect(result[:potential_p2p]).to eq(29)
+        # Sailing level should flag as P2P (value = 1) when detected
+        expect(result["potential_p2p"]).to eq(1)
       end
 
       it 'handles unranked sailing correctly' do
@@ -372,7 +358,7 @@ RSpec.describe Hiscores do
         # members_levels_sum = 1
         # members_skill_count = 1
         # potential_p2p = (1 - 1) = 0
-        expect(result[:potential_p2p]).to eq(0)
+        expect(result["potential_p2p"]).to eq(0)
       end
 
       it 'does not flag P2P for ranked minigames without score' do
@@ -391,7 +377,7 @@ RSpec.describe Hiscores do
         result = Hiscores.send(:parse_stats, json_data)
 
         # Should NOT flag as P2P since there's no actual score/activity
-        expect(result[:potential_p2p]).to eq(0)
+        expect(result["potential_p2p"]).to eq(0)
       end
 
       it 'flags P2P for minigames with actual scores' do
@@ -408,8 +394,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Should flag as P2P with total score of 150 + 25 = 175
-        expect(result[:potential_p2p]).to eq(175)
+        # Should flag as P2P (value = 1) when minigames have scores
+        expect(result["potential_p2p"]).to eq(1)
       end
 
       it 'handles P2P minigames with missing score field correctly' do
@@ -426,7 +412,7 @@ RSpec.describe Hiscores do
         result = Hiscores.send(:parse_stats, json_data)
 
         # Should NOT flag as P2P since score defaults to 0
-        expect(result[:potential_p2p]).to eq(0)
+        expect(result["potential_p2p"]).to eq(0)
       end
 
       it 'flags P2P for unranked minigames with positive scores' do
@@ -442,8 +428,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Should flag as P2P since score > 0
-        expect(result[:potential_p2p]).to eq(5)
+        # Should flag as P2P (value = 1) since score > 0
+        expect(result["potential_p2p"]).to eq(1)
       end
     end
 

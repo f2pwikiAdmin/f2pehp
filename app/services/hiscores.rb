@@ -289,13 +289,12 @@ class Hiscores
       return false if lines.empty?
       
       stats = {
-        potential_p2p: 0,
+        "potential_p2p" => 0,
         
         # helpers for deterministic reconciliation in Player model
         f2p_levels_sum: 0,
         members_skill_count: 0,
-        members_levels_sum: 0,
-        p2p_minigame_score_sum: 0
+        members_levels_sum: 0
       }
       
       # CSV line order matches this skill/activity order
@@ -350,10 +349,13 @@ class Hiscores
         # Process based on skill type
         case internal_skill_name
         when 'p2p'
-          # Members-only SKILL: do NOT add XP to potential_p2p (breaks for high-xp F2P accounts)
-          # Instead record level evidence and let Player decide final flag.
+          # Members skill detected (ranked / levelled / has xp) => flag as P2P
+          # Also track counts for Player model's deterministic reconciliation
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
+          if rank != -1 || lvl > 1 || xp > 0
+            stats["potential_p2p"] = 1
+          end
         when 'hitpoints'
           stats["#{internal_skill_name}_lvl"] = [lvl, MIN_HITPOINTS_LEVEL].max
           stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
@@ -391,8 +393,10 @@ class Hiscores
         # Process based on activity type
         case internal_activity_name
         when 'p2p_minigame'
-          # Members-only ACTIVITY/MINIGAME: use SCORE for detection
-          stats[:p2p_minigame_score_sum] += score if (rank != -1 || score > 0)
+          # Members activity/minigame detected => flag as P2P
+          if score > 0
+            stats["potential_p2p"] = 1
+          end
         when 'lms'
           # LMS is F2P
           stats[:lms_score] = score
@@ -417,10 +421,8 @@ class Hiscores
       overall_lvl = stats["overall_lvl"].to_i
       stats[:overall_lvl] = overall_lvl
 
-      # Evidence score:
-      # If any members-only skill is above level 1, members_levels_sum will exceed members_skill_count.
-      members_training_points = [stats[:members_levels_sum] - stats[:members_skill_count], 0].max
-      stats[:potential_p2p] = members_training_points + stats[:p2p_minigame_score_sum].to_i
+      # potential_p2p is now set as a boolean flag (0 or 1) in the case statements above
+      # when any P2P skill or minigame is detected
       
       stats
     end
@@ -434,13 +436,12 @@ class Hiscores
     # @return [Hash, false] Parsed stats hash or false if data is invalid
     def parse_stats(data, restrict_fields = [])
       stats = {
-        potential_p2p: 0,
+        "potential_p2p" => 0,
         
         # helpers for deterministic reconciliation in Player model
         f2p_levels_sum: 0,
         members_skill_count: 0,
-        members_levels_sum: 0,
-        p2p_minigame_score_sum: 0
+        members_levels_sum: 0
       }
 
       # Safety guard: ensure data has skills array
@@ -491,15 +492,19 @@ class Hiscores
 
         case internal_skill_name
         when 'p2p'
-          # Members-only SKILL: do NOT add XP to potential_p2p (breaks for high-xp F2P accounts)
-          # Instead record level evidence and let Player decide final flag.
+          # Members skill detected => flag as P2P (do NOT accumulate xp)
+          # Also track counts for Player model's deterministic reconciliation
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
+          if rank != -1 || lvl > 1 || xp > 0
+            stats["potential_p2p"] = 1
+          end
         when 'p2p_minigame'
-          # Members-only ACTIVITY/MINIGAME: prefer score; fall back to level if score missing
+          # Members activity/minigame detected => flag as P2P (do NOT accumulate)
           score = [(skill_data['score'] || 0).to_i, 0].max
-          value = score > 0 ? score : lvl
-          stats[:p2p_minigame_score_sum] += value if (rank != -1 || value > 0)
+          if score > 0
+            stats["potential_p2p"] = 1
+          end
         when 'lms'
           # LMS is F2P
           score = [(skill_data['score'] || 0).to_i, 0].max
@@ -540,10 +545,8 @@ class Hiscores
       overall_lvl = stats["overall_lvl"].to_i
       stats[:overall_lvl] = overall_lvl
 
-      # Evidence score:
-      # If any members-only skill is above level 1, members_levels_sum will exceed members_skill_count.
-      members_training_points = [stats[:members_levels_sum] - stats[:members_skill_count], 0].max
-      stats[:potential_p2p] = members_training_points + stats[:p2p_minigame_score_sum].to_i
+      # potential_p2p is now set as a boolean flag (0 or 1) in the case statements above
+      # when any P2P skill or minigame is detected
 
       stats
     end

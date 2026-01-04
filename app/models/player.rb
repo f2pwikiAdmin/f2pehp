@@ -1047,7 +1047,7 @@ class Player < ActiveRecord::Base
 
   def check_p2p_stats(stats)
     # 1) If parser detected any members-only skill training or members-only activity evidence
-    if stats[:potential_p2p].to_i > 0
+    if stats["potential_p2p"].to_i > 0
       update(potential_p2p: 1)
       return
     end
@@ -1074,7 +1074,7 @@ class Player < ActiveRecord::Base
   end
 
   def self.initial_p2p_check(stats)
-    return true if stats[:potential_p2p] > 0
+    return true if stats["potential_p2p"].to_i > 0
 
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|

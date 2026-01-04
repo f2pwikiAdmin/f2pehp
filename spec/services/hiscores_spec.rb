@@ -33,14 +33,13 @@ RSpec.describe Hiscores do
           '-1,1,0',                # Construction (P2P, unranked)
           '-1,1,0',                # Sailing (unranked)
           # Activities start here (line 35 in CSV, index 0 in activities)
+          '-1,0',                  # Grid Points
+          '-1,0',                  # League Points
+          '-1,0',                  # Deadman Points
           '-1,0',                  # Bounty Hunter - Hunter
           '-1,0',                  # Bounty Hunter - Rogue
           '-1,0',                  # Bounty Hunter (Legacy) - Hunter
           '-1,0',                  # Bounty Hunter (Legacy) - Rogue
-          '-1,0',                  # Unknown Activity 1
-          '-1,0',                  # Unknown Activity 2
-          '-1,0',                  # Unknown Activity 3
-          '-1,0',                  # Unknown Activity 4
           '5000,50',               # Clue Scrolls (all)
           '5001,25',               # Clue Scrolls (beginner)
           '-1,0',                  # Clue Scrolls (easy) - P2P

@@ -45,10 +45,9 @@ namespace :players do
       # The order matches the SKILL_NAME_MAP in the Hiscores service
       # We need to maintain this order to correctly parse the CSV response
       csv_activity_order = [
+        'Grid Points', 'League Points', 'Deadman Points',
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
-        'Bounty Hunter (Legacy) - Rogue',
-        'Unknown Activity 1', 'Unknown Activity 2', 'Unknown Activity 3', 'Unknown Activity 4',
-        'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
+        'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
         'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
         'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',

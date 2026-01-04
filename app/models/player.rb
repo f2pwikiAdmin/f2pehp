@@ -1063,6 +1063,15 @@ class Player < ActiveRecord::Base
       return
     end
 
+    # Players incorrectly flagged as P2P by the detection system (temporary fix)
+    # To fix false P2P flags, add the player's username to the false_p2p_flagged list
+    # in config/initializers/assets.rb (line 17)
+    # Example: config.false_p2p_flagged = ["PlayerName1", "PlayerName2"]
+    if F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(player_name.downcase)
+      update(potential_p2p: 0)
+      return
+    end
+
     # 1) If parser detected any members-only skill training or members-only activity evidence
     if stats["potential_p2p"].to_i > 0
       update(potential_p2p: 1)

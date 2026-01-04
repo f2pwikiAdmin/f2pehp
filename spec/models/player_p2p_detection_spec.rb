@@ -340,4 +340,53 @@ RSpec.describe Player, type: :model do
       end
     end
   end
+
+  describe '#check_p2p_stats with false_p2p_flagged list' do
+    let(:player) { Player.new(player_name: "FalseFlaggedPlayer", player_acc_type: "Reg") }
+
+    before do
+      # Mock the configuration to include our test player in the false_p2p_flagged list
+      allow(F2POSRSRanks::Application.config).to receive(:downcase_false_p2p_flagged)
+        .and_return(['falseflaggedplayer'])
+    end
+
+    it 'marks player in false_p2p_flagged list as F2P regardless of stats' do
+      # Stats that would normally flag as P2P
+      stats = {
+        "overall_lvl" => 1510,  # Exceeds max F2P
+        "attack_lvl" => 99,
+        "strength_lvl" => 99,
+        "defence_lvl" => 99,
+        "hitpoints_lvl" => 99,
+        "ranged_lvl" => 99,
+        "prayer_lvl" => 99,
+        "magic_lvl" => 99,
+        "cooking_lvl" => 99,
+        "woodcutting_lvl" => 99,
+        "fishing_lvl" => 99,
+        "firemaking_lvl" => 99,
+        "crafting_lvl" => 99,
+        "smithing_lvl" => 99,
+        "mining_lvl" => 99,
+        "runecraft_lvl" => 99,
+        :potential_p2p => 0,
+        :f2p_levels_sum => 1485,
+        :members_skill_count => 9,
+        :members_levels_sum => 9,
+        :overall_lvl => 1510
+      }
+
+      # Save player first
+      player.save(validate: false)
+
+      # Call check_p2p_stats
+      player.check_p2p_stats(stats)
+
+      # Reload to get updated value
+      player.reload
+
+      # Player should NOT be flagged as P2P due to being in false_p2p_flagged list
+      expect(player.potential_p2p).to eq(0)
+    end
+  end
 end

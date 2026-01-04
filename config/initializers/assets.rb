@@ -14,6 +14,9 @@ F2POSRSRanks::Application.configure do
    config.downcase_banned = config.banned.map(&:downcase)
    config.false_banned = ["cacapoopoo71", "RuneWzrd"]
    config.downcase_false_banned = config.false_banned.map(&:downcase)
+   # Players incorrectly flagged as P2P by the detection system (temporary until automatic solution)
+   config.false_p2p_flagged = []
+   config.downcase_false_p2p_flagged = config.false_p2p_flagged.map(&:downcase)
 
     #ORDER OF SKILLS ON http://services.runescape.com/m=hiscore_oldschool/index_lite.ws?player=NAME
     config.skills = ["overall",

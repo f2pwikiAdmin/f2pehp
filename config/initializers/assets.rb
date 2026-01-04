@@ -51,6 +51,8 @@ F2POSRSRanks::Application.configure do
                      "p2p_minigame", # Bounty Hunter - Rogue
                      "p2p_minigame", # Bounty Hunter (Legacy) - Hunter (added 26/05/2023)
                      "p2p_minigame", # Bounty Hunter (Legacy) - Rogue (added 26/05/2023)
+                     "p2p_minigame", # Unknown Activity 1 (added 24/08/2023) - CRITICAL: Required for CML API alignment, maintains proper boss KC positions
+                     "p2p_minigame", # Unknown Activity 2 - Placeholder for API structure alignment
                      "clues_all", # Verified position with Pawz (1337 clues) and Lillie756 (967 clues)
                      "clues_beginner", # Verified position with Pawz (1337 clues) and Lillie756 (967 clues)
                      "p2p_minigame",

@@ -48,6 +48,7 @@ class Hiscores
     'Bounty Hunter - Rogue' => 'p2p_minigame',
     'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
     'Bounty Hunter (Legacy) - Rogue' => 'p2p_minigame',
+    'Unknown Activity 1' => 'p2p_minigame',
     'Clue Scrolls (all)' => 'clues_all',
     'Clue Scrolls (beginner)' => 'clues_beginner',
     'Clue Scrolls (easy)' => 'p2p_minigame',
@@ -311,38 +312,22 @@ class Hiscores
       # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API.
       # The order must also match the config.skills array in config/initializers/assets.rb
       csv_activity_order = [
-        # Indices 0-3: Bounty Hunter activities (4 P2P minigames)
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
-        'Bounty Hunter (Legacy) - Rogue',
-        # Indices 4-5: F2P Clue Scrolls (directly after Bounty Hunter activities)
-        'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
-        # Indices 6-10: P2P Clue Scrolls
+        'Bounty Hunter (Legacy) - Rogue', 'Unknown Activity 1', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
-        'Clue Scrolls (master)',
-        # Index 11: LMS (F2P)
-        'LMS - Rank',
-        # Indices 12-15: Other activities
-        'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed', 'Colosseum Glory',
-        # Indices 16-22: Bosses (alphabetical grouping)
-        'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests', 'Callisto', 'Calvar\'ion', 'Cerberus',
-        # Index 23: Bryophyta (F2P boss) - Position adjusted after removing Unknown Activity 1
-        'Bryophyta',
-        # Indices 24-29: More bosses (C-bosses continued)
-        'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic', 
-        'Commander Zilyana', 'Corporeal Beast',
-        # Indices 30-53: Bosses (D-N alphabetical)
-        'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex', 'Dagannoth Supreme',
-        'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor', 'Giant Mole',
-        'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon', 'Kraken',
-        'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
-        'Phosani\'s Nightmare', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',
-        # Index 54: Obor (F2P boss) - Position adjusted after removing Unknown Activity 1
-        'Obor',
-        # Indices 55-78: More bosses (S-Z alphabetical)
-        'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
-        'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
-        'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad', 'Vardorvis',
-        'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
+        'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
+        'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
+        'Chaos Elemental', 'Callisto', 'Calvar\'ion', 'Cerberus', 'Chambers of Xeric',
+        'Chambers of Xeric: Challenge Mode', 'Bryophyta', 'Chaos Fanatic', 'Commander Zilyana',
+        'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
+        'Dagannoth Supreme', 'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
+        'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon',
+        'Kraken', 'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
+        'Phosani\'s Nightmare', 'Spindel', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',
+        'Skotizo', 'Sol Heredit', 'Obor', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
+        'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode',
+        'Thermy', 'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad',
+        'Vardorvis', 'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
       ]
       
       # Parse skills (first 25 lines)

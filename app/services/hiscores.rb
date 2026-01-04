@@ -324,7 +324,8 @@ class Hiscores
         'Skotizo', 'Sol Heredit', 'Obor', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
         'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode',
         'Thermy', 'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad',
-        'Vardorvis', 'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
+        'Vardorvis', 'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah',
+        'Blood Moon', 'Blue Moon', 'Eclipse Moon'
       ]
       
       # Parse skills (first 25 lines)

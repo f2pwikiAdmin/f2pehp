@@ -312,6 +312,10 @@ class Hiscores
       ]
       
       # Activities and bosses order (after skills)
+      # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API.
+      # 'Unknown Activity 1' was added by Jagex on 24/08/2023. While we don't track this specific
+      # activity, it MUST remain in the array to maintain proper CSV line alignment for all
+      # subsequent activities (clues, bosses, etc.). Removing it will cause parsing errors.
       csv_activity_order = [
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
         'Bounty Hunter (Legacy) - Rogue', 'Unknown Activity 1', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',

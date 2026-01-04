@@ -29,7 +29,13 @@ RSpec.describe Player, type: :model do
           "runecraft_lvl" => 44,
           :obor_kc => 50,
           :obor_kc_rank => 1000,
-          :potential_p2p => 0  # Parser correctly identified as F2P
+          :potential_p2p => 0,  # Parser correctly identified as F2P
+          # Helper fields from parser
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,  # All at base level 1
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 838
         }
         
         # Save player first
@@ -66,7 +72,13 @@ RSpec.describe Player, type: :model do
           "runecraft_lvl" => 44,
           :bryo_kc => 25,
           :bryo_kc_rank => 500,
-          :potential_p2p => 0  # Parser correctly identified as F2P
+          :potential_p2p => 0,  # Parser correctly identified as F2P
+          # Helper fields from parser
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 838
         }
         
         # Save player first
@@ -105,7 +117,13 @@ RSpec.describe Player, type: :model do
           :obor_kc_rank => 1000,
           :bryo_kc => 25,
           :bryo_kc_rank => 500,
-          :potential_p2p => 0  # Parser correctly identified as F2P
+          :potential_p2p => 0,  # Parser correctly identified as F2P
+          # Helper fields from parser
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 838
         }
         
         # Save player first
@@ -124,9 +142,10 @@ RSpec.describe Player, type: :model do
     
     context 'when player has trained P2P skills' do
       it 'flags player as P2P when parser detects P2P skills' do
-        # Player with trained P2P: F2P (829) + 8 base P2P (8) + Fletching (50) = 887
+        # Player with trained P2P: F2P (829) + 8 base P2P at lvl 1 (8) + Fletching (50) = 887
+        # Note: There are 9 P2P skills total, but one (Fletching) is trained to 50
         stats = {
-          "overall_lvl" => 887,  # F2P (829) + base P2P (8) + Fletching (50)
+          "overall_lvl" => 887,  # F2P (829) + 8 base P2P (8) + Fletching (50)
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,
@@ -142,7 +161,13 @@ RSpec.describe Player, type: :model do
           "smithing_lvl" => 40,
           "mining_lvl" => 60,
           "runecraft_lvl" => 44,
-          :potential_p2p => 100000  # Parser detected P2P (e.g., Fletching XP)
+          :potential_p2p => 49,  # Parser detected P2P (Fletching level 50 - 1 = 49)
+          # Helper fields from parser
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,  # All 9 P2P skills counted
+          :members_levels_sum => 58,  # 8 at level 1 (=8) + Fletching at 50 (=50) = 58
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 887
         }
         
         # Save player first
@@ -181,7 +206,13 @@ RSpec.describe Player, type: :model do
           "smithing_lvl" => 99,
           "mining_lvl" => 99,
           "runecraft_lvl" => 99,
-          :potential_p2p => 0  # Parser correctly says F2P
+          :potential_p2p => 0,  # Parser correctly says F2P
+          # Helper fields from parser
+          :f2p_levels_sum => 1485,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 1494
         }
         
         # Save player first
@@ -219,7 +250,13 @@ RSpec.describe Player, type: :model do
           "smithing_lvl" => 99,
           "mining_lvl" => 99,
           "runecraft_lvl" => 99,
-          :potential_p2p => 0  # Parser might not detect if it's just level discrepancy
+          :potential_p2p => 0,  # Parser might not detect if it's just level discrepancy
+          # Helper fields from parser
+          :f2p_levels_sum => 1485,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,  # But some must be higher to reach 1510
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 1510
         }
         
         # Save player first
@@ -232,6 +269,7 @@ RSpec.describe Player, type: :model do
         player.reload
         
         # Player SHOULD be flagged as P2P due to impossible stats
+        # overall (1510) > f2p_sum (1485) + members_count (9) = 1494
         expect(player.potential_p2p).to eq(1)
       end
     end
@@ -259,7 +297,13 @@ RSpec.describe Player, type: :model do
           "mining_lvl" => 60,
           "runecraft_lvl" => 44,
           :obor_kc => 50,
-          :potential_p2p => 0
+          :potential_p2p => 0,
+          # Helper fields
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 838
         }
         
         result = Player.initial_p2p_check(stats)
@@ -270,8 +314,9 @@ RSpec.describe Player, type: :model do
     context 'when player has trained P2P skills' do
       it 'returns true when parser detects P2P skills' do
         # Player with trained P2P skills
+        # 9 P2P skills total: 8 at level 1 + Fletching at 50
         stats = {
-          "overall_lvl" => 887,  # F2P (829) + base P2P (8) + Fletching (50)
+          "overall_lvl" => 887,  # F2P (829) + 8 base P2P (8) + Fletching (50)
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,
@@ -287,7 +332,7 @@ RSpec.describe Player, type: :model do
           "smithing_lvl" => 40,
           "mining_lvl" => 60,
           "runecraft_lvl" => 44,
-          :potential_p2p => 100000
+          :potential_p2p => 49  # Fletching level 50 - 1 base = 49
         }
         
         result = Player.initial_p2p_check(stats)

@@ -1046,25 +1046,31 @@ class Player < ActiveRecord::Base
   end
 
   def check_p2p_stats(stats)
-    # The potential_p2p field is already set by the hiscores parser
-    # which includes detection of trained P2P skills (including Sailing)
-    # Check if parser detected P2P skills/minigames first
-    if stats[:potential_p2p] && stats[:potential_p2p] > 0
-      update(:potential_p2p => 1)
+    # 1) If parser detected any members-only skill training or members-only activity evidence
+    if stats[:potential_p2p].to_i > 0
+      update(potential_p2p: 1)
       return
     end
-    
-    actual_f2p_lvls = 0
-    (SKILLS - ["overall"]).each do |skill|
-      actual_f2p_lvls += stats["#{skill}_lvl"]
+
+    # 2) Deterministic reconciliation using overall level (no magic numbers):
+    #
+    # expected_overall = sum(f2p skill levels) + (members_skill_count * 1)
+    # If API overall level exceeds expected_overall, at least one members skill > 1
+    # (or our parser missed a members skill) => flag as potential_p2p.
+    overall = stats[:overall_lvl].to_i
+    f2p_sum = stats[:f2p_levels_sum].to_i
+    members_count = stats[:members_skill_count].to_i
+
+    if overall > 0 && members_count > 0
+      expected_overall = f2p_sum + members_count
+      if overall > expected_overall
+        update(potential_p2p: 1)
+        return
+      end
     end
 
-    if stats["overall_lvl"] > 1494 or (stats["overall_lvl"] - 9) > actual_f2p_lvls
-      update(:potential_p2p => 1)
-    else
-      # Player passes F2P checks, ensure potential_p2p is set to 0
-      update(:potential_p2p => 0)
-    end
+    # Passes checks
+    update(potential_p2p: 0)
   end
 
   def self.initial_p2p_check(stats)

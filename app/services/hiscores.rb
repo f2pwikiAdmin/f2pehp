@@ -288,7 +288,15 @@ class Hiscores
       lines = csv_data.strip.split("\n")
       return false if lines.empty?
       
-      stats = { potential_p2p: 0 }
+      stats = {
+        potential_p2p: 0,
+        
+        # helpers for deterministic reconciliation in Player model
+        f2p_levels_sum: 0,
+        members_skill_count: 0,
+        members_levels_sum: 0,
+        p2p_minigame_score_sum: 0
+      }
       
       # CSV line order matches this skill/activity order
       # Lines 0-24: Skills (Overall, Attack, Defence, ..., Construction, Sailing)
@@ -342,19 +350,21 @@ class Hiscores
         # Process based on skill type
         case internal_skill_name
         when 'p2p'
-          # Check if this is a real P2P skill (not unranked)
-          if rank != -1 || lvl > 1 || xp > 0
-            stats[:potential_p2p] += xp
-          end
+          # Members-only SKILL: do NOT add XP to potential_p2p (breaks for high-xp F2P accounts)
+          # Instead record level evidence and let Player decide final flag.
+          stats[:members_skill_count] += 1
+          stats[:members_levels_sum] += lvl
         when 'hitpoints'
           stats["#{internal_skill_name}_lvl"] = [lvl, MIN_HITPOINTS_LEVEL].max
           stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
           stats["#{internal_skill_name}_rank"] = rank
+          stats[:f2p_levels_sum] += stats["#{internal_skill_name}_lvl"].to_i
         else
-          # F2P skills only (Attack, Defence, Strength, etc.)
+          # F2P skills (store + include in f2p level sum)
           stats["#{internal_skill_name}_lvl"] = lvl
           stats["#{internal_skill_name}_xp"] = xp
           stats["#{internal_skill_name}_rank"] = rank
+          stats[:f2p_levels_sum] += lvl
         end
       end
       
@@ -381,24 +391,36 @@ class Hiscores
         # Process based on activity type
         case internal_activity_name
         when 'p2p_minigame'
-          # Check if this is a real P2P minigame (not unranked)
-          if rank != -1 || score > 0
-            stats[:potential_p2p] += score
-          end
+          # Members-only ACTIVITY/MINIGAME: use SCORE for detection
+          stats[:p2p_minigame_score_sum] += score if (rank != -1 || score > 0)
         when 'lms'
+          # LMS is F2P
           stats[:lms_score] = score
           stats[:lms_rank] = rank
         when 'obor_kc'
+          # F2P boss KC
           stats[:obor_kc] = score
           stats[:obor_kc_rank] = rank
         when 'bryophyta_kc'
+          # F2P boss KC
           stats[:bryo_kc] = score
           stats[:bryo_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
+          # Activities: treat as score-like
           stats[internal_activity_name] = score
           stats["#{internal_activity_name}_rank"] = rank
         end
       end
+      
+      # Derive overall level if present in mapping (Overall should map to "overall")
+      # If SKILL_NAME_MAP doesn't map "Overall" -> "overall", overall_lvl will remain 0.
+      overall_lvl = stats["overall_lvl"].to_i
+      stats[:overall_lvl] = overall_lvl
+
+      # Evidence score:
+      # If any members-only skill is above level 1, members_levels_sum will exceed members_skill_count.
+      members_training_points = [stats[:members_levels_sum] - stats[:members_skill_count], 0].max
+      stats[:potential_p2p] = members_training_points + stats[:p2p_minigame_score_sum].to_i
       
       stats
     end
@@ -411,7 +433,15 @@ class Hiscores
     # @param restrict_fields [Array<String>] Optional list of internal skill names to parse
     # @return [Hash, false] Parsed stats hash or false if data is invalid
     def parse_stats(data, restrict_fields = [])
-      stats = { potential_p2p: 0 }
+      stats = {
+        potential_p2p: 0,
+        
+        # helpers for deterministic reconciliation in Player model
+        f2p_levels_sum: 0,
+        members_skill_count: 0,
+        members_levels_sum: 0,
+        p2p_minigame_score_sum: 0
+      }
 
       # Safety guard: ensure data has skills array
       unless data && data['skills'] && data['skills'].is_a?(Array)
@@ -461,42 +491,59 @@ class Hiscores
 
         case internal_skill_name
         when 'p2p'
-          # Check if this is a real P2P skill (not unranked)
-          # Unranked means rank=-1, level=1, xp=0
-          if rank != -1 || lvl > 1 || xp > 0
-            stats[:potential_p2p] += xp
-          end
+          # Members-only SKILL: do NOT add XP to potential_p2p (breaks for high-xp F2P accounts)
+          # Instead record level evidence and let Player decide final flag.
+          stats[:members_skill_count] += 1
+          stats[:members_levels_sum] += lvl
         when 'p2p_minigame'
-          # JSON activities/minigames use "score", not "level".
-          # Using lvl is wrong because many entries have no "level" key and we default lvl to 1,
-          # which incorrectly flags ranked accounts.
+          # Members-only ACTIVITY/MINIGAME: prefer score; fall back to level if score missing
           score = [(skill_data['score'] || 0).to_i, 0].max
-
-          if rank != -1 || score > 0
-            stats[:potential_p2p] += score
-          end
+          value = score > 0 ? score : lvl
+          stats[:p2p_minigame_score_sum] += value if (rank != -1 || value > 0)
         when 'lms'
-          stats[:lms_score] = lvl
+          # LMS is F2P
+          score = [(skill_data['score'] || 0).to_i, 0].max
+          stats[:lms_score] = score > 0 ? score : lvl
           stats[:lms_rank] = rank
         when 'obor_kc'
-          stats[:obor_kc] = lvl
+          # F2P boss KC
+          score = [(skill_data['score'] || 0).to_i, 0].max
+          stats[:obor_kc] = score > 0 ? score : lvl
           stats[:obor_kc_rank] = rank
         when 'bryophyta_kc'
-          stats[:bryo_kc] = lvl
+          # F2P boss KC
+          score = [(skill_data['score'] || 0).to_i, 0].max
+          stats[:bryo_kc] = score > 0 ? score : lvl
           stats[:bryo_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
-          stats[internal_skill_name] = lvl
+          # Activities: treat as score-like
+          score = [(skill_data['score'] || 0).to_i, 0].max
+          v = score > 0 ? score : lvl
+          stats[internal_skill_name] = v
           stats["#{internal_skill_name}_rank"] = rank
         when 'hitpoints'
           stats["#{internal_skill_name}_lvl"] = [lvl, MIN_HITPOINTS_LEVEL].max
           stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
+          stats["#{internal_skill_name}_rank"] = rank
+          stats[:f2p_levels_sum] += stats["#{internal_skill_name}_lvl"].to_i
         else
-          # F2P skills
+          # F2P skills (store + include in f2p level sum)
           stats["#{internal_skill_name}_lvl"] = lvl
           stats["#{internal_skill_name}_xp"] = xp
           stats["#{internal_skill_name}_rank"] = rank
+          stats[:f2p_levels_sum] += lvl
         end
       end
+
+      # Derive overall level if present in mapping (Overall should map to "overall")
+      # If SKILL_NAME_MAP doesn't map "Overall" -> "overall", overall_lvl will remain 0.
+      overall_lvl = stats["overall_lvl"].to_i
+      stats[:overall_lvl] = overall_lvl
+
+      # Evidence score:
+      # If any members-only skill is above level 1, members_levels_sum will exceed members_skill_count.
+      members_training_points = [stats[:members_levels_sum] - stats[:members_skill_count], 0].max
+      stats[:potential_p2p] = members_training_points + stats[:p2p_minigame_score_sum].to_i
 
       stats
     end

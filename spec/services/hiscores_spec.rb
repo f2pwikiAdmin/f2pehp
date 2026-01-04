@@ -124,7 +124,7 @@ RSpec.describe Hiscores do
           '10006,55,170000',       # Magic
           '10007,70,800000',       # Cooking
           '10008,60,300000',       # Woodcutting
-          '5000,50,100000',        # Fletching (P2P with XP - should be flagged!)
+          '5000,50,100000',        # Fletching (P2P with level 50 - should be flagged!)
           '10009,65,450000',       # Fishing
           '10010,50,100000',       # Firemaking
           '10011,40,40000',        # Crafting
@@ -135,8 +135,12 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Should have P2P XP from Fletching
-        expect(result[:potential_p2p]).to eq(100000)
+        # Should have P2P level evidence from Fletching (level 50, base is 1, so 49 points)
+        # Note: In this CSV we only have 2 P2P skills shown (Fletching + Herblore)
+        # members_levels_sum = 50 + 1 = 51
+        # members_skill_count = 2
+        # potential_p2p = (51 - 2) = 49
+        expect(result[:potential_p2p]).to eq(49)
       end
 
       it 'detects sailing as P2P indicator' do
@@ -165,13 +169,17 @@ RSpec.describe Hiscores do
           '10014,44,55000',        # Runecraft
           '-1,1,0',                # Hunter
           '-1,1,0',                # Construction
-          '1000,30,15000',         # Sailing - with XP! (P2P skill)
+          '1000,30,15000',         # Sailing - with level 30! (P2P skill)
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Sailing XP should contribute to P2P detection
-        expect(result[:potential_p2p]).to eq(15000)
+        # Sailing level should contribute to P2P detection
+        # We have 9 P2P skills total (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction, Sailing)
+        # members_levels_sum = 1+1+1+1+1+1+1+1+30 = 38
+        # members_skill_count = 9
+        # potential_p2p = (38 - 9) = 29
+        expect(result[:potential_p2p]).to eq(29)
       end
 
       it 'handles unranked sailing correctly' do
@@ -314,7 +322,7 @@ RSpec.describe Hiscores do
             { 'name' => 'Smithing', 'rank' => 10012, 'level' => 40, 'xp' => 40000 },
             { 'name' => 'Mining', 'rank' => 10013, 'level' => 60, 'xp' => 300000 },
             { 'name' => 'Runecraft', 'rank' => 10014, 'level' => 44, 'xp' => 55000 },
-            # P2P skill with XP - should be flagged
+            # P2P skill with level 50 - should be flagged
             { 'name' => 'Fletching', 'rank' => 5000, 'level' => 50, 'xp' => 100000 },
             { 'name' => 'Herblore', 'rank' => -1, 'level' => 1, 'xp' => 0 }
           ]
@@ -322,8 +330,11 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Should have P2P XP from Fletching
-        expect(result[:potential_p2p]).to eq(100000)
+        # Should have P2P level evidence from Fletching
+        # members_levels_sum = 50 + 1 = 51
+        # members_skill_count = 2
+        # potential_p2p = (51 - 2) = 49
+        expect(result[:potential_p2p]).to eq(49)
       end
 
       it 'detects sailing as P2P indicator' do
@@ -338,9 +349,11 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Sailing stats should be stored for P2P detection
-        expect(result['sailing_lvl']).to eq(30)
-        expect(result['sailing_xp']).to eq(15000)
+        # Sailing level should contribute to P2P detection
+        # members_levels_sum = 30
+        # members_skill_count = 1
+        # potential_p2p = (30 - 1) = 29
+        expect(result[:potential_p2p]).to eq(29)
       end
 
       it 'handles unranked sailing correctly' do
@@ -355,9 +368,11 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Unranked sailing should still be recorded but shouldn't flag P2P by itself
-        expect(result['sailing_lvl']).to eq(1)
-        expect(result['sailing_xp']).to eq(0)
+        # Unranked sailing at level 1 shouldn't flag P2P
+        # members_levels_sum = 1
+        # members_skill_count = 1
+        # potential_p2p = (1 - 1) = 0
+        expect(result[:potential_p2p]).to eq(0)
       end
 
       it 'does not flag P2P for ranked minigames without score' do

@@ -43,6 +43,7 @@ class Hiscores
     'Runecraft' => 'runecraft',
     'Hunter' => 'p2p',
     'Construction' => 'p2p',
+    'Sailing' => 'p2p',
     'Bounty Hunter - Hunter' => 'p2p_minigame',
     'Bounty Hunter - Rogue' => 'p2p_minigame',
     'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
@@ -290,13 +291,13 @@ class Hiscores
       stats = { potential_p2p: 0 }
       
       # CSV line order matches this skill/activity order
-      # Lines 0-23: Skills (Overall, Attack, Defence, ..., Construction)
-      # Lines 24+: Activities (Clue Scrolls, Bounty Hunter, LMS, Bosses, etc.)
+      # Lines 0-24: Skills (Overall, Attack, Defence, ..., Construction, Sailing)
+      # Lines 25+: Activities (Clue Scrolls, Bounty Hunter, LMS, Bosses, etc.)
       csv_skill_order = [
         'Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer', 'Magic',
         'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing',
         'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer', 'Farming', 'Runecraft', 'Hunter',
-        'Construction'
+        'Construction', 'Sailing'
       ]
       
       # Activities and bosses order (after skills)

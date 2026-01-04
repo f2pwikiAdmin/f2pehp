@@ -389,4 +389,92 @@ RSpec.describe Player, type: :model do
       expect(player.potential_p2p).to eq(0)
     end
   end
+
+  describe 'F2P ranking with false_p2p_flagged list' do
+    before do
+      # Create test players
+      @f2p_player = Player.create!(
+        player_name: "F2PPlayer",
+        player_acc_type: "Reg",
+        potential_p2p: 0,
+        attack_ehp: 100,
+        attack_lvl: 80,
+        attack_xp: 2000000,
+        attack_rank: 100
+      )
+      
+      @p2p_player = Player.create!(
+        player_name: "P2PPlayer",
+        player_acc_type: "Reg",
+        potential_p2p: 1,
+        attack_ehp: 150,
+        attack_lvl: 90,
+        attack_xp: 5000000,
+        attack_rank: 50
+      )
+      
+      @false_flagged_player = Player.create!(
+        player_name: "FalseFlaggedPlayer",
+        player_acc_type: "Reg",
+        potential_p2p: 1,  # Still flagged as P2P in DB
+        attack_ehp: 120,
+        attack_lvl: 85,
+        attack_xp: 3000000,
+        attack_rank: 75
+      )
+
+      # Mock the configuration to include FalseFlaggedPlayer in the false_p2p_flagged list
+      allow(F2POSRSRanks::Application.config).to receive(:downcase_false_p2p_flagged)
+        .and_return(['falseflaggedplayer'])
+    end
+
+    after do
+      # Clean up test data
+      Player.where(player_name: ["F2PPlayer", "P2PPlayer", "FalseFlaggedPlayer"]).destroy_all
+    end
+
+    it 'includes false_p2p_flagged players in F2P rankings' do
+      # F2PPlayer should be ranked 2 (below false_flagged_player who has higher EHP)
+      f2p_rank = @f2p_player.f2p_skill_rank('attack')
+      expect(f2p_rank).to be > 1  # Not rank 1 since false_flagged_player has better stats
+
+      # FalseFlaggedPlayer should be included in rankings despite potential_p2p = 1
+      false_flagged_rank = @false_flagged_player.f2p_skill_rank('attack')
+      expect(false_flagged_rank).to be > 0  # Should have a valid rank
+      expect(false_flagged_rank).to be < f2p_rank  # Should rank better than f2p_player
+
+      # P2PPlayer should NOT be included in rankings (very high rank)
+      p2p_rank = @p2p_player.f2p_skill_rank('attack')
+      # P2P player should rank worse than both F2P players since they're excluded
+      expect(p2p_rank).to be > false_flagged_rank
+      expect(p2p_rank).to be > f2p_rank
+    end
+
+    it 'sql_f2p_filter includes false_p2p_flagged players' do
+      # Query should return both F2PPlayer and FalseFlaggedPlayer, but not P2PPlayer
+      f2p_players = Player.where(Player.sql_f2p_filter)
+      
+      expect(f2p_players).to include(@f2p_player)
+      expect(f2p_players).to include(@false_flagged_player)
+      expect(f2p_players).not_to include(@p2p_player)
+    end
+
+    it 'sql_false_p2p_flagged returns correct SQL fragment' do
+      sql_fragment = Player.sql_false_p2p_flagged
+      expect(sql_fragment).to include('falseflaggedplayer')
+      expect(sql_fragment).to match(/\(.*\)/)  # Should be wrapped in parentheses
+    end
+
+    it 'is_f2p? returns true for players with potential_p2p <= 0' do
+      expect(@f2p_player.is_f2p?).to be true
+    end
+
+    it 'is_f2p? returns false for P2P players not in false_p2p_flagged list' do
+      expect(@p2p_player.is_f2p?).to be false
+    end
+
+    it 'is_f2p? returns true for players in false_p2p_flagged list' do
+      expect(@false_flagged_player.is_f2p?).to be true
+    end
+  end
 end

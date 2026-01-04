@@ -273,7 +273,7 @@ class ClansController < ApplicationController
       ordering = "player_name ASC"
     end
 
-    @players = @clan.players.where("potential_p2p <= 0")
+    @players = @clan.players.where(Player.sql_f2p_filter)
 
     if @filter_inactive == "true"
       @players = @players.where("(overall_xp - overall_xp_month_start) > 0")

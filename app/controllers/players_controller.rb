@@ -172,8 +172,8 @@ class PlayersController < ApplicationController
 
 
     # clan filter breaks page for some reason
-    #@players = @players.left_joins(:clans).merge(Clan.where(name: clan_filter_clause)).distinct.where("potential_p2p <= 0").where("overall_ehp > 1").paginate(:page => params[:page], :per_page => @show_limit.to_i)
-    @players = @players.where("potential_p2p <= 0").where("overall_ehp > 1").paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    #@players = @players.left_joins(:clans).merge(Clan.where(name: clan_filter_clause)).distinct.where(Player.sql_f2p_filter).where("overall_ehp > 1").paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    @players = @players.where(Player.sql_f2p_filter).where("overall_ehp > 1").paginate(:page => params[:page], :per_page => @show_limit.to_i)
   end
 
   def records
@@ -293,7 +293,7 @@ class PlayersController < ApplicationController
       @players = @players.where(cooking_lvl: 1).where(woodcutting_lvl: 1).where(fishing_lvl: 1).where(firemaking_lvl: 1).where(crafting_lvl: 1).where(smithing_lvl: 1).where(mining_lvl: 1).where(runecraft_lvl: 1).where("combat_lvl > 10")
     end
 
-    @players = @players.where("overall_ehp > 1 and potential_p2p <= 0").paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    @players = @players.where("overall_ehp > 1").where(Player.sql_f2p_filter).paginate(:page => params[:page], :per_page => @show_limit.to_i)
   end
 
   def ranks
@@ -441,7 +441,7 @@ class PlayersController < ApplicationController
       @players = @players.where("bryo_kc > 0")
     end
 
-    @players = @players.where("potential_p2p <= 0")
+    @players = @players.where(Player.sql_f2p_filter)
 
     if @skill.include?("99_count")
       @players = @players.sort_by {|player| [player.count_99, player.overall_ehp] }.reverse.paginate(:page => params[:page], :per_page => @show_limit.to_i)
@@ -527,7 +527,7 @@ class PlayersController < ApplicationController
       return
     end
 
-    if @player.potential_p2p > 0
+    if !@player.is_f2p?
       redirect_to ranks_path, notice: "Player '#{@player.player_name}' is not free to play."
       return
     end

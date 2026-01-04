@@ -4,7 +4,7 @@
 
 = render :partial => "header.html.haml",  :locals => {notice: notice}
 
-- @players = Player.where("potential_p2p > 0").order("overall_ehp DESC")
+- @players = Player.where("potential_p2p > 0 AND LOWER(player_name) NOT IN #{Player.sql_false_p2p_flagged}").order("overall_ehp DESC")
 - @players = @players.paginate(:page => params[:page], :per_page => 100.to_i)
 
 = content_tag(:div, nil, class: "container", style: "width: 420px; color: white;") do 

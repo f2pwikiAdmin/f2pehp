@@ -527,7 +527,7 @@ class PlayersController < ApplicationController
       return
     end
 
-    if @player.potential_p2p > 0
+    if !@player.is_f2p?
       redirect_to ranks_path, notice: "Player '#{@player.player_name}' is not free to play."
       return
     end

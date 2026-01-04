@@ -491,6 +491,20 @@ class Player < ActiveRecord::Base
     "(potential_p2p <= 0 OR LOWER(player_name) IN #{sql_false_p2p_flagged})"
   end
 
+  def is_f2p?
+    # Instance method to check if this player should be treated as F2P
+    # Returns true if potential_p2p <= 0 OR player is in false_p2p_flagged list
+    return true if potential_p2p.to_i <= 0
+    
+    # Check if player name is in false_p2p_flagged list
+    if F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
+      flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
+      return flagged_names.include?(player_name.downcase)
+    end
+    
+    false
+  end
+
   # The characters +, _, \s, -, %20 count as the same when doing a lookup on hiscores.
   def self.sanitize_name(str)
     if str.downcase == "_yrak"

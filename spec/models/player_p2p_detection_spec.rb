@@ -464,5 +464,17 @@ RSpec.describe Player, type: :model do
       expect(sql_fragment).to include('falseflaggedplayer')
       expect(sql_fragment).to match(/\(.*\)/)  # Should be wrapped in parentheses
     end
+
+    it 'is_f2p? returns true for players with potential_p2p <= 0' do
+      expect(@f2p_player.is_f2p?).to be true
+    end
+
+    it 'is_f2p? returns false for P2P players not in false_p2p_flagged list' do
+      expect(@p2p_player.is_f2p?).to be false
+    end
+
+    it 'is_f2p? returns true for players in false_p2p_flagged list' do
+      expect(@false_flagged_player.is_f2p?).to be true
+    end
   end
 end

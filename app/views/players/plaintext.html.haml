@@ -13,15 +13,15 @@
     - lvl = "#{skill}_lvl"
     - xp = "#{skill}_xp"
     - ehp = "#{skill}_ehp"
-    - if (not player["#{lvl}"].nil?) and player['potential_p2p'] == '0'
+    - if (not player["#{lvl}"].nil?) and player.is_f2p?
       - str = str + ", #{skill}_lvl: #{player[lvl]}"
     - else
       - str = str +  ", #{skill}_lvl: 0"
-    - if (not player["#{xp}"].nil?) and player['potential_p2p'] == '0'
+    - if (not player["#{xp}"].nil?) and player.is_f2p?
       - str = str +  ", #{skill}_xp: #{player[xp]}"
     - else
       - str = str +  ", #{skill}_xp: 0"
-    - if (not player["#{ehp}"].nil?) and player['potential_p2p'] == '0'
+    - if (not player["#{ehp}"].nil?) and player.is_f2p?
       - str = str +  ", #{skill}_ehp: #{player[ehp]}"
     - else
       - str = str +  ", #{skill}_ehp: 0"

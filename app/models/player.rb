@@ -608,6 +608,15 @@ class Player < ActiveRecord::Base
     stats = calculate_virtual_stats(stats, last_updated=last_updated)
     stats[:updated_at] = Time.now
 
+    # Strip helper keys that are not DB columns before assigning to model
+    if stats.is_a?(Hash)
+      stats = stats.dup
+      %w[f2p_levels_sum members_skill_count members_levels_sum].each do |k|
+        stats.delete(k)
+        stats.delete(k.to_sym)
+      end
+    end
+
     self.attributes = stats
     self.save(validate: false)
   end

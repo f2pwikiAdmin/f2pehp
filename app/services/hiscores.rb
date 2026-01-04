@@ -410,7 +410,7 @@ class Hiscores
           stats[:bryo_kc] = score
           stats[:bryo_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
-          # Activities: treat as score-like
+          # F2P clue scrolls: treat as score-like
           stats[internal_activity_name] = score
           stats["#{internal_activity_name}_rank"] = rank
         end
@@ -521,7 +521,7 @@ class Hiscores
           stats[:bryo_kc] = score > 0 ? score : lvl
           stats[:bryo_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
-          # Activities: treat as score-like
+          # F2P clue scrolls: treat as score-like
           score = [(skill_data['score'] || 0).to_i, 0].max
           v = score > 0 ? score : lvl
           stats[internal_skill_name] = v

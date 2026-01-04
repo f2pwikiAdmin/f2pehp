@@ -47,7 +47,7 @@ namespace :players do
 
     # Helper to extract boss KC from hiscores API response
     # Returns a hash of {boss_name => kill_count} or nil if no P2P bosses found
-    def extract_boss_kc_from_csv(csv_data, p2p_bosses)
+    extract_boss_kc_from_csv = lambda do |csv_data, p2p_bosses|
       return nil unless csv_data
 
       lines = csv_data.strip.split("\n")
@@ -152,7 +152,7 @@ namespace :players do
         csv_data = stats_uri.read(openuri_params)
         
         # Extract boss KC from the CSV
-        boss_kc_data = extract_boss_kc_from_csv(csv_data, P2P_BOSSES)
+        boss_kc_data = extract_boss_kc_from_csv.call(csv_data, P2P_BOSSES)
         
         if boss_kc_data && boss_kc_data.any?
           # Player has P2P boss KC
@@ -193,7 +193,7 @@ namespace :players do
       puts "These players have P2P boss kill counts and should not be in the"
       puts "false_p2p_flagged list. Please remove them from config/initializers/assets.rb"
       puts ""
-      puts "To remove them, edit line 21 in config/initializers/assets.rb and delete these names."
+      puts "To remove them, edit the false_p2p_flagged list in config/initializers/assets.rb and delete these names."
     else
       puts "✅ No players found with P2P boss KC!"
     end

@@ -130,10 +130,11 @@
                 %th{:class => @player_xp_header, :style => "text-decoration: underline;"}= link_to "XP", ranks_path(:sort_by => 'xp', :skill => @skill), :id => 'player_xp_header'
               - else
                 %th{:class => @player_xp_header}= link_to "XP", ranks_path(:sort_by => 'xp', :skill => @skill), :id => 'player_xp_header'
-              - if @sort_by == "ehp"
-                %th{:class => @player_ehp_header, :style => "text-decoration: underline;"}= link_to "EHP", ranks_path(:sort_by => 'ehp', :skill => @skill), :id => 'player_ehp_header'
-              - else
-                %th{:class => @player_ehp_header}= link_to "EHP", ranks_path(:sort_by => 'ehp', :skill => @skill), :id => 'player_ehp_header'
+              - if @skill != "magic"
+                - if @sort_by == "ehp"
+                  %th{:class => @player_ehp_header, :style => "text-decoration: underline;"}= link_to "EHP", ranks_path(:sort_by => 'ehp', :skill => @skill), :id => 'player_ehp_header'
+                - else
+                  %th{:class => @player_ehp_header}= link_to "EHP", ranks_path(:sort_by => 'ehp', :skill => @skill), :id => 'player_ehp_header'
   
       %tbody
         - @players.each.with_index 1 do |player, index|
@@ -172,7 +173,8 @@
               %td= player["#{@skill}_lvl"]
               - if @skill != "combat"
                 %td= number_with_delimiter(player["#{@skill}_xp"].to_i, :delimiter => ",") 
-                %td= number_with_delimiter(player["#{@skill}_ehp"].to_f, :delimiter => ",", :separator => ".") 
+                - if @skill != "magic"
+                  %td= number_with_delimiter(player["#{@skill}_ehp"].to_f, :delimiter => ",", :separator => ".") 
             
     = content_tag(:div, nil, class: "container", id: "footerHiscores", style: "margin: auto; margin-top: 0px; width: 430px; height: 41px;") 
 

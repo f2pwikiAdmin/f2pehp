@@ -476,9 +476,18 @@ class Player < ActiveRecord::Base
   def self.sql_false_p2p_flagged
     # Return list of downcase false_p2p_flagged names for SQL IN clause
     # Returns empty list if config is not available or list is empty
+    # IMPORTANT: Excludes players in fakes list (fakes list takes priority)
     return "()" unless F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
     
     flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
+    return "()" if flagged_names.empty?
+    
+    # Remove any players that are in the fakes list (fakes take priority)
+    if F2POSRSRanks::Application.config.respond_to?(:downcase_fakes)
+      fakes_names = F2POSRSRanks::Application.config.downcase_fakes || []
+      flagged_names = flagged_names - fakes_names
+    end
+    
     return "()" if flagged_names.empty?
     
     quoted_names = flagged_names.map{ |name| "'#{name}'" }
@@ -493,6 +502,14 @@ class Player < ActiveRecord::Base
 
   def is_f2p?
     # Instance method to check if this player should be treated as F2P
+    # IMPORTANT: Players in fakes list are NEVER treated as F2P (fakes take priority)
+    
+    # Check fakes list first - if player is in fakes, they are NOT F2P
+    if F2POSRSRanks::Application.config.respond_to?(:downcase_fakes)
+      fakes_names = F2POSRSRanks::Application.config.downcase_fakes || []
+      return false if fakes_names.include?(player_name.downcase)
+    end
+    
     # Returns true if potential_p2p <= 0 OR player is in false_p2p_flagged list
     return true if potential_p2p.to_i <= 0
     
@@ -1086,6 +1103,15 @@ class Player < ActiveRecord::Base
   end
 
   def check_p2p_stats(stats)
+    # Players in fakes list should ALWAYS be treated as P2P (potential_p2p = 1)
+    # This takes priority over false_p2p_flagged and false_banned lists
+    if F2POSRSRanks::Application.config.respond_to?(:downcase_fakes)
+      if F2POSRSRanks::Application.config.downcase_fakes.include?(player_name.downcase)
+        update(potential_p2p: 1)
+        return
+      end
+    end
+    
     # False-banned players should always be marked as F2P (potential_p2p = 0)
     # in config/initializers/assets.rb (line 15)
     # Example: config.false_banned = ["cacapoopoo71", "RuneWzrd"]

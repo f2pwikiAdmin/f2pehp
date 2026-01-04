@@ -470,10 +470,9 @@ class Hiscores
           # JSON activities/minigames use "score", not "level".
           # Using lvl is wrong because many entries have no "level" key and we default lvl to 1,
           # which incorrectly flags ranked accounts.
-          score = skill_data['score'] || 0
-          score = [score.to_i, 0].max
+          score = [(skill_data['score'] || 0).to_i, 0].max
 
-          if rank != -1 || score > 0 || xp > 0
+          if rank != -1 || score > 0
             stats[:potential_p2p] += score
           end
         when 'lms'

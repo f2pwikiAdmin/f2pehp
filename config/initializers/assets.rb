@@ -68,8 +68,9 @@ F2POSRSRanks::Application.configure do
                      "p2p_minigame",
                      "p2p_minigame", # 2023-04-13
                      "p2p_minigame", # 2024-03-21
-                     "p2p_minigame", # Blood Moon - Perilous Moons 2024-08-26
-                     "p2p_minigame", # Blue Moon - Perilous Moons 2024-08-26
+                     "p2p_minigame", # 2024-08-26
+                     "p2p_minigame", # 2024-09-25
+                     "p2p_minigame", # 2025-01-29
                      "bryophyta_kc",
                      "p2p_minigame",
                      "p2p_minigame",
@@ -85,7 +86,7 @@ F2POSRSRanks::Application.configure do
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",
-                     "p2p_minigame", # Eclipse Moon - Perilous Moons 2024-08-26
+                     "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",

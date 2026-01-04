@@ -65,8 +65,6 @@ class Hiscores
     'Alchemical Hydra' => 'p2p_minigame',
     'Artio' => 'p2p_minigame',
     'Barrows Chests' => 'p2p_minigame',
-    'Blood Moon' => 'p2p_minigame',
-    'Blue Moon' => 'p2p_minigame',
     'Bryophyta' => 'bryophyta_kc',
     'Callisto' => 'p2p_minigame',
     'Calvar\'ion' => 'p2p_minigame',
@@ -83,7 +81,6 @@ class Hiscores
     'Dagannoth Supreme' => 'p2p_minigame',
     'Deranged Archaeologist' => 'p2p_minigame',
     'Duke Sucellus' => 'p2p_minigame',
-    'Eclipse Moon' => 'p2p_minigame',
     'General Graardor' => 'p2p_minigame',
     'Giant Mole' => 'p2p_minigame',
     'Grotesque Guardians' => 'p2p_minigame',
@@ -313,19 +310,16 @@ class Hiscores
       
       # Activities and bosses order (after skills)
       # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API.
-      # 'Unknown Activity 1' was added by Jagex on 24/08/2023. While we don't track this specific
-      # activity, it MUST remain in the array to maintain proper CSV line alignment for all
-      # subsequent activities (clues, bosses, etc.). Removing it will cause parsing errors.
       csv_activity_order = [
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
-        'Bounty Hunter (Legacy) - Rogue', 'Unknown Activity 1', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
+        'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
         'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
         'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
-        'Blood Moon', 'Blue Moon', 'Bryophyta', 'Callisto', 'Calvar\'ion', 'Cerberus',
-        'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic',
-        'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
-        'Dagannoth Supreme', 'Deranged Archaeologist', 'Duke Sucellus', 'Eclipse Moon', 'General Graardor',
+        'Chaos Elemental', 'Callisto', 'Calvar\'ion', 'Cerberus', 'Chambers of Xeric',
+        'Chambers of Xeric: Challenge Mode', 'Bryophyta', 'Chaos Fanatic', 'Commander Zilyana',
+        'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
+        'Dagannoth Supreme', 'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
         'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon',
         'Kraken', 'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
         'Phosani\'s Nightmare', 'Spindel', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',

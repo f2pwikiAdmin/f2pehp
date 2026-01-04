@@ -552,14 +552,12 @@ class Player < ActiveRecord::Base
   end
 
   def update_player(stats: nil)
-    # If the player has been false banned and is frozen, do not fetch updates from hiscores
-    # However, allow initial stat setting when stats are provided (during player creation)
-    if F2POSRSRanks::Application.config.downcase_false_banned.include?(player_name.downcase) && stats.nil?
-      return false
-    end
+    # Check if player should be removed (fakes or banned accounts)
     if F2POSRSRanks::Application.config.downcase_fakes.include?(player_name.downcase) || F2POSRSRanks::Application.config.downcase_banned.include?(player_name.downcase)
       Player.where(player_name: player_name).destroy_all
+      return false
     end
+    
     Rails.logger.info "Updating #{player_name}"
 
     # save this value first, because any changes to a record will update Rails models' "updated_at"
@@ -609,6 +607,15 @@ class Player < ActiveRecord::Base
 
     stats = calculate_virtual_stats(stats, last_updated=last_updated)
     stats[:updated_at] = Time.now
+
+    # Strip helper keys that are not DB columns before assigning to model
+    if stats.is_a?(Hash)
+      stats = stats.dup
+      %w[f2p_levels_sum members_skill_count members_levels_sum].each do |k|
+        stats.delete(k)
+        stats.delete(k.to_sym)
+      end
+    end
 
     self.attributes = stats
     self.save(validate: false)

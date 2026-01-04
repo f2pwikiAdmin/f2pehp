@@ -1055,6 +1055,8 @@ class Player < ActiveRecord::Base
 
   def check_p2p_stats(stats)
     # False-banned players should always be marked as F2P (potential_p2p = 0)
+    # in config/initializers/assets.rb (line 15)
+    # Example: config.false_banned = ["cacapoopoo71", "RuneWzrd"]
     if F2POSRSRanks::Application.config.downcase_false_banned.include?(player_name.downcase)
       update(potential_p2p: 0)
       return

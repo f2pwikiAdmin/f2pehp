@@ -312,7 +312,7 @@ class Hiscores
       # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API.
       csv_activity_order = [
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
-        'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
+        'Bounty Hunter (Legacy) - Rogue', 'Unknown Activity 1', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
         'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
         'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',

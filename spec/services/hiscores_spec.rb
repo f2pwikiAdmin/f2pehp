@@ -359,6 +359,77 @@ RSpec.describe Hiscores do
         expect(result['sailing_lvl']).to eq(1)
         expect(result['sailing_xp']).to eq(0)
       end
+
+      it 'does not flag P2P for ranked minigames without score' do
+        # This is the bug we're fixing: ranked P2P minigames without a "level" field
+        # (which defaults to 1) should NOT flag as P2P unless they have a score
+        json_data = {
+          'skills' => [
+            { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
+            { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
+            # P2P minigames that are ranked but have no score/level field (no actual activity)
+            { 'name' => 'Barrows Chests', 'rank' => 50000 },  # Missing score, level, xp
+            { 'name' => 'Chambers of Xeric', 'rank' => 40000, 'score' => 0 }  # Ranked but zero score
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # Should NOT flag as P2P since there's no actual score/activity
+        expect(result[:potential_p2p]).to eq(0)
+      end
+
+      it 'flags P2P for minigames with actual scores' do
+        # Minigames with real scores should flag as P2P
+        json_data = {
+          'skills' => [
+            { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
+            { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
+            # P2P minigames with actual scores
+            { 'name' => 'Barrows Chests', 'rank' => 5000, 'score' => 150 },
+            { 'name' => 'Chambers of Xeric', 'rank' => 3000, 'score' => 25 }
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # Should flag as P2P with total score of 150 + 25 = 175
+        expect(result[:potential_p2p]).to eq(175)
+      end
+
+      it 'handles P2P minigames with missing score field correctly' do
+        # When score field is completely missing, should default to 0
+        json_data = {
+          'skills' => [
+            { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
+            { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
+            # P2P minigame without score field but with level field (edge case)
+            { 'name' => 'TzTok-Jad', 'rank' => 10000, 'level' => 1 }  # No score field
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # Should NOT flag as P2P since score defaults to 0
+        expect(result[:potential_p2p]).to eq(0)
+      end
+
+      it 'flags P2P for unranked minigames with positive scores' do
+        # Even unranked minigames with scores should flag as P2P
+        json_data = {
+          'skills' => [
+            { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
+            { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
+            # Unranked but with score (possible edge case)
+            { 'name' => 'Giant Mole', 'rank' => -1, 'score' => 5 }
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # Should flag as P2P since score > 0
+        expect(result[:potential_p2p]).to eq(5)
+      end
     end
 
     context 'with invalid JSON data' do

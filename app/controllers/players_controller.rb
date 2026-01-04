@@ -552,8 +552,12 @@ class PlayersController < ApplicationController
   # PATCH/PUT /players/1
   # PATCH/PUT /players/1.json
   def update
+    # Check if player is false-banned first
+    if F2POSRSRanks::Application.config.downcase_false_banned.include?(@player.player_name.downcase)
+      redirect_to player_path(@player.player_name),
+        notice: "This player is frozen and cannot be updated. If this is incorrect, please contact an administrator."
     # If updated less than a minute ago
-    if (@player.updated_at > 1.minutes.ago)
+    elsif (@player.updated_at > 1.minutes.ago)
       redirect_to player_path(@player.player_name),
         notice: "Updating too quickly. Please try again in a minute"
     elsif @player.update_player

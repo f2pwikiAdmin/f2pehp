@@ -1,13 +1,19 @@
-- @title = "F2P OSRS/Wiki Changelog"
-- @description = "A log of all of the F2P OSRS and F2P.wiki updates."
+- @title = "F2P OSRS Updates"
+- @description = "A log of all of the F2P OSRS updates."
 = favicon_link_tag "rs_favicon.png"
 = link_to image_tag("f2pwiki.png"), players_path
 
 = render :partial => "header.html.haml",  :locals => {notice: notice}
 
 = content_tag(:div, nil, class: "container", style: "width: 760px;") do
-  = content_tag(:div, nil, class: "left", style: "margin-left: 5px; text-align: left; width: 340px; padding: 10px;") do
-    %h3 F2P OSRS Changelog
+  = content_tag(:div, nil, class: "left", style: "margin-left: 5px; text-align: left; width: 740px; padding: 10px;") do
+    %h3 Free-to-Play Game Updates
+    
+    = content_tag(:div, nil, style: "background-color: rgba(56, 36, 24, 0.7); border: 2px solid #382418; padding: 10px; margin-bottom: 20px;") do
+      %h4{style: "margin: 0 0 5px 0; color: #d9c27e;"} Site Updates
+      = "For the latest F2P.wiki site updates and changes, visit our "
+      = link_to "GitHub repository", "https://github.com/f2pwikiAdmin/f2pehp", target: "_blank", rel: "noopener noreferrer"
+      = "."
     
     %h5 May 30, 2025
     = "- Obor and Bryophyta no longer require Giant or Mossy Keys to be fought."

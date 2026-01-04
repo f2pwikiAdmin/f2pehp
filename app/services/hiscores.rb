@@ -394,7 +394,8 @@ class Hiscores
         case internal_activity_name
         when 'p2p_minigame'
           # Members activity/minigame detected => flag as P2P
-          if score > 0
+          # Only flag if actually ranked (rank != -1) to avoid false positives from unranked entries
+          if rank != -1 && score > 0
             stats["potential_p2p"] = 1
           end
         when 'lms'
@@ -501,8 +502,9 @@ class Hiscores
           end
         when 'p2p_minigame'
           # Members activity/minigame detected => flag as P2P (do NOT accumulate)
+          # Only flag if actually ranked (rank != -1) to avoid false positives from unranked entries
           score = [(skill_data['score'] || 0).to_i, 0].max
-          if score > 0
+          if rank != -1 && score > 0
             stats["potential_p2p"] = 1
           end
         when 'lms'

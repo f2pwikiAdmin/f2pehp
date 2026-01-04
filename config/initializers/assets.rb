@@ -51,29 +51,27 @@ F2POSRSRanks::Application.configure do
                      "p2p_minigame", # Bounty Hunter - Rogue
                      "p2p_minigame", # Bounty Hunter (Legacy) - Hunter (added 26/05/2023)
                      "p2p_minigame", # Bounty Hunter (Legacy) - Rogue (added 26/05/2023)
-                     "clues_all", # Position verified with Pawz (1337 clues) - matches csv_activity_order index 4
-                     "clues_beginner", # Position verified with Pawz (1337 clues) - matches csv_activity_order index 5
+                     "p2p_minigame", # Unknown Activity 1 (added 24/08/2023) - CRITICAL: Do not remove, maintains alignment for clues_all/clues_beginner
+                     "clues_all", # Verified position with Pawz (1337 clues) and Lillie756 (967 clues)
+                     "clues_beginner", # Verified position with Pawz (1337 clues) and Lillie756 (967 clues)
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",
                      "lms",
-                     "p2p_minigame", # PvP Arena - Rank (added 2022-07-13)
-                     "p2p_minigame", # Soul Wars Zeal
-                     "p2p_minigame", # Rifts closed (added 2022-04-13)
-                     "p2p_minigame", # Colosseum Glory
-                     "p2p_minigame", # Abyssal Sire
-                     "p2p_minigame", # Alchemical Hydra
-                     "p2p_minigame", # Artio (added 2023-04-13)
-                     "p2p_minigame", # Barrows Chests
-                     "p2p_minigame", # Chaos Elemental
-                     "p2p_minigame", # Callisto
-                     "p2p_minigame", # Calvar'ion (added 2024-03-21)
-                     "p2p_minigame", # Cerberus
-                     "p2p_minigame", # Chambers of Xeric (added 2024-08-26)
-                     "p2p_minigame", # Chambers of Xeric: Challenge Mode (added 2024-09-25)
-                     "bryophyta_kc", # Bryophyta (added 2025-01-29) - now at correct index 51
+                     "p2p_minigame", # somewhere around here pvp arena added here fuck you jagex 2022-07-13
+                     "p2p_minigame",
+                     "p2p_minigame",
+                     "p2p_minigame", #rifts closed 13-04-2022
+                     "p2p_minigame",
+                     "p2p_minigame",
+                     "p2p_minigame", # 2023-04-13
+                     "p2p_minigame", # 2024-03-21
+                     "p2p_minigame", # 2024-08-26
+                     "p2p_minigame", # 2024-09-25
+                     "p2p_minigame", # 2025-01-29
+                     "bryophyta_kc",
                      "p2p_minigame",
                      "p2p_minigame",
                      "p2p_minigame",

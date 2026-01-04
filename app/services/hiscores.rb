@@ -310,23 +310,40 @@ class Hiscores
       
       # Activities and bosses order (after skills)
       # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API.
+      # The order must also match the config.skills array in config/initializers/assets.rb
       csv_activity_order = [
+        # Indices 0-4: Bounty Hunter activities + Unknown Activity 1
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
-        'Bounty Hunter (Legacy) - Rogue', 'Unknown Activity 1', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
+        'Bounty Hunter (Legacy) - Rogue', 'Unknown Activity 1',
+        # Indices 5-6: F2P Clue Scrolls
+        'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
+        # Indices 7-11: P2P Clue Scrolls
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
-        'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
-        'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
-        'Chaos Elemental', 'Callisto', 'Calvar\'ion', 'Cerberus', 'Chambers of Xeric',
-        'Chambers of Xeric: Challenge Mode', 'Bryophyta', 'Chaos Fanatic', 'Commander Zilyana',
-        'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
-        'Dagannoth Supreme', 'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
-        'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon',
-        'Kraken', 'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
-        'Phosani\'s Nightmare', 'Spindel', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',
-        'Skotizo', 'Sol Heredit', 'Obor', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
-        'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode',
-        'Thermy', 'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad',
-        'Vardorvis', 'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
+        'Clue Scrolls (master)',
+        # Index 12: LMS (F2P)
+        'LMS - Rank',
+        # Indices 13-16: Other activities
+        'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed', 'Colosseum Glory',
+        # Indices 17-23: Bosses (alphabetical grouping)
+        'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests', 'Callisto', 'Calvar\'ion', 'Cerberus',
+        # Index 24: Bryophyta (F2P boss) - MUST stay at index 24 to match config
+        'Bryophyta',
+        # Indices 25-30: More bosses (C-bosses continued)
+        'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic', 
+        'Commander Zilyana', 'Corporeal Beast',
+        # Indices 31-54: Bosses (D-N alphabetical)
+        'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex', 'Dagannoth Supreme',
+        'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor', 'Giant Mole',
+        'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon', 'Kraken',
+        'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
+        'Phosani\'s Nightmare', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',
+        # Index 55: Obor (F2P boss) - MUST stay at index 55 to match config
+        'Obor',
+        # Indices 56-79: More bosses (S-Z alphabetical)
+        'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
+        'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
+        'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad', 'Vardorvis',
+        'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
       ]
       
       # Parse skills (first 25 lines)

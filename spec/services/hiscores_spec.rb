@@ -38,6 +38,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Bounty Hunter (Legacy) - Hunter
           '-1,0',                  # Bounty Hunter (Legacy) - Rogue
           '-1,0',                  # Unknown Activity 1
+          '-1,0',                  # Unknown Activity 2
           '5000,50',               # Clue Scrolls (all)
           '5001,25',               # Clue Scrolls (beginner)
           '-1,0',                  # Clue Scrolls (easy) - P2P

@@ -45,6 +45,60 @@ namespace :players do
       'Wintertodt', 'Zalcano', 'Zulrah'
     ].freeze
 
+    # Helper to extract boss KC from hiscores API response
+    # Returns a hash of {boss_name => kill_count} or nil if no P2P bosses found
+    def extract_boss_kc_from_csv(csv_data, p2p_bosses)
+      return nil unless csv_data
+
+      lines = csv_data.strip.split("\n")
+      
+      # Skills are lines 0-24, activities/bosses start at line 25
+      # The order matches the SKILL_NAME_MAP in the Hiscores service
+      # We need to maintain this order to correctly parse the CSV response
+      csv_activity_order = [
+        'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
+        'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
+        'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
+        'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
+        'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
+        'Bryophyta', 'Callisto', "Calvar'ion", 'Cerberus', 'Chambers of Xeric',
+        'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic', 'Commander Zilyana',
+        'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
+        'Dagannoth Supreme', 'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
+        'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon',
+        'Kraken', "Kree'Arra", "K'ril Tsutsaroth", 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
+        "Phosani's Nightmare", 'Obor', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',
+        'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
+        'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode',
+        'Thermy', 'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad',
+        'Vardorvis', 'Venenatis', "Vet'ion", 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
+      ]
+      
+      boss_kc_found = {}
+      activity_start_idx = 25  # Skills take lines 0-24
+      
+      csv_activity_order.each_with_index do |activity_name, idx|
+        line_idx = activity_start_idx + idx
+        next if line_idx >= lines.length
+        
+        # Only check P2P bosses
+        next unless p2p_bosses.include?(activity_name)
+        
+        line = lines[line_idx]
+        values = line.split(',').map(&:strip).map(&:to_i)
+        next if values.length < 2
+        
+        rank, score = values[0], values[1]
+        
+        # If player has KC for this P2P boss, record it
+        if rank != -1 && score > 0
+          boss_kc_found[activity_name] = score
+        end
+      end
+      
+      boss_kc_found.empty? ? nil : boss_kc_found
+    end
+
     puts "=" * 80
     puts "Checking false_p2p_flagged list for players with P2P boss KC"
     puts "=" * 80
@@ -72,8 +126,33 @@ namespace :players do
       players_checked += 1
       
       # Fetch raw hiscores data to check boss KC
+      # We use the existing Hiscores.fetch_stats_by_acc method but need the raw CSV
+      # Since we can't access the raw CSV through the public API, we'll fetch it directly
       begin
-        boss_kc_data = fetch_boss_kc(player_name, player.player_acc_type)
+        # Build the API URL using the same logic as Hiscores service
+        path_suffix = {
+          'HCIM' => '_hardcore_ironman',
+          'UIM' => '_ultimate',
+          'IM' => '_ironman'
+        }
+        
+        url_friendly_name = ERB::Util.url_encode(player_name).gsub(/(%C2)*%A0/, '_')
+        stats_uri = URI.join(
+          'https://secure.runescape.com',
+          "m=hiscore_oldschool#{path_suffix[player.player_acc_type]}/index_lite.ws",
+          "?player=#{url_friendly_name}"
+        )
+        
+        # Fetch the raw CSV data
+        openuri_params = {
+          open_timeout: 5,
+          read_timeout: 5
+        }
+        
+        csv_data = stats_uri.read(openuri_params)
+        
+        # Extract boss KC from the CSV
+        boss_kc_data = extract_boss_kc_from_csv(csv_data, P2P_BOSSES)
         
         if boss_kc_data && boss_kc_data.any?
           # Player has P2P boss KC
@@ -87,6 +166,8 @@ namespace :players do
         end
       rescue SocketError, Net::ReadTimeout => e
         puts "⚠️  WARNING: Could not fetch hiscores for #{player_name}: #{e.message}"
+      rescue OpenURI::HTTPError => e
+        puts "⚠️  WARNING: HTTP error for #{player_name}: #{e.message}"
       rescue => e
         puts "⚠️  WARNING: Error checking #{player_name}: #{e.message}"
         puts "    #{e.backtrace.first}"
@@ -129,83 +210,5 @@ namespace :players do
 
     puts ""
     puts "=" * 80
-  end
-
-  # Helper method to fetch and parse boss KC from hiscores
-  def fetch_boss_kc(player_name, account_type)
-    # Get the API URI for this player
-    stats_uri = Hiscores.send(:api_url, account_type, player_name)
-    
-    # Fetch raw CSV data
-    csv_data = Hiscores.fetch(stats_uri)
-    return nil unless csv_data
-    
-    # Parse the CSV to extract boss KC
-    lines = csv_data.strip.split("\n")
-    
-    # Skills are lines 0-24, activities/bosses start at line 25
-    # The order matches the csv_activity_order in Hiscores service
-    csv_activity_order = [
-      'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
-      'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
-      'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
-      'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
-      'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
-      'Bryophyta', 'Callisto', "Calvar'ion", 'Cerberus', 'Chambers of Xeric',
-      'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic', 'Commander Zilyana',
-      'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
-      'Dagannoth Supreme', 'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
-      'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon',
-      'Kraken', "Kree'Arra", "K'ril Tsutsaroth", 'Lunar Chests', 'Mimic', 'Nex', 'Nightmare',
-      "Phosani's Nightmare", 'Obor', 'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius',
-      'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
-      'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode',
-      'Thermy', 'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad',
-      'Vardorvis', 'Venenatis', "Vet'ion", 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
-    ]
-    
-    # P2P bosses from the constant defined above
-    p2p_bosses = [
-      'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
-      'Callisto', "Calvar'ion", 'Cerberus', 'Chambers of Xeric',
-      'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic',
-      'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist',
-      'Dagannoth Prime', 'Dagannoth Rex', 'Dagannoth Supreme',
-      'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
-      'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen',
-      'King Black Dragon', 'Kraken', "Kree'Arra", "K'ril Tsutsaroth",
-      'Lunar Chests', 'Mimic', 'Nex', 'Nightmare', "Phosani's Nightmare",
-      'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius', 'Skotizo',
-      'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet',
-      'The Corrupted Gauntlet', 'The Leviathan', 'The Whisperer',
-      'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
-      'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk',
-      'TzTok-Jad', 'Vardorvis', 'Venenatis', "Vet'ion", 'Vorkath',
-      'Wintertodt', 'Zalcano', 'Zulrah'
-    ]
-    
-    boss_kc_found = {}
-    activity_start_idx = 25  # Skills take lines 0-24
-    
-    csv_activity_order.each_with_index do |activity_name, idx|
-      line_idx = activity_start_idx + idx
-      next if line_idx >= lines.length
-      
-      # Only check P2P bosses
-      next unless p2p_bosses.include?(activity_name)
-      
-      line = lines[line_idx]
-      values = line.split(',').map(&:strip).map(&:to_i)
-      next if values.length < 2
-      
-      rank, score = values[0], values[1]
-      
-      # If player has KC for this P2P boss, record it
-      if rank != -1 && score > 0
-        boss_kc_found[activity_name] = score
-      end
-    end
-    
-    boss_kc_found.empty? ? nil : boss_kc_found
   end
 end

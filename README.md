@@ -127,6 +127,35 @@ rails s
 
 The app should now be running at [http://localhost:3000](http://localhost:3000) or [127.0.0.1:3000](127.0.0.1:3000).
 
+## Available Rake Tasks
+
+### Check False P2P Flagged List
+
+The application maintains a list of players incorrectly flagged as P2P (members) when they are actually F2P. These rake tasks help validate and maintain this list.
+
+#### Check for P2P Skills
+
+Checks if players in the false_p2p_flagged list have actually trained P2P skills (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction, Sailing):
+
+```bash
+bundle exec rake players:check_false_p2p_flagged
+```
+
+#### Check for P2P Boss KC
+
+Checks if players in the false_p2p_flagged list have kill counts for P2P bosses (excluding F2P bosses Obor and Bryophyta):
+
+```bash
+bundle exec rake players:check_boss_kc
+```
+
+Both tasks will output:
+- Players who should be removed from the list (they have P2P evidence)
+- Players not found in the database (may need cleanup)
+- A summary with actionable recommendations
+
+The false_p2p_flagged list can be edited in `config/initializers/assets.rb` (line 21).
+
 ## Useful Links
 
 Rails Command Line - [https://guides.rubyonrails.org/command_line.html](https://guides.rubyonrails.org/command_line.html)

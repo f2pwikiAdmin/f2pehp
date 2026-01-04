@@ -552,8 +552,9 @@ class Player < ActiveRecord::Base
   end
 
   def update_player(stats: nil)
-    # If the player has been false banned and is frozen, do not update stats otherwise they will get marked as p2p
-    if F2POSRSRanks::Application.config.downcase_false_banned.include?(player_name.downcase)
+    # If the player has been false banned and is frozen, do not fetch updates from hiscores
+    # However, allow initial stat setting when stats are provided (during player creation)
+    if F2POSRSRanks::Application.config.downcase_false_banned.include?(player_name.downcase) && stats.nil?
       return false
     end
     if F2POSRSRanks::Application.config.downcase_fakes.include?(player_name.downcase) || F2POSRSRanks::Application.config.downcase_banned.include?(player_name.downcase)
@@ -1046,6 +1047,12 @@ class Player < ActiveRecord::Base
   end
 
   def check_p2p_stats(stats)
+    # False-banned players should always be marked as F2P (potential_p2p = 0)
+    if F2POSRSRanks::Application.config.downcase_false_banned.include?(player_name.downcase)
+      update(potential_p2p: 0)
+      return
+    end
+
     # 1) If parser detected any members-only skill training or members-only activity evidence
     if stats["potential_p2p"].to_i > 0
       update(potential_p2p: 1)

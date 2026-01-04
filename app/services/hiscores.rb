@@ -351,6 +351,9 @@ class Hiscores
         case internal_skill_name
         when 'p2p'
           # Members skill detected (ranked / levelled / has xp) => flag as P2P
+          # Also track counts for Player model's deterministic reconciliation
+          stats[:members_skill_count] += 1
+          stats[:members_levels_sum] += lvl
           if rank != -1 || lvl > 1 || xp > 0
             stats[:potential_p2p] = 1
           end
@@ -492,6 +495,9 @@ class Hiscores
         case internal_skill_name
         when 'p2p'
           # Members skill detected => flag as P2P (do NOT accumulate xp)
+          # Also track counts for Player model's deterministic reconciliation
+          stats[:members_skill_count] += 1
+          stats[:members_levels_sum] += lvl
           if rank != -1 || lvl > 1 || xp > 0
             stats[:potential_p2p] = 1
           end

@@ -53,13 +53,13 @@ RSpec.describe Hiscores do
           '-1,0',                  # Alchemical Hydra
           '-1,0',                  # Artio
           '-1,0',                  # Barrows Chests
-          '2001,8',                # Bryophyta
+          '-1,0',                  # Chaos Elemental
           '-1,0',                  # Callisto
           '-1,0',                  # Calvar'ion
           '-1,0',                  # Cerberus
           '-1,0',                  # Chambers of Xeric
           '-1,0',                  # Chambers of Xeric: Challenge Mode
-          '-1,0',                  # Chaos Elemental
+          '2001,8',                # Bryophyta
           '-1,0',                  # Chaos Fanatic
           '-1,0',                  # Commander Zilyana
           '-1,0',                  # Corporeal Beast
@@ -83,6 +83,13 @@ RSpec.describe Hiscores do
           '-1,0',                  # Nex
           '-1,0',                  # Nightmare
           '-1,0',                  # Phosani's Nightmare
+          '-1,0',                  # Spindel
+          '-1,0',                  # Phantom Muspah
+          '-1,0',                  # Sarachnis
+          '-1,0',                  # Scorpia
+          '-1,0',                  # Scurrius
+          '-1,0',                  # Skotizo
+          '-1,0',                  # Sol Heredit
           '2000,10',               # Obor
         ].join("\n")
 

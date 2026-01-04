@@ -312,8 +312,9 @@ class Hiscores
       ]
       
       # Activities and bosses order (after skills)
-      # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API.
-      # The order must also match the config.skills array in config/initializers/assets.rb
+      # IMPORTANT: This array order MUST match the exact order returned by the OSRS hiscores API CSV.
+      # Note: This structure may differ from config.skills which follows the CML API structure.
+      # The SKILL_NAME_MAP links OSRS activity names to internal names used in config.skills.
       csv_activity_order = [
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
         'Bounty Hunter (Legacy) - Rogue',

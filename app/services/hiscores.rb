@@ -289,7 +289,7 @@ class Hiscores
       return false if lines.empty?
       
       stats = {
-        potential_p2p: 0,
+        "potential_p2p" => 0,
         
         # helpers for deterministic reconciliation in Player model
         f2p_levels_sum: 0,
@@ -354,7 +354,7 @@ class Hiscores
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
           if rank != -1 || lvl > 1 || xp > 0
-            stats[:potential_p2p] = 1
+            stats["potential_p2p"] = 1
           end
         when 'hitpoints'
           stats["#{internal_skill_name}_lvl"] = [lvl, MIN_HITPOINTS_LEVEL].max
@@ -395,7 +395,7 @@ class Hiscores
         when 'p2p_minigame'
           # Members activity/minigame detected => flag as P2P
           if score > 0
-            stats[:potential_p2p] = 1
+            stats["potential_p2p"] = 1
           end
         when 'lms'
           # LMS is F2P
@@ -436,7 +436,7 @@ class Hiscores
     # @return [Hash, false] Parsed stats hash or false if data is invalid
     def parse_stats(data, restrict_fields = [])
       stats = {
-        potential_p2p: 0,
+        "potential_p2p" => 0,
         
         # helpers for deterministic reconciliation in Player model
         f2p_levels_sum: 0,
@@ -497,13 +497,13 @@ class Hiscores
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
           if rank != -1 || lvl > 1 || xp > 0
-            stats[:potential_p2p] = 1
+            stats["potential_p2p"] = 1
           end
         when 'p2p_minigame'
           # Members activity/minigame detected => flag as P2P (do NOT accumulate)
           score = [(skill_data['score'] || 0).to_i, 0].max
           if score > 0
-            stats[:potential_p2p] = 1
+            stats["potential_p2p"] = 1
           end
         when 'lms'
           # LMS is F2P

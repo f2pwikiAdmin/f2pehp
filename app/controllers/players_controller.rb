@@ -513,6 +513,20 @@ class PlayersController < ApplicationController
       return
     end
 
+    # Check if player is on the fakes list - they should be removed
+    if F2POSRSRanks::Application.config.downcase_fakes.include?(@player.player_name.downcase)
+      Player.where(player_name: @player.player_name).destroy_all
+      redirect_to ranks_path, notice: "Player '#{@player.player_name}' is not a free-to-play account and has been removed."
+      return
+    end
+
+    # Check if player is on the banned list - they should be removed
+    if F2POSRSRanks::Application.config.downcase_banned.include?(@player.player_name.downcase)
+      Player.where(player_name: @player.player_name).destroy_all
+      redirect_to ranks_path, notice: "Player '#{@player.player_name}' is banned and has been removed."
+      return
+    end
+
     if @player.potential_p2p > 0
       redirect_to ranks_path, notice: "Player '#{@player.player_name}' is not free to play."
       return
@@ -552,19 +566,24 @@ class PlayersController < ApplicationController
   # PATCH/PUT /players/1
   # PATCH/PUT /players/1.json
   def update
-    # Check if player is false-banned first
-    if F2POSRSRanks::Application.config.downcase_false_banned.include?(@player.player_name.downcase)
-      redirect_to player_path(@player.player_name),
-        notice: "This player is frozen and cannot be updated. If this is incorrect, please contact an administrator."
     # If updated less than a minute ago
-    elsif (@player.updated_at > 1.minutes.ago)
+    if (@player.updated_at > 1.minutes.ago)
       redirect_to player_path(@player.player_name),
         notice: "Updating too quickly. Please try again in a minute"
     elsif @player.update_player
       redirect_to player_path(@player.player_name)
     else
-      redirect_to player_path(@player.player_name),
-        notice: "Player #{@player.player_name} could not be updated. Please try again."
+      # update_player returns false for fakes/banned (which get destroyed) or failed updates
+      if F2POSRSRanks::Application.config.downcase_fakes.include?(@player.player_name.downcase)
+        redirect_to ranks_path,
+          notice: "Player #{@player.player_name} is not a free-to-play account and has been removed."
+      elsif F2POSRSRanks::Application.config.downcase_banned.include?(@player.player_name.downcase)
+        redirect_to ranks_path,
+          notice: "Player #{@player.player_name} is banned and has been removed."
+      else
+        redirect_to player_path(@player.player_name),
+          notice: "Player #{@player.player_name} could not be updated. Please try again."
+      end
     end
   end
 

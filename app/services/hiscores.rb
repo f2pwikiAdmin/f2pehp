@@ -365,11 +365,11 @@ class Hiscores
         # Process based on skill type
         case internal_skill_name
         when 'p2p'
-          # Members skill detected (ranked / levelled / has xp) => flag as P2P
+          # Members skill detected (levelled / has xp) => flag as P2P
           # Also track counts for Player model's deterministic reconciliation
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
-          if rank != -1 || lvl > 1 || xp > 0
+          if lvl > 1 || xp > 0
             stats["potential_p2p"] = 1
           end
         when 'hitpoints'
@@ -410,8 +410,8 @@ class Hiscores
         case internal_activity_name
         when 'p2p_minigame'
           # Members activity/minigame detected => flag as P2P
-          # Only flag if actually ranked (rank != -1) to avoid false positives from unranked entries
-          if rank != -1 && score > 0
+          # Flag if player has positive score (indicates P2P activity)
+          if score > 0
             stats["potential_p2p"] = 1
           end
         when 'lms'
@@ -513,14 +513,14 @@ class Hiscores
           # Also track counts for Player model's deterministic reconciliation
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
-          if rank != -1 || lvl > 1 || xp > 0
+          if lvl > 1 || xp > 0
             stats["potential_p2p"] = 1
           end
         when 'p2p_minigame'
           # Members activity/minigame detected => flag as P2P (do NOT accumulate)
-          # Only flag if actually ranked (rank != -1) to avoid false positives from unranked entries
+          # Flag if player has positive score (indicates P2P activity)
           score = [(skill_data['score'] || 0).to_i, 0].max
-          if rank != -1 && score > 0
+          if score > 0
             stats["potential_p2p"] = 1
           end
         when 'lms'

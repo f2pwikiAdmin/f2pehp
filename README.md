@@ -149,7 +149,23 @@ Checks if players in the false_p2p_flagged list have kill counts for P2P bosses 
 bundle exec rake players:check_boss_kc
 ```
 
-Both tasks will output:
+#### Check for P2P Clue Scrolls
+
+Checks if players in the false_p2p_flagged list have completed P2P clue scrolls (excluding F2P beginner clues):
+
+```bash
+bundle exec rake players:check_clue_scrolls
+```
+
+#### Check All Players for P2P Clue Scrolls
+
+Scans all players in the database (not just false_p2p_flagged list) to identify those who have completed P2P clue scrolls (easy, medium, hard, elite, or master). Players with only beginner clues and/or "clue scrolls (all)" are considered F2P.
+
+```bash
+bundle exec rake players:check_all_clue_scrolls
+```
+
+All of these tasks will output:
 - Players who should be removed from the list (they have P2P evidence)
 - Players not found in the database (may need cleanup)
 - A summary with actionable recommendations

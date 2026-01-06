@@ -135,11 +135,10 @@ namespace :players do
           'IM' => '_ironman'
         }
         
-        url_friendly_name = ERB::Util.url_encode(player.player_name).gsub(/(%C2)*%A0/, '_')
         stats_uri = URI.join(
           'https://secure.runescape.com',
           "m=hiscore_oldschool#{path_suffix[player.player_acc_type]}/index_lite.ws",
-          "?player=#{url_friendly_name}"
+          "?player=#{player.url_friendly_player_name}"
         )
         
         # Fetch the raw CSV data
@@ -157,17 +156,21 @@ namespace :players do
           # Player has P2P clue scroll completions - remove them
           clue_list = clue_counts_data.map { |clue_type, count| "#{clue_type}: #{count}" }.join(", ")
           
+          # Store player info before destroying the record
+          player_name = player.player_name
+          player_acc_type = player.player_acc_type
+          
           # Delete the player from the database
           player.destroy
           
           players_removed << {
-            name: player.player_name,
-            acc_type: player.player_acc_type,
+            name: player_name,
+            acc_type: player_acc_type,
             clue_counts: clue_counts_data,
             clue_list: clue_list
           }
           
-          puts "❌ REMOVED: #{player.player_name} (#{player.player_acc_type}) - P2P clues: #{clue_list}"
+          puts "❌ REMOVED: #{player_name} (#{player_acc_type}) - P2P clues: #{clue_list}"
         end
       rescue SocketError, Net::ReadTimeout => e
         players_skipped += 1

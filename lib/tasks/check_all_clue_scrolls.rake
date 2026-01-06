@@ -183,8 +183,11 @@ namespace :players do
       puts "These players have P2P clue scroll completions and should not be in the database."
       puts "They have trained members-only content and should be considered P2P players."
       puts ""
-      puts "To remove them, you can use Player.where(player_name: 'name').destroy_all for each player,"
-      puts "or create a separate script to batch delete these players from the database."
+      puts "To remove them manually, you can use the Rails console:"
+      puts "  Player.where(player_name: ['player1', 'player2', 'player3']).destroy_all"
+      puts ""
+      puts "Replace the player names with the actual names from the list above."
+      puts "Or create a custom rake task to handle batch deletion safely."
     else
       puts "✅ No players found with P2P clue scroll completions!"
     end

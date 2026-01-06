@@ -1,31 +1,27 @@
-# Rake task to remove players with P2P clue scroll completions from the database
+# Rake task to check all players for P2P clue scroll completions
 #
 # Purpose:
-#   Scans all players in the database and removes those who have completed
+#   Scans all players in the database and identifies those who have completed
 #   P2P clue scrolls (easy, medium, hard, elite, or master clues).
-#   Only beginner clues and "clue scrolls (all)" are allowed (F2P content).
+#   Only beginner clues and "clue scrolls (all)" are F2P content.
 #
 # Usage:
-#   bundle exec rake players:remove_p2p_clue_players
+#   bundle exec rake players:check_all_clue_scrolls
 #
 # What it does:
 #   1. Fetches all players from the database
 #   2. For each player, checks hiscores for P2P clue scroll completions
-#   3. Removes players who have any P2P clue scrolls (easy/medium/hard/elite/master)
-#   4. Keeps players with only beginner clues and/or "all" clues
-#   5. Reports statistics on removed players
+#   3. Reports which players have P2P clue scrolls (easy/medium/hard/elite/master)
+#   4. Provides recommendations for removal
 #
 # Output:
-#   - List of players removed due to P2P clue scrolls
-#   - Summary statistics
-#
-# WARNING:
-#   This task PERMANENTLY REMOVES players from the database.
-#   Use with extreme caution, especially on production databases.
+#   - Players with P2P clue scroll completions (should be removed from database)
+#   - Players not found in hiscores (may need cleanup)
+#   - Summary with actionable recommendations
 
 namespace :players do
-  desc "Remove players with P2P clue scroll completions (keeps only beginner and all)"
-  task remove_p2p_clue_players: :environment do
+  desc "Check all players for P2P clue scroll completions (excluding beginner and all)"
+  task check_all_clue_scrolls: :environment do
     # P2P clue scroll types from OSRS hiscores API
     # Beginner clues and "all" clues are F2P and should NOT trigger removal
     P2P_CLUE_SCROLLS = [
@@ -93,19 +89,11 @@ namespace :players do
     end
 
     puts "=" * 80
-    puts "REMOVING PLAYERS WITH P2P CLUE SCROLL COMPLETIONS"
+    puts "Checking all players for P2P clue scroll completions"
     puts "=" * 80
     puts ""
-    puts "⚠️  WARNING: This task will PERMANENTLY DELETE players from the database!"
-    puts ""
-    puts "This task removes players who have completed any P2P clue scrolls:"
-    puts "  - Clue Scrolls (easy)"
-    puts "  - Clue Scrolls (medium)"
-    puts "  - Clue Scrolls (hard)"
-    puts "  - Clue Scrolls (elite)"
-    puts "  - Clue Scrolls (master)"
-    puts ""
-    puts "Players with only beginner clues and/or 'all' clues will NOT be removed."
+    puts "NOTE: This check looks for P2P clue scroll completions across all players."
+    puts "Beginner clues and 'clue scrolls (all)' are excluded as they are F2P content."
     puts ""
     
     total_players = Player.count
@@ -114,9 +102,9 @@ namespace :players do
     puts "Starting scan... (this may take a while)"
     puts ""
 
-    players_removed = []
+    players_to_remove = []
     players_checked = 0
-    players_skipped = 0
+    players_not_found = []
     errors = []
 
     Player.find_each do |player|
@@ -124,7 +112,7 @@ namespace :players do
       
       # Progress indicator every 100 players
       if players_checked % 100 == 0
-        puts "Progress: #{players_checked}/#{total_players} players checked, #{players_removed.length} removed..."
+        puts "Progress: #{players_checked}/#{total_players} players checked, #{players_to_remove.length} flagged..."
       end
       
       begin
@@ -153,62 +141,70 @@ namespace :players do
         clue_counts_data = extract_clue_counts_from_csv.call(csv_data, P2P_CLUE_SCROLLS)
         
         if clue_counts_data && clue_counts_data.any?
-          # Player has P2P clue scroll completions - remove them
+          # Player has P2P clue scroll completions
           clue_list = clue_counts_data.map { |clue_type, count| "#{clue_type}: #{count}" }.join(", ")
           
-          # Store player info before destroying the record
-          player_name = player.player_name
-          player_acc_type = player.player_acc_type
-          
-          # Delete the player from the database
-          player.destroy
-          
-          players_removed << {
-            name: player_name,
-            acc_type: player_acc_type,
+          players_to_remove << {
+            name: player.player_name,
+            acc_type: player.player_acc_type,
             clue_counts: clue_counts_data,
-            clue_list: clue_list
+            clue_list: clue_list,
+            reason: "Has P2P clue scroll completions (#{clue_list})"
           }
           
-          puts "❌ REMOVED: #{player_name} (#{player_acc_type}) - P2P clues: #{clue_list}"
+          puts "❌ REMOVE: #{player.player_name} (#{player.player_acc_type}) - P2P clues: #{clue_list}"
         end
       rescue SocketError, Net::ReadTimeout => e
-        players_skipped += 1
         errors << { player: player.player_name, error: "Network timeout: #{e.message}" }
       rescue OpenURI::HTTPError => e
         # HTTP errors might indicate player doesn't exist anymore or is banned
-        # We can skip these players
-        players_skipped += 1
+        players_not_found << player.player_name
       rescue => e
-        players_skipped += 1
         errors << { player: player.player_name, error: "#{e.class}: #{e.message}" }
       end
     end
 
     puts ""
     puts "=" * 80
-    puts "FINAL SUMMARY"
+    puts "Summary:"
     puts "=" * 80
-    puts "Total players checked: #{players_checked}"
-    puts "Players removed: #{players_removed.length}"
-    puts "Players skipped (errors): #{players_skipped}"
-    puts "Remaining players: #{Player.count}"
+    puts "Players checked: #{players_checked}"
+    puts "Players not found in hiscores: #{players_not_found.length}"
+    puts "Players to remove from database: #{players_to_remove.length}"
     puts ""
 
-    if players_removed.any?
-      puts "Removed players:"
+    if players_to_remove.any?
+      puts "⚠️  The following players should be REMOVED from the database:"
       puts ""
-      players_removed.each do |player|
-        puts "  - #{player[:name]} (#{player[:acc_type]}): #{player[:clue_list]}"
+      players_to_remove.each do |player|
+        puts "  - #{player[:name]} (#{player[:acc_type]}): #{player[:reason]}"
       end
       puts ""
-    else
-      puts "✅ No players were removed (no P2P clue scrolls found)!"
+      puts "These players have P2P clue scroll completions and should not be in the database."
+      puts "They have trained members-only content and should be considered P2P players."
       puts ""
+      puts "To remove them, you can use Player.where(player_name: 'name').destroy_all for each player,"
+      puts "or create a separate script to batch delete these players from the database."
+    else
+      puts "✅ No players found with P2P clue scroll completions!"
+    end
+
+    if players_not_found.any?
+      puts ""
+      puts "ℹ️  Players not found in hiscores (#{players_not_found.length}):"
+      players_not_found.take(10).each do |player_name|
+        puts "  - #{player_name}"
+      end
+      if players_not_found.length > 10
+        puts "  ... and #{players_not_found.length - 10} more"
+      end
+      puts ""
+      puts "These players may have been removed, renamed, or banned. Consider removing them from the database."
     end
 
     if errors.any?
-      puts "Errors encountered (#{errors.length}):"
+      puts ""
+      puts "⚠️  Errors encountered (#{errors.length}):"
       puts ""
       errors.take(10).each do |error|
         puts "  - #{error[:player]}: #{error[:error]}"
@@ -219,8 +215,7 @@ namespace :players do
       puts ""
     end
 
-    puts "=" * 80
-    puts "Task completed!"
+    puts ""
     puts "=" * 80
   end
 end

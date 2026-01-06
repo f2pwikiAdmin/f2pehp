@@ -157,30 +157,20 @@ Checks if players in the false_p2p_flagged list have completed P2P clue scrolls 
 bundle exec rake players:check_clue_scrolls
 ```
 
+#### Check All Players for P2P Clue Scrolls
+
+Scans all players in the database (not just false_p2p_flagged list) to identify those who have completed P2P clue scrolls (easy, medium, hard, elite, or master). Players with only beginner clues and/or "clue scrolls (all)" are considered F2P.
+
+```bash
+bundle exec rake players:check_all_clue_scrolls
+```
+
 All of these tasks will output:
 - Players who should be removed from the list (they have P2P evidence)
 - Players not found in the database (may need cleanup)
 - A summary with actionable recommendations
 
 The false_p2p_flagged list can be edited in `config/initializers/assets.rb` (line 21).
-
-### Remove Players with P2P Clue Scrolls
-
-⚠️ **WARNING: This task permanently deletes players from the database!**
-
-This task scans all players in the database and removes those who have completed any P2P clue scrolls (easy, medium, hard, elite, or master). Players with only beginner clues and/or "clue scrolls (all)" are kept (F2P content).
-
-```bash
-bundle exec rake players:remove_p2p_clue_players
-```
-
-The task will:
-- Check all players in the database
-- Fetch their hiscores data
-- Remove players with P2P clue scroll completions
-- Provide detailed progress and summary output
-
-Use with extreme caution, especially on production databases.
 
 ## Useful Links
 

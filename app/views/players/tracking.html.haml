@@ -4,6 +4,7 @@
 = render :partial => "header.html.haml",  :locals => {notice: notice}
 
 - skill_name = "#{@skill}".capitalize
+- sort_display = @skill == "magic" ? "xp" : @sort_by
 = content_tag(:div, nil, class: "container", style: "width: 800px;") do 
   = content_tag(:div, nil, class: ["container", "left"], style: "margin-left: 0px; margin-right: 5px; width: 200px;") do 
     = content_tag(:div, nil, class: "container", id: "headerSkills", style: "margin: auto; margin-bottom: 0px; width: 200px; height: 103px;") 
@@ -42,7 +43,7 @@
         %tr
           %th{:align => "center", :colspan => 6}
             = image_tag "skills/#{@skill}.png", style: "vertical-align: -6px;"
-            = "F2P #{skill_name} #{@sort_by.upcase} Current Top #{@time.capitalize} of #{@time_display}"
+            = "F2P #{skill_name} #{sort_display.upcase} Current Top #{@time.capitalize} of #{@time_display}"
       %thead
         %tr
           %th Rank

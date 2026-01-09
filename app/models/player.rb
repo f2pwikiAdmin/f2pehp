@@ -1107,7 +1107,8 @@ class Player < ActiveRecord::Base
     # This takes priority over false_p2p_flagged and false_banned lists
     if F2POSRSRanks::Application.config.respond_to?(:downcase_fakes)
       if F2POSRSRanks::Application.config.downcase_fakes.include?(player_name.downcase)
-        update(potential_p2p: 1)
+        Rails.logger.info "[P2P CHECK] #{player_name}: FAILED - In fakes list (known P2P player)"
+        update_with_reason(potential_p2p: 1, reason: "In fakes list")
         return
       end
     end
@@ -1116,7 +1117,8 @@ class Player < ActiveRecord::Base
     # in config/initializers/assets.rb (line 15)
     # Example: config.false_banned = ["cacapoopoo71", "RuneWzrd"]
     if F2POSRSRanks::Application.config.downcase_false_banned.include?(player_name.downcase)
-      update(potential_p2p: 0)
+      Rails.logger.info "[P2P CHECK] #{player_name}: PASSED - In false_banned list (incorrectly banned, treated as F2P)"
+      update_with_reason(potential_p2p: 0, reason: "In false_banned list")
       return
     end
 
@@ -1125,13 +1127,15 @@ class Player < ActiveRecord::Base
     # in config/initializers/assets.rb (line 17)
     # Example: config.false_p2p_flagged = ["PlayerName1", "PlayerName2"]
     if F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(player_name.downcase)
-      update(potential_p2p: 0)
+      Rails.logger.info "[P2P CHECK] #{player_name}: PASSED - In false_p2p_flagged list (override)"
+      update_with_reason(potential_p2p: 0, reason: "In false_p2p_flagged list (manual override)")
       return
     end
 
     # 1) If parser detected any members-only skill training or members-only activity evidence
     if stats["potential_p2p"].to_i > 0
-      update(potential_p2p: 1)
+      Rails.logger.info "[P2P CHECK] #{player_name}: FAILED - Parser detected P2P skill/activity (value: #{stats["potential_p2p"]})"
+      update_with_reason(potential_p2p: 1, reason: "Parser detected P2P skill or activity")
       return
     end
 
@@ -1147,13 +1151,26 @@ class Player < ActiveRecord::Base
     if overall > 0 && members_count > 0
       expected_overall = f2p_sum + members_count
       if overall > expected_overall
-        update(potential_p2p: 1)
+        trained_levels = overall - expected_overall
+        Rails.logger.info "[P2P CHECK] #{player_name}: FAILED - Overall level (#{overall}) exceeds F2P max (#{expected_overall}) by #{trained_levels} levels"
+        update_with_reason(potential_p2p: 1, reason: "Overall level #{overall} exceeds F2P max #{expected_overall} (#{trained_levels} P2P levels trained)")
         return
       end
     end
 
     # Passes checks
-    update(potential_p2p: 0)
+    Rails.logger.info "[P2P CHECK] #{player_name}: PASSED - All checks passed (F2P player)"
+    update_with_reason(potential_p2p: 0, reason: "All checks passed")
+  end
+
+  # Helper method to update P2P status with reason (backward compatible)
+  def update_with_reason(potential_p2p:, reason:)
+    updates = { potential_p2p: potential_p2p }
+    # Only set p2p_check_reason if the column exists (for backward compatibility)
+    if self.class.column_names.include?('p2p_check_reason')
+      updates[:p2p_check_reason] = reason
+    end
+    update(updates)
   end
 
   def self.initial_p2p_check(stats)

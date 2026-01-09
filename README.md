@@ -172,6 +172,41 @@ All of these tasks will output:
 
 The false_p2p_flagged list can be edited in `config/initializers/assets.rb` (line 21).
 
+### Analyze P2P Check Failures
+
+New tasks to help understand where and why players are failing P2P checks.
+
+#### Analyze All P2P Failures
+
+Provides a comprehensive report showing:
+- Overall statistics on F2P vs P2P players
+- Breakdown of P2P check failure reasons
+- Examples of each failure type
+- Status of the false_p2p_flagged list
+
+```bash
+bundle exec rake players:analyze_p2p_failures
+```
+
+#### Analyze Specific Player
+
+Shows detailed P2P check information for a specific player:
+- Current P2P status and reason
+- Which lists they're in (fakes, false_p2p_flagged, etc.)
+- Fresh stats from OSRS hiscores API
+- Detailed skill levels and overall level check
+
+```bash
+bundle exec rake players:analyze_player_p2p[PlayerName]
+```
+
+Example:
+```bash
+bundle exec rake players:analyze_player_p2p[Zezima]
+```
+
+These tasks help identify where players are failing P2P checks and provide actionable information for debugging the detection system.
+
 ## Useful Links
 
 Rails Command Line - [https://guides.rubyonrails.org/command_line.html](https://guides.rubyonrails.org/command_line.html)

@@ -1163,16 +1163,6 @@ class Player < ActiveRecord::Base
     update_with_reason(potential_p2p: 0, reason: "All checks passed")
   end
 
-  # Helper method to update P2P status with reason (backward compatible)
-  def update_with_reason(potential_p2p:, reason:)
-    updates = { potential_p2p: potential_p2p }
-    # Only set p2p_check_reason if the column exists (for backward compatibility)
-    if self.class.column_names.include?('p2p_check_reason')
-      updates[:p2p_check_reason] = reason
-    end
-    update(updates)
-  end
-
   def self.initial_p2p_check(stats)
     return true if stats["potential_p2p"].to_i > 0
 
@@ -1323,6 +1313,16 @@ class Player < ActiveRecord::Base
   end
 
   private
+
+  # Helper method to update P2P status with reason (backward compatible)
+  def update_with_reason(potential_p2p:, reason:)
+    updates = { potential_p2p: potential_p2p }
+    # Only set p2p_check_reason if the column exists (for backward compatibility)
+    if self.class.column_names.include?('p2p_check_reason')
+      updates[:p2p_check_reason] = reason
+    end
+    update(updates)
+  end
 
   def register_hcim_death
     self.hcim_has_died = true

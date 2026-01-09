@@ -79,11 +79,7 @@ namespace :players do
         ""
       end
 
-      examples = if category == "No reason recorded"
-        Player.where(condition, query_param).limit(10)
-      else
-        Player.where(condition, query_param).limit(10)
-      end
+      examples = Player.where(condition, query_param).limit(10)
 
       if examples.any?
         examples.each do |player|

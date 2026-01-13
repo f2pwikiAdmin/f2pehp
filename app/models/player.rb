@@ -477,20 +477,9 @@ class Player < ActiveRecord::Base
     # Return list of downcase false_p2p_flagged names for SQL IN clause
     # Returns empty list if config is not available or list is empty
     # IMPORTANT: Excludes players in fakes list (fakes list takes priority)
-    # INCLUDES: Both config-based and runtime-flagged players
     return "()" unless F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
     
-    # Combine config-based and runtime-flagged players
     flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
-    
-    # Add runtime-flagged players if auto-add feature is enabled
-    if F2POSRSRanks::Application.config.respond_to?(:auto_add_to_false_p2p_flagged) &&
-       F2POSRSRanks::Application.config.auto_add_to_false_p2p_flagged &&
-       F2POSRSRanks::Application.config.respond_to?(:runtime_false_p2p_flagged)
-      runtime_flagged = F2POSRSRanks::Application.config.runtime_false_p2p_flagged || []
-      flagged_names = (flagged_names + runtime_flagged).uniq
-    end
-    
     return "()" if flagged_names.empty?
     
     # Remove any players that are in the fakes list (fakes take priority)
@@ -521,21 +510,13 @@ class Player < ActiveRecord::Base
       return false if fakes_names.include?(player_name.downcase)
     end
     
-    # Returns true if potential_p2p <= 0 OR player is in false_p2p_flagged list (config or runtime)
+    # Returns true if potential_p2p <= 0 OR player is in false_p2p_flagged list
     return true if potential_p2p.to_i <= 0
     
     # Check if player name is in config-based false_p2p_flagged list
     if F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
       flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
       return true if flagged_names.include?(player_name.downcase)
-    end
-    
-    # Check if player name is in runtime false_p2p_flagged list (only if auto-add is enabled)
-    if F2POSRSRanks::Application.config.respond_to?(:auto_add_to_false_p2p_flagged) &&
-       F2POSRSRanks::Application.config.auto_add_to_false_p2p_flagged &&
-       F2POSRSRanks::Application.config.respond_to?(:runtime_false_p2p_flagged)
-      runtime_flagged = F2POSRSRanks::Application.config.runtime_false_p2p_flagged || []
-      return true if runtime_flagged.include?(player_name.downcase)
     end
     
     false
@@ -1187,6 +1168,42 @@ class Player < ActiveRecord::Base
     return false
   end
 
+  # Helper method to add a player name to the persistent false_p2p_flagged list in config file
+  def self.add_to_false_p2p_flagged_config(player_name)
+    config_file_path = Rails.root.join('config', 'initializers', 'assets.rb')
+    
+    # Read the config file
+    config_content = File.read(config_file_path)
+    
+    # Check if player is already in the list
+    return if config_content.include?("\"#{player_name}\"")
+    
+    # Find the line with config.false_p2p_flagged and add the new player name
+    # The list ends with "]" so we'll add before the closing bracket
+    pattern = /(config\.false_p2p_flagged = \[.*?)(\])/m
+    
+    if config_content =~ pattern
+      # Add the new player name at the end of the array, before the closing bracket
+      updated_content = config_content.sub(pattern, "\\1, \"#{player_name}\"\\2")
+      
+      # Write back to the file
+      File.write(config_file_path, updated_content)
+      
+      # Reload the config in memory (add to both the main list and downcase list)
+      F2POSRSRanks::Application.config.false_p2p_flagged << player_name
+      F2POSRSRanks::Application.config.downcase_false_p2p_flagged << player_name.downcase
+      
+      Rails.logger.info "[AUTO-ADD-FALSE-P2P] Added #{player_name} to persistent false_p2p_flagged list"
+      true
+    else
+      Rails.logger.error "[AUTO-ADD-FALSE-P2P] Failed to find false_p2p_flagged config pattern"
+      false
+    end
+  rescue => e
+    Rails.logger.error "[AUTO-ADD-FALSE-P2P] Error adding #{player_name} to config: #{e.message}"
+    false
+  end
+
   def self.create_new(name)
     name = self.sanitize_name(name)
     is_found = self.find_player(name)
@@ -1210,23 +1227,18 @@ class Player < ActiveRecord::Base
 
     return unless stats  # Player does not exist if return value is nil
 
-    # IMPORTANT: Execute P2P experience check (as required by problem statement)
-    # This check STILL runs and stats are updated, but we may override the result below
+    # Execute P2P experience check and boss KC check (both execute as part of stats parsing)
     is_p2p_by_check = initial_p2p_check(stats)
     
     # Check if auto-add to false_p2p_flagged feature is enabled
     auto_add_enabled = F2POSRSRanks::Application.config.respond_to?(:auto_add_to_false_p2p_flagged) &&
                        F2POSRSRanks::Application.config.auto_add_to_false_p2p_flagged
     
-    # If auto-add is enabled, add player to runtime false_p2p_flagged list
-    # This allows the player to be created even if they appear to be P2P
+    # If auto-add is enabled and player passes checks, add to persistent false_p2p_flagged list
     if auto_add_enabled
-      # Add to runtime list
-      # NOTE: In multi-threaded environments, consider using a Mutex for thread safety
-      runtime_list = F2POSRSRanks::Application.config.runtime_false_p2p_flagged
-      runtime_list << name.downcase unless runtime_list.include?(name.downcase)
-      
-      Rails.logger.info "[AUTO-ADD-FALSE-P2P] Added #{name} to runtime false_p2p_flagged list (P2P check result: #{is_p2p_by_check})"
+      # Player passed initial checks, add them to the persistent config list
+      # This allows them to be created and treated as F2P going forward
+      add_to_false_p2p_flagged_config(name)
     else
       # If auto-add is disabled, use normal P2P check logic
       return 'p2p' if is_p2p_by_check
@@ -1235,10 +1247,9 @@ class Player < ActiveRecord::Base
     name = Hiscores.get_registered_player_name(account_type, name)
     return unless name  # Player does not exist if return value is false
 
+    # Create the player and update with stats (boss KC checks execute in update_player)
     player = Player.create!(player_name: name, player_acc_type: account_type)
     stats[:created_at] = Time.now
-    # Note: P2P experience check (check_p2p_stats) and boss KC check execute
-    # inside update_player method below, which processes the stats hash
     player.update_player(stats: stats)
     player
   end

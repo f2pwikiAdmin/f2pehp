@@ -1156,7 +1156,14 @@ class Player < ActiveRecord::Base
     update(potential_p2p: 0)
   end
 
-  def self.initial_p2p_check(stats)
+  def self.initial_p2p_check(stats, player_name = nil)
+    # If player name is provided, check false_p2p_flagged list first
+    # Players on this list should be treated as F2P regardless of indicators
+    if player_name && F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
+      flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
+      return false if flagged_names.include?(player_name.downcase)
+    end
+    
     return true if stats["potential_p2p"].to_i > 0
 
     actual_f2p_lvls = 0
@@ -1175,6 +1182,7 @@ class Player < ActiveRecord::Base
     if is_found
       return 'exists'
     elsif F2POSRSRanks::Application.config.downcase_fakes.include?(name.downcase)
+      # Fakes list takes absolute priority - always reject
       return 'p2p'
     elsif F2POSRSRanks::Application.config.downcase_banned.include?(name.downcase)
       return 'banned'
@@ -1191,7 +1199,9 @@ class Player < ActiveRecord::Base
 
     return unless stats  # Player does not exist if return value is nil
 
-    return 'p2p' if initial_p2p_check(stats)
+    # Pass player name to initial_p2p_check so it can check false_p2p_flagged list
+    # Players on false_p2p_flagged list should be allowed to be added
+    return 'p2p' if initial_p2p_check(stats, name)
 
     name = Hiscores.get_registered_player_name(account_type, name)
     return unless name  # Player does not exist if return value is false

@@ -306,7 +306,7 @@ RSpec.describe Player, type: :model do
           :overall_lvl => 838
         }
         
-        result = Player.initial_p2p_check(stats)
+        result = Player.initial_p2p_check(stats, "F2PPlayer")
         expect(result).to eq(false)
       end
     end
@@ -335,8 +335,43 @@ RSpec.describe Player, type: :model do
           :potential_p2p => 49  # Fletching level 50 - 1 base = 49
         }
         
-        result = Player.initial_p2p_check(stats)
+        result = Player.initial_p2p_check(stats, "P2PPlayer")
         expect(result).to eq(true)
+      end
+    end
+    
+    context 'when player is on false_p2p_flagged list' do
+      before do
+        # Mock the configuration to include FalseFlaggedPlayer in the false_p2p_flagged list
+        allow(F2POSRSRanks::Application.config).to receive(:downcase_false_p2p_flagged)
+          .and_return(['falseflaggedplayer'])
+      end
+      
+      it 'returns false even if stats indicate P2P' do
+        # Stats that would normally flag as P2P
+        stats = {
+          "overall_lvl" => 887,  # Would indicate P2P skills trained
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          :potential_p2p => 49  # Would indicate P2P
+        }
+        
+        # Should return false because player is on false_p2p_flagged list
+        result = Player.initial_p2p_check(stats, "FalseFlaggedPlayer")
+        expect(result).to eq(false)
       end
     end
   end
@@ -475,6 +510,105 @@ RSpec.describe Player, type: :model do
 
     it 'is_f2p? returns true for players in false_p2p_flagged list' do
       expect(@false_flagged_player.is_f2p?).to be true
+    end
+  end
+  
+  describe '.create_new with false_p2p_flagged list' do
+    before do
+      # Mock the configuration
+      allow(F2POSRSRanks::Application.config).to receive(:downcase_false_p2p_flagged)
+        .and_return(['falseflaggedplayer'])
+      allow(F2POSRSRanks::Application.config).to receive(:downcase_fakes)
+        .and_return(['fakeplayer'])
+      allow(F2POSRSRanks::Application.config).to receive(:downcase_banned)
+        .and_return([])
+    end
+    
+    context 'when adding a player on false_p2p_flagged list' do
+      it 'allows adding the player even if stats indicate P2P' do
+        # Mock hiscores to return stats that would normally flag as P2P
+        stats = {
+          "overall_lvl" => 887,
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          "potential_p2p" => 49
+        }
+        
+        allow(Hiscores).to receive(:fetch_stats).with('FalseFlaggedPlayer')
+          .and_return([stats, 'Reg'])
+        allow(Hiscores).to receive(:get_registered_player_name)
+          .with('Reg', 'FalseFlaggedPlayer')
+          .and_return('FalseFlaggedPlayer')
+        
+        # Attempt to create the player
+        result = Player.create_new('FalseFlaggedPlayer')
+        
+        # Should NOT return 'p2p' - should successfully create the player
+        expect(result).not_to eq('p2p')
+        expect(result).to be_a(Player)
+        expect(result.player_name).to eq('FalseFlaggedPlayer')
+        
+        # Clean up
+        Player.where(player_name: 'FalseFlaggedPlayer').destroy_all
+      end
+    end
+    
+    context 'when adding a player on fakes list (P2P accounts)' do
+      it 'rejects the player even if on false_p2p_flagged list' do
+        # Even if a player is on both lists, fakes list takes priority
+        allow(F2POSRSRanks::Application.config).to receive(:downcase_false_p2p_flagged)
+          .and_return(['fakeplayer'])
+        
+        result = Player.create_new('FakePlayer')
+        
+        # Should return 'p2p' because fakes list takes priority
+        expect(result).to eq('p2p')
+      end
+    end
+    
+    context 'when adding a normal P2P player' do
+      it 'rejects players with P2P indicators not on false_p2p_flagged list' do
+        stats = {
+          "overall_lvl" => 887,
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          "potential_p2p" => 49
+        }
+        
+        allow(Hiscores).to receive(:fetch_stats).with('P2PPlayer')
+          .and_return([stats, 'Reg'])
+        
+        result = Player.create_new('P2PPlayer')
+        
+        # Should return 'p2p' - player is actually P2P
+        expect(result).to eq('p2p')
+      end
     end
   end
 end

@@ -1120,16 +1120,8 @@ class Player < ActiveRecord::Base
       return
     end
 
-    # Players incorrectly flagged as P2P by the detection system (temporary fix)
-    # To fix false P2P flags, add the player's username to the false_p2p_flagged list
-    # in config/initializers/assets.rb (line 17)
-    # Example: config.false_p2p_flagged = ["PlayerName1", "PlayerName2"]
-    if F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(player_name.downcase)
-      update(potential_p2p: 0)
-      return
-    end
-
     # 1) If parser detected any members-only skill training or members-only activity evidence
+    # This is ACTUAL P2P evidence and should NOT be overridden by false_p2p_flagged list
     if stats["potential_p2p"].to_i > 0
       update(potential_p2p: 1)
       return
@@ -1147,6 +1139,16 @@ class Player < ActiveRecord::Base
     if overall > 0 && members_count > 0
       expected_overall = f2p_sum + members_count
       if overall > expected_overall
+        # Overall level check indicates P2P, but this can be a false positive
+        # Check if player is on false_p2p_flagged list (these are known false positives)
+        # Players incorrectly flagged as P2P by the detection system (temporary fix)
+        # To fix false P2P flags, add the player's username to the false_p2p_flagged list
+        # in config/initializers/assets.rb (line 17)
+        # Example: config.false_p2p_flagged = ["PlayerName1", "PlayerName2"]
+        if F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(player_name.downcase)
+          update(potential_p2p: 0)  # Override false positive
+          return
+        end
         update(potential_p2p: 1)
         return
       end
@@ -1157,21 +1159,27 @@ class Player < ActiveRecord::Base
   end
 
   def self.initial_p2p_check(stats, player_name = nil)
-    # If player name is provided, check false_p2p_flagged list first
-    # Players on this list should be treated as F2P regardless of indicators
-    if player_name && F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
-      flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
-      return false if flagged_names.include?(player_name.downcase)
-    end
-    
+    # 1) Check if parser detected actual P2P skills/activities
+    # This check happens FIRST - even false_p2p_flagged players are rejected if they have real P2P
     return true if stats["potential_p2p"].to_i > 0
 
+    # 2) Deterministic reconciliation using overall level
+    # This can produce false positives, so check false_p2p_flagged list before applying
     actual_f2p_lvls = 0
     (SKILLS - ["overall"]).each do |skill|
       actual_f2p_lvls += (stats["#{skill}_lvl"] or 0)
     end
 
-    return true if (stats["overall_lvl"] - 9) > actual_f2p_lvls
+    if (stats["overall_lvl"] - 9) > actual_f2p_lvls
+      # Overall level check indicates P2P, but this can be a false positive
+      # Check if player is on false_p2p_flagged list (these are known false positives)
+      if player_name && F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
+        flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
+        return false if flagged_names.include?(player_name.downcase)  # Override false positive
+      end
+      return true  # Not on list, treat as P2P
+    end
+    
     return false
   end
 

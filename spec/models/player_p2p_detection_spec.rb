@@ -347,10 +347,11 @@ RSpec.describe Player, type: :model do
           .and_return(['falseflaggedplayer'])
       end
       
-      it 'returns false even if stats indicate P2P' do
-        # Stats that would normally flag as P2P
+      it 'returns false when only overall level check would flag (false positive)' do
+        # Stats that would flag as P2P ONLY due to overall level discrepancy
+        # but NOT due to actual P2P skills (potential_p2p = 0)
         stats = {
-          "overall_lvl" => 887,  # Would indicate P2P skills trained
+          "overall_lvl" => 887,  # Higher than expected
           "attack_lvl" => 60,
           "strength_lvl" => 60,
           "defence_lvl" => 60,
@@ -366,12 +367,41 @@ RSpec.describe Player, type: :model do
           "smithing_lvl" => 40,
           "mining_lvl" => 60,
           "runecraft_lvl" => 44,
-          :potential_p2p => 49  # Would indicate P2P
+          :potential_p2p => 0  # No actual P2P detected by parser
         }
         
-        # Should return false because player is on false_p2p_flagged list
+        # Should return false (F2P) because player is on false_p2p_flagged list
+        # and only overall level check would flag them (false positive)
         result = Player.initial_p2p_check(stats, "FalseFlaggedPlayer")
         expect(result).to eq(false)
+      end
+      
+      it 'returns true when player has actual P2P skills (potential_p2p > 0)' do
+        # Stats with ACTUAL P2P skills detected by parser
+        stats = {
+          "overall_lvl" => 887,
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          :potential_p2p => 49  # ACTUAL P2P detected (e.g., Fletching level 50)
+        }
+        
+        # Should return true (P2P) because player has actual P2P skills
+        # false_p2p_flagged list does NOT override actual P2P evidence
+        result = Player.initial_p2p_check(stats, "FalseFlaggedPlayer")
+        expect(result).to eq(true)
       end
     end
   end
@@ -385,8 +415,9 @@ RSpec.describe Player, type: :model do
         .and_return(['falseflaggedplayer'])
     end
 
-    it 'marks player in false_p2p_flagged list as F2P regardless of stats' do
-      # Stats that would normally flag as P2P
+    it 'marks player in false_p2p_flagged list as F2P when only overall level would flag' do
+      # Stats that would flag as P2P due to overall level (false positive)
+      # but NOT due to actual P2P skills
       stats = {
         "overall_lvl" => 1510,  # Exceeds max F2P
         "attack_lvl" => 99,
@@ -404,7 +435,7 @@ RSpec.describe Player, type: :model do
         "smithing_lvl" => 99,
         "mining_lvl" => 99,
         "runecraft_lvl" => 99,
-        :potential_p2p => 0,
+        :potential_p2p => 0,  # No actual P2P detected
         :f2p_levels_sum => 1485,
         :members_skill_count => 9,
         :members_levels_sum => 9,
@@ -422,6 +453,46 @@ RSpec.describe Player, type: :model do
 
       # Player should NOT be flagged as P2P due to being in false_p2p_flagged list
       expect(player.potential_p2p).to eq(0)
+    end
+    
+    it 'marks player in false_p2p_flagged list as P2P when actual P2P skills detected' do
+      # Stats with ACTUAL P2P skills detected
+      stats = {
+        "overall_lvl" => 887,
+        "attack_lvl" => 60,
+        "strength_lvl" => 60,
+        "defence_lvl" => 60,
+        "hitpoints_lvl" => 60,
+        "ranged_lvl" => 60,
+        "prayer_lvl" => 45,
+        "magic_lvl" => 55,
+        "cooking_lvl" => 70,
+        "woodcutting_lvl" => 60,
+        "fishing_lvl" => 65,
+        "firemaking_lvl" => 50,
+        "crafting_lvl" => 40,
+        "smithing_lvl" => 40,
+        "mining_lvl" => 60,
+        "runecraft_lvl" => 44,
+        :potential_p2p => 49,  # ACTUAL P2P detected (e.g., Fletching level 50)
+        :f2p_levels_sum => 829,
+        :members_skill_count => 9,
+        :members_levels_sum => 58,
+        :overall_lvl => 887
+      }
+
+      # Save player first
+      player.save(validate: false)
+
+      # Call check_p2p_stats
+      player.check_p2p_stats(stats)
+
+      # Reload to get updated value
+      player.reload
+
+      # Player SHOULD be flagged as P2P because of actual P2P skills
+      # false_p2p_flagged list does NOT override actual P2P evidence
+      expect(player.potential_p2p).to eq(1)
     end
   end
 
@@ -525,8 +596,9 @@ RSpec.describe Player, type: :model do
     end
     
     context 'when adding a player on false_p2p_flagged list' do
-      it 'allows adding the player even if stats indicate P2P' do
-        # Mock hiscores to return stats that would normally flag as P2P
+      it 'allows adding the player when only overall level check would flag (false positive)' do
+        # Mock hiscores to return stats that would flag as P2P due to overall level
+        # but NOT due to actual P2P skills
         stats = {
           "overall_lvl" => 887,
           "attack_lvl" => 60,
@@ -544,7 +616,7 @@ RSpec.describe Player, type: :model do
           "smithing_lvl" => 40,
           "mining_lvl" => 60,
           "runecraft_lvl" => 44,
-          "potential_p2p" => 49
+          "potential_p2p" => 0  # No actual P2P detected
         }
         
         allow(Hiscores).to receive(:fetch_stats).with('FalseFlaggedPlayer')
@@ -556,13 +628,45 @@ RSpec.describe Player, type: :model do
         # Attempt to create the player
         result = Player.create_new('FalseFlaggedPlayer')
         
-        # Should NOT return 'p2p' - should successfully create the player
+        # Should successfully create the player (not return 'p2p')
         expect(result).not_to eq('p2p')
         expect(result).to be_a(Player)
         expect(result.player_name).to eq('FalseFlaggedPlayer')
         
         # Clean up
         Player.where(player_name: 'FalseFlaggedPlayer').destroy_all
+      end
+      
+      it 'rejects the player when actual P2P skills detected (potential_p2p > 0)' do
+        # Mock hiscores to return stats with ACTUAL P2P skills
+        stats = {
+          "overall_lvl" => 887,
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          "potential_p2p" => 49  # ACTUAL P2P detected
+        }
+        
+        allow(Hiscores).to receive(:fetch_stats).with('FalseFlaggedPlayer')
+          .and_return([stats, 'Reg'])
+        
+        # Attempt to create the player
+        result = Player.create_new('FalseFlaggedPlayer')
+        
+        # Should return 'p2p' - false_p2p_flagged does NOT override actual P2P
+        expect(result).to eq('p2p')
       end
     end
     

@@ -150,13 +150,16 @@ RSpec.describe Player, type: :model do
     end
     
     context 'P2P experience check execution' do
+      # Constant for impossible F2P overall level (used in test data)
+      IMPOSSIBLE_F2P_OVERALL_LEVEL = 1510  # Max F2P is 1494 (15*99 + 9 base P2P skills)
+      
       it 'still executes P2P experience checks when feature is enabled' do
         # This test verifies that the P2P detection logic still runs
         # Even though we override the result, the checks should execute
         
         # Create stats that would trigger P2P detection
         stats = {
-          "overall_lvl" => 1510,  # Exceeds max F2P (should trigger P2P flag)
+          "overall_lvl" => IMPOSSIBLE_F2P_OVERALL_LEVEL,  # Exceeds max F2P (should trigger P2P flag)
           "attack_lvl" => 99,
           "strength_lvl" => 99,
           "defence_lvl" => 99,
@@ -176,7 +179,7 @@ RSpec.describe Player, type: :model do
           :f2p_levels_sum => 1485,
           :members_skill_count => 9,
           :members_levels_sum => 9,
-          :overall_lvl => 1510
+          :overall_lvl => IMPOSSIBLE_F2P_OVERALL_LEVEL
         }
         
         # The initial_p2p_check should return true (P2P detected)

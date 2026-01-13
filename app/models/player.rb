@@ -1221,7 +1221,8 @@ class Player < ActiveRecord::Base
     # If auto-add is enabled, add player to runtime false_p2p_flagged list
     # This allows the player to be created even if they appear to be P2P
     if auto_add_enabled
-      # Add to runtime list (thread-safe append)
+      # Add to runtime list
+      # NOTE: In multi-threaded environments, consider using a Mutex for thread safety
       runtime_list = F2POSRSRanks::Application.config.runtime_false_p2p_flagged
       runtime_list << name.downcase unless runtime_list.include?(name.downcase)
       
@@ -1236,8 +1237,8 @@ class Player < ActiveRecord::Base
 
     player = Player.create!(player_name: name, player_acc_type: account_type)
     stats[:created_at] = Time.now
-    # P2P experience check and boss KC check execute here in update_player
-    # The checks run normally and update potential_p2p, but player is still treated as F2P
+    # Note: P2P experience check (check_p2p_stats) and boss KC check execute
+    # inside update_player method below, which processes the stats hash
     player.update_player(stats: stats)
     player
   end

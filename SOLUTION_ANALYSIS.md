@@ -4,19 +4,29 @@
 
 The application had a conflict between two features:
 1. **Add Player Route**: Used to add new players to the F2P hiscores
-2. **false_p2p_flagged List**: A whitelist of players who were incorrectly flagged as P2P (Pay-to-Play) due to bugs in P2P detection (e.g., F2P boss KC being counted as P2P indicators)
+2. **false_p2p_flagged List**: A whitelist of players who were incorrectly flagged as P2P (Pay-to-Play) due to bugs in P2P detection (e.g., false positives from overall level discrepancies)
 
 ### The Conflict
 
 When attempting to add a player via the add player route:
 - If the player was on the `false_p2p_flagged` list (meaning they should be treated as F2P)
-- BUT had some P2P indicators in their stats (e.g., Obor KC, Bryophyta KC)
+- BUT had false positive P2P indicators (e.g., overall level discrepancies)
 - The `initial_p2p_check` method would reject them as P2P
 - **Result**: Players on the whitelist could not be added to the system
 
 This created an impossible situation where:
 - Existing players on the list would show up in rankings (because `check_p2p_stats` respects the list)
 - But you couldn't add NEW players to the list (because `initial_p2p_check` didn't respect it)
+
+## Important Clarification
+
+**The `false_p2p_flagged` list should ONLY override false positives, NOT actual P2P activity.**
+
+- ✅ **Override**: Overall level discrepancies (false positives)
+- ❌ **Do NOT override**: Actual P2P skills trained (level > 1 or xp > 0)
+- ❌ **Do NOT override**: P2P minigames/bosses (score > 0)
+
+This ensures the list is used only to fix detection bugs, not to whitelist actual P2P accounts.
 
 ## Root Cause Analysis
 
@@ -41,12 +51,12 @@ Player.sql_f2p_filter
       └─> ✅ Includes players on false_p2p_flagged list in rankings
 ```
 
-### Player Update Flow (Already Working)
+### Player Update Flow (Before Fix - Incorrect)
 ```ruby
 player.check_p2p_stats(stats)
   ├─> Check fakes list first (always reject)
   ├─> Check false_banned list (always allow)
-  ├─> Check false_p2p_flagged list (always allow)  # ✅ Working correctly
+  ├─> Check false_p2p_flagged list (always allow)  # ❌ Too broad - overrides actual P2P
   └─> Then check P2P indicators
 ```
 
@@ -57,24 +67,60 @@ player.check_p2p_stats(stats)
 1. **Modified `Player.initial_p2p_check` method**
    ```ruby
    def self.initial_p2p_check(stats, player_name = nil)
-     # NEW: Check false_p2p_flagged list FIRST
-     if player_name && F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
-       flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
-       return false if flagged_names.include?(player_name.downcase)  # Allow F2P
+     # 1) Check if parser detected actual P2P skills/activities FIRST
+     return true if stats["potential_p2p"].to_i > 0
+     
+     # 2) Deterministic overall level check (can be false positive)
+     actual_f2p_lvls = 0
+     (SKILLS - ["overall"]).each do |skill|
+       actual_f2p_lvls += (stats["#{skill}_lvl"] or 0)
      end
      
-     # Then do normal P2P checks
-     return true if stats["potential_p2p"].to_i > 0
-     # ... rest of P2P validation
+     if (stats["overall_lvl"] - 9) > actual_f2p_lvls
+       # Check false_p2p_flagged list to override false positives
+       if player_name && F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
+         flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
+         return false if flagged_names.include?(player_name.downcase)
+       end
+       return true  # Not on list, treat as P2P
+     end
+     
+     return false
    end
    ```
 
-2. **Modified `Player.create_new` method**
+2. **Modified `Player.check_p2p_stats` method**
+   ```ruby
+   def check_p2p_stats(stats)
+     # ... fakes and false_banned checks ...
+     
+     # 1) Check actual P2P evidence FIRST - NOT overridden by false_p2p_flagged
+     if stats["potential_p2p"].to_i > 0
+       update(potential_p2p: 1)
+       return
+     end
+     
+     # 2) Overall level check (can be false positive)
+     if overall > expected_overall
+       # Check false_p2p_flagged list to override false positives
+       if F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(player_name.downcase)
+         update(potential_p2p: 0)
+         return
+       end
+       update(potential_p2p: 1)
+       return
+     end
+     
+     update(potential_p2p: 0)
+   end
+   ```
+
+3. **Modified `Player.create_new` method**
    ```ruby
    def self.create_new(name)
      # ... existing checks for fakes/banned
      
-     # NEW: Pass player name to check
+     # Pass player name to enable false_p2p_flagged checking
      return 'p2p' if initial_p2p_check(stats, name)
      
      # ... create player
@@ -92,50 +138,78 @@ The solution maintains a clear priority hierarchy:
 2. **Banned List** - Always rejects
    - Banned accounts
    
-3. **false_p2p_flagged List** - Always allows
-   - Overrides P2P detection bugs
-   - These players should be treated as F2P
+3. **Actual P2P Detection** - Always rejects
+   - P2P skills trained (level > 1 or xp > 0)
+   - P2P minigames/bosses (score > 0)
+   - **NOT overridden** by false_p2p_flagged list
    
-4. **P2P Detection** (Lowest Priority) - Normal validation
-   - Automatic detection based on stats
+4. **false_p2p_flagged List** - Overrides false positives only
+   - Only applies to overall level discrepancies
+   - Does NOT override actual P2P evidence
+   
+5. **Overall Level Check** (Lowest Priority) - Can be overridden
+   - Automatic detection based on overall level
+   - Can produce false positives
+   - Can be overridden by false_p2p_flagged list
    - Can be overridden by false_p2p_flagged list
 
 ### Why This Order Matters
 
-Consider a scenario where a player is on BOTH the fakes list and false_p2p_flagged list:
-- The fakes list check happens FIRST in `create_new` (line 1184)
-- So the player is rejected before we even check false_p2p_flagged
-- This is correct: fakes list takes absolute priority
+Consider different scenarios:
+
+**Scenario 1: Player on fakes list AND false_p2p_flagged list**
+- The fakes list check happens FIRST in `create_new`
+- Player is rejected before we check false_p2p_flagged
+- Correct: fakes list takes absolute priority
+
+**Scenario 2: Player on false_p2p_flagged with actual P2P skills**
+- `potential_p2p` check happens FIRST
+- Player is rejected due to actual P2P evidence
+- false_p2p_flagged list is never checked
+- Correct: the list should not whitelist actual P2P accounts
+
+**Scenario 3: Player on false_p2p_flagged with only overall level discrepancy**
+- `potential_p2p = 0` (no actual P2P)
+- Overall level check would flag as P2P (false positive)
+- false_p2p_flagged list overrides this false positive
+- Correct: this is exactly what the list was designed for
 
 ## Testing Strategy
 
 ### Test Cases Added
 
 1. **Initial P2P Check with false_p2p_flagged**
-   - Player on list with P2P indicators → Returns false (F2P)
+   - Player on list with only overall level discrepancy (potential_p2p = 0) → Returns false (F2P)
+   - Player on list with actual P2P (potential_p2p > 0) → Returns true (P2P)
    - Player NOT on list with P2P indicators → Returns true (P2P)
 
-2. **Create New Player**
-   - Player on false_p2p_flagged with P2P indicators → Successfully creates
+2. **check_p2p_stats with false_p2p_flagged**
+   - Player on list with only overall level discrepancy → Sets potential_p2p = 0 (F2P)
+   - Player on list with actual P2P detected → Sets potential_p2p = 1 (P2P)
+
+3. **Create New Player**
+   - Player on false_p2p_flagged with only overall level discrepancy → Successfully creates
+   - Player on false_p2p_flagged with actual P2P → Rejects
    - Player on fakes list (even if on false_p2p_flagged) → Rejects
    - Normal P2P player → Rejects
 
-3. **Backward Compatibility**
-   - All existing ranking and update flows continue to work
-   - No changes to `check_p2p_stats` method (already working)
+4. **Backward Compatibility**
+   - All existing ranking flows continue to work
+   - Both `check_p2p_stats` and `initial_p2p_check` now have consistent behavior
 
 ## Impact Analysis
 
 ### What Changed
-- Players on `false_p2p_flagged` list can now be added via add player route
-- `initial_p2p_check` is now consistent with `check_p2p_stats` behavior
+- Players on `false_p2p_flagged` list can now be added via add player route (if only overall level discrepancy)
+- `initial_p2p_check` now checks actual P2P first, then applies false_p2p_flagged to overall level check only
+- `check_p2p_stats` now checks actual P2P first, then applies false_p2p_flagged to overall level check only
+- Both methods now have consistent behavior
 
 ### What Stayed the Same
 - Fakes list still takes absolute priority
 - Banned list behavior unchanged
 - Ranking queries unchanged (already working)
-- Player update logic unchanged (already working)
-- Normal P2P detection unchanged
+- Normal P2P detection unchanged (still checks potential_p2p)
 
 ### Edge Cases Handled
 
@@ -143,15 +217,19 @@ Consider a scenario where a player is on BOTH the fakes list and false_p2p_flagg
    - Result: Rejected (fakes takes priority)
    - Correct behavior ✅
 
-2. **Player on false_p2p_flagged with high P2P skill levels**
-   - Result: Allowed (false_p2p_flagged overrides)
-   - This is intentional - list is manually curated ✅
+2. **Player on false_p2p_flagged with actual P2P skills**
+   - Result: Rejected (actual P2P evidence NOT overridden)
+   - Correct behavior ✅ (NEW - fixed in this update)
 
-3. **Player name case sensitivity**
+3. **Player on false_p2p_flagged with only overall level discrepancy**
+   - Result: Allowed (false positive overridden)
+   - Correct behavior ✅ (this is what the list was designed for)
+
+4. **Player name case sensitivity**
    - All checks use `.downcase` for comparison
    - Consistent with existing behavior ✅
 
-4. **Config not available**
+5. **Config not available**
    - Uses `.respond_to?` check
    - Returns empty array as fallback ✅
 
@@ -159,18 +237,25 @@ Consider a scenario where a player is on BOTH the fakes list and false_p2p_flagg
 
 To verify the solution works:
 
-1. **Check player on false_p2p_flagged list can be added**
+1. **Check player on false_p2p_flagged list with false positive can be added**
    ```ruby
    # In Rails console
-   Player.create_new('bigstickmann')  # Should succeed, not return 'p2p'
+   # Player must have potential_p2p = 0 (no actual P2P)
+   Player.create_new('bigstickmann')  # Should succeed if no actual P2P
    ```
 
-2. **Check fakes list still takes priority**
+2. **Check player on false_p2p_flagged list with actual P2P is rejected**
+   ```ruby
+   # If player has trained P2P skills (potential_p2p > 0)
+   Player.create_new('SomePlayerWithP2PSkills')  # Should return 'p2p'
+   ```
+
+3. **Check fakes list still takes priority**
    ```ruby
    Player.create_new('Zezrian')  # Should return 'p2p' (from fakes list)
    ```
 
-3. **Check normal P2P detection still works**
+4. **Check normal P2P detection still works**
    ```ruby
    Player.create_new('SomeP2PPlayer')  # Should return 'p2p' if detected
    ```

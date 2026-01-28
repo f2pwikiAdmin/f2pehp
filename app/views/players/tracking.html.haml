@@ -1,7 +1,7 @@
 - @title = "Tracking" 
 = link_to image_tag("f2pwiki.png"), players_path
 
-= render :partial => "header.html.haml",  :locals => {notice: notice}
+= render :partial => "header",  :locals => {notice: notice}
 
 - skill_name = "#{@skill}".capitalize
 - sort_display = @skill == "magic" ? "xp" : @sort_by

@@ -2,7 +2,7 @@
 - @description = "View the personal hiscores of a player." 
 = link_to image_tag("f2pwiki.png"), players_path
 
-= render :partial => "header.html.haml",  :locals => {notice: notice}
+= render :partial => "header",  :locals => {notice: notice}
     
 = content_tag(:div, nil, class: ["container", "compare-wide"], style: "margin: auto; width: 400px; height: 76px;") do 
   = form_tag compare_path, :method => :get, :id => 'filters_form' do

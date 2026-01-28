@@ -2,7 +2,7 @@
 - @description = "A list of accounts which may or may not be pure F2P." 
 = link_to image_tag("f2pwiki.png"), players_path
 
-= render :partial => "header.html.haml",  :locals => {notice: notice}
+= render :partial => "header",  :locals => {notice: notice}
 
 - @players = Player.where("potential_p2p > 0 AND LOWER(player_name) NOT IN #{Player.sql_false_p2p_flagged}").order("overall_ehp DESC")
 - @players = @players.paginate(:page => params[:page], :per_page => 100.to_i)

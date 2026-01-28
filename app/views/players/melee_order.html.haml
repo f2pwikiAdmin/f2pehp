@@ -2,7 +2,7 @@
 - @description = "Melee order calculator"
 = link_to image_tag("f2pwiki.png"), players_path
 
-= render partial: "header.html.haml", locals: { notice: notice }
+= render partial: "header", locals: { notice: notice }
 = content_tag(:div, nil, class: ["container", "center"], style: "width: 850px;") do
   = content_tag(:div, nil, class: ["container", "left"], style: "width: 566px;") do
     = content_tag(:div, nil, class: ["container", "left"], style: "width: 276px; padding-left: 10px") do

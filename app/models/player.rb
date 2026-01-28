@@ -1206,17 +1206,17 @@ class Player < ActiveRecord::Base
   # This ensures -1 values sort as the worst rank rather than the best
   UNRANKED_SENTINEL = 2147483647  # Max 32-bit integer
 
-  # Converts a rank value for safe comparison, treating -1 as the worst rank
-  # Returns the sentinel value for -1, otherwise returns the rank unchanged
+  # Converts a rank value for safe comparison, treating -1 or nil as the worst rank
+  # Returns the sentinel value for -1/nil, otherwise returns the rank unchanged
   def self.normalize_rank_value(rank)
-    rank == -1 ? UNRANKED_SENTINEL : rank
+    (rank.nil? || rank == -1) ? UNRANKED_SENTINEL : rank
   end
 
-  # Converts a rank column reference to a SQL expression that treats -1 as the worst rank
+  # Converts a rank column reference to a SQL expression that treats -1 or NULL as the worst rank
   # This allows rank columns to be used in WHERE clauses and ORDER BY with proper sorting
-  # Example: normalize_rank_column("attack_rank") => "CASE WHEN attack_rank = -1 THEN 2147483647 ELSE attack_rank END"
+  # Example: normalize_rank_column("attack_rank") => "CASE WHEN attack_rank IS NULL OR attack_rank = -1 THEN 2147483647 ELSE attack_rank END"
   def self.normalize_rank_column(column)
-    "CASE WHEN #{column} = -1 THEN #{UNRANKED_SENTINEL} ELSE #{column} END"
+    "CASE WHEN #{column} IS NULL OR #{column} = -1 THEN #{UNRANKED_SENTINEL} ELSE #{column} END"
   end
 
   # Find the players rank in the database by same arbitrary set of criteria

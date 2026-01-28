@@ -18,6 +18,39 @@ class Player < ActiveRecord::Base
     IM: %w[Reg]
   }
 
+  # Maximum F2P total level: 15 skills × 99 = 1485
+  # With 9 P2P skills at base level 1 = 1494
+  F2P_MAX_TOTAL = 1494
+
+  # P2P bosses (excluding F2P bosses Obor and Bryophyta)
+  P2P_BOSSES = [
+    'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
+    'Callisto', "Calvar'ion", 'Cerberus', 'Chambers of Xeric',
+    'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic',
+    'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist',
+    'Dagannoth Prime', 'Dagannoth Rex', 'Dagannoth Supreme',
+    'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
+    'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen',
+    'King Black Dragon', 'Kraken', "Kree'Arra", "K'ril Tsutsaroth",
+    'Lunar Chests', 'Mimic', 'Nex', 'Nightmare', "Phosani's Nightmare",
+    'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius', 'Skotizo',
+    'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet',
+    'The Corrupted Gauntlet', 'The Leviathan', 'The Whisperer',
+    'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
+    'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk',
+    'TzTok-Jad', 'Vardorvis', 'Venenatis', "Vet'ion", 'Vorkath',
+    'Wintertodt', 'Zalcano', 'Zulrah'
+  ].freeze
+
+  # P2P clue scrolls (excluding beginner clues which are F2P)
+  P2P_CLUE_SCROLLS = [
+    'Clue Scrolls (easy)',
+    'Clue Scrolls (medium)',
+    'Clue Scrolls (hard)',
+    'Clue Scrolls (elite)',
+    'Clue Scrolls (master)'
+  ].freeze
+
   # This is the canonical list of supporter. It is used to generate the list
   # of supporters on both the home page and the about us page. It also contains
   # the flair image and other styling applied to supporters names wherever
@@ -1120,12 +1153,13 @@ class Player < ActiveRecord::Base
       return
     end
 
-    # Players incorrectly flagged as P2P by the detection system (temporary fix)
-    # To fix false P2P flags, add the player's username to the false_p2p_flagged list
-    # in config/initializers/assets.rb (line 17)
-    # Example: config.false_p2p_flagged = ["PlayerName1", "PlayerName2"]
+    # Players in false_p2p_flagged list undergo detailed verification
+    # This is the new P2P verification route - players must pass detailed checks
+    # to be marked as F2P, otherwise they are marked as P2P
     if F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(player_name.downcase)
-      update(potential_p2p: 0)
+      # Run detailed verification checks
+      is_p2p = detailed_p2p_verification(stats)
+      update(potential_p2p: is_p2p ? 1 : 0)
       return
     end
 
@@ -1156,7 +1190,134 @@ class Player < ActiveRecord::Base
     update(potential_p2p: 0)
   end
 
-  def self.initial_p2p_check(stats)
+  # Detailed P2P verification for players in false_p2p_flagged list
+  # Returns true if player has P2P content (should be marked as P2P)
+  # Returns false if player is truly F2P
+  def detailed_p2p_verification(stats)
+    # Check 1: P2P XP levels
+    # Check if total level exceeds F2P maximum or if any P2P skill is trained
+    overall = stats[:overall_lvl].to_i
+    f2p_sum = stats[:f2p_levels_sum].to_i
+    members_count = stats[:members_skill_count].to_i
+
+    # Check if total level exceeds F2P maximum
+    if overall > F2P_MAX_TOTAL
+      Rails.logger.info "Player #{player_name} marked as P2P: Total level #{overall} exceeds F2P max (#{F2P_MAX_TOTAL})"
+      return true
+    end
+
+    # Check if any P2P skill is trained beyond base level
+    if overall > 0 && members_count > 0
+      expected_overall = f2p_sum + members_count
+      if overall > expected_overall
+        trained_p2p_levels = overall - expected_overall
+        Rails.logger.info "Player #{player_name} marked as P2P: Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
+        return true
+      end
+    end
+
+    # Check 2: P2P boss KC (excluding F2P bosses Obor and Bryophyta)
+    # Check 3: P2P clue scrolls (excluding beginner clues which are F2P)
+    # These checks are done by fetching raw hiscores data
+    begin
+      has_p2p_content = check_p2p_hiscores_content
+      if has_p2p_content
+        Rails.logger.info "Player #{player_name} marked as P2P: Has P2P boss KC or clue scrolls"
+        return true
+      end
+    rescue => e
+      Rails.logger.warn "Could not verify P2P hiscores content for #{player_name}: #{e.message}"
+      # If we can't check, assume F2P (benefit of the doubt)
+    end
+
+    # Passed all checks - player is truly F2P
+    Rails.logger.info "Player #{player_name} passed detailed P2P verification - marked as F2P"
+    return false
+  end
+
+  # Check if player has P2P boss KC or P2P clue scrolls
+  # Returns true if player has any P2P content in hiscores
+  def check_p2p_hiscores_content
+
+    # Build the API URL
+    path_suffix = {
+      'HCIM' => '_hardcore_ironman',
+      'UIM' => '_ultimate',
+      'IM' => '_ironman'
+    }
+    
+    url_friendly_name = ERB::Util.url_encode(player_name).gsub(/(%C2)*%A0/, '_')
+    stats_uri = URI.join(
+      'https://secure.runescape.com',
+      "m=hiscore_oldschool#{path_suffix[player_acc_type]}/index_lite.ws",
+      "?player=#{url_friendly_name}"
+    )
+    
+    # Fetch the raw CSV data
+    openuri_params = {
+      open_timeout: 5,
+      read_timeout: 5
+    }
+    
+    csv_data = stats_uri.read(openuri_params)
+    lines = csv_data.strip.split("\n")
+    
+    # CSV format: Skills are lines 0-24, activities/bosses start at line 25
+    # The order matches the hiscores API response
+    csv_activity_order = [
+      'Grid Points', 'League Points', 'Deadman Points',
+      'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
+      'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
+      'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
+      'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
+      'Colosseum Glory', 'Collections Logged', 'Abyssal Sire', 'Alchemical Hydra', 'Amoxliatl',
+      'Araxxor', 'Artio', 'Barrows Chests', 'Bryophyta', 'Callisto', "Calvar'ion", 'Cerberus',
+      'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic',
+      'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
+      'Dagannoth Supreme', 'Deranged Archaeologist', 'Doom of Mokhaiotl', 'Duke Sucellus',
+      'General Graardor', 'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen',
+      'King Black Dragon', 'Kraken', "Kree'Arra", "K'ril Tsutsaroth", 'Lunar Chests', 'Mimic',
+      'Nex', 'Nightmare', "Phosani's Nightmare", 'Obor', 'Phantom Muspah', 'Sarachnis', 'Scorpia',
+      'Scurrius', 'Shellbane Gryphon', 'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross',
+      'The Gauntlet', 'The Corrupted Gauntlet', 'The Hueycoatl', 'The Leviathan', 'The Royal Titans',
+      'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
+      'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad', 'Vardorvis',
+      'Venenatis', "Vet'ion", 'Vorkath', 'Wintertodt', 'Yama', 'Zalcano', 'Zulrah'
+    ]
+    
+    activity_start_idx = 25  # Skills take lines 0-24
+    
+    csv_activity_order.each_with_index do |activity_name, idx|
+      line_idx = activity_start_idx + idx
+      next if line_idx >= lines.length
+      
+      # Check if this activity is a P2P boss or P2P clue scroll
+      is_p2p_activity = P2P_BOSSES.include?(activity_name) || P2P_CLUE_SCROLLS.include?(activity_name)
+      next unless is_p2p_activity
+      
+      line = lines[line_idx]
+      values = line.split(',').map(&:strip).map(&:to_i)
+      next if values.length < 2
+      
+      rank, score = values[0], values[1]
+      
+      # If player has KC/score for this P2P activity, they have P2P content
+      if rank != -1 && score > 0
+        Rails.logger.info "Player #{player_name} has P2P content: #{activity_name} = #{score}"
+        return true
+      end
+    end
+    
+    # No P2P content found
+    return false
+  end
+
+  def self.initial_p2p_check(stats, name = nil)
+    # For players in false_p2p_flagged list, use detailed verification
+    if name && F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(name.downcase)
+      return initial_detailed_p2p_check(stats, name)
+    end
+
     return true if stats["potential_p2p"].to_i > 0
 
     actual_f2p_lvls = 0
@@ -1165,6 +1326,37 @@ class Player < ActiveRecord::Base
     end
 
     return true if (stats["overall_lvl"] - 9) > actual_f2p_lvls
+    return false
+  end
+
+  # Detailed P2P check for initial player creation (for false_p2p_flagged players)
+  def self.initial_detailed_p2p_check(stats, name)
+    # Check 1: P2P XP levels
+    overall = stats[:overall_lvl].to_i
+    f2p_sum = stats[:f2p_levels_sum].to_i
+    members_count = stats[:members_skill_count].to_i
+
+    # Check if total level exceeds F2P maximum
+    if overall > F2P_MAX_TOTAL
+      Rails.logger.info "Player #{name} marked as P2P (creation): Total level #{overall} exceeds F2P max (#{F2P_MAX_TOTAL})"
+      return true
+    end
+
+    # Check if any P2P skill is trained beyond base level
+    if overall > 0 && members_count > 0
+      expected_overall = f2p_sum + members_count
+      if overall > expected_overall
+        trained_p2p_levels = overall - expected_overall
+        Rails.logger.info "Player #{name} marked as P2P (creation): Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
+        return true
+      end
+    end
+
+    # For creation, we can't check hiscores content as easily since we don't have a player object yet
+    # So we'll rely on the XP checks above, and the full hiscores check will happen on first update
+    
+    # Passed checks - player is F2P
+    Rails.logger.info "Player #{name} passed detailed P2P verification (creation) - allowing creation as F2P"
     return false
   end
 
@@ -1191,7 +1383,7 @@ class Player < ActiveRecord::Base
 
     return unless stats  # Player does not exist if return value is nil
 
-    return 'p2p' if initial_p2p_check(stats)
+    return 'p2p' if initial_p2p_check(stats, name)
 
     name = Hiscores.get_registered_player_name(account_type, name)
     return unless name  # Player does not exist if return value is false

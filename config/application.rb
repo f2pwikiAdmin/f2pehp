@@ -35,9 +35,11 @@ module F2POSRSRanks
 
     config.before_configuration do
       env_file = File.join(Rails.root, 'config', 'local_env.yml')
-      YAML.safe_load(File.read(env_file)).each do |key, value|
-        ENV[key.to_s] = value
-      end if File.exist?(env_file)
+      if File.exist?(env_file)
+        YAML.safe_load(File.read(env_file)).each do |key, value|
+          ENV[key.to_s] = value
+        end
+      end
     end
     
   end

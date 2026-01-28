@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '3.2.3'
+ruby '3.1.4'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '6.1.3.1'
@@ -40,7 +40,6 @@ group :development, :test do
 	gem 'byebug'
 
 	gem 'guard-rspec'
-	gem 'simplecov'
 
 	# Use sqlite3 as the database for Active Record
 	gem 'sqlite3', '~> 1.4'

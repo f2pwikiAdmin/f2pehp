@@ -4,6 +4,11 @@ RSpec.describe Player, type: :model do
   describe '#check_p2p_stats' do
     let(:player) { Player.new(player_name: "TestPlayer", player_acc_type: "Reg") }
     
+    # Mock check_p2p_hiscores_content for all tests since detailed verification now applies to all players
+    before do
+      allow_any_instance_of(Player).to receive(:check_p2p_hiscores_content).and_return(false)
+    end
+    
     context 'when player has F2P boss kill counts but no P2P skills' do
       it 'does not flag player as P2P based on Obor KC' do
         # Realistic test data from Jagex API:
@@ -277,7 +282,7 @@ RSpec.describe Player, type: :model do
   
   describe '.initial_p2p_check' do
     context 'when player has F2P boss kill counts but no P2P skills' do
-      it 'returns false for F2P player with Obor KC' do
+      it 'returns false for F2P player with Obor KC (new detailed verification)' do
         # Realistic test data from Jagex API
         stats = {
           "overall_lvl" => 838,  # F2P skills (829) + base P2P (9)
@@ -306,13 +311,14 @@ RSpec.describe Player, type: :model do
           :overall_lvl => 838
         }
         
-        result = Player.initial_p2p_check(stats)
+        # With name parameter, uses new detailed verification
+        result = Player.initial_p2p_check(stats, "TestPlayer")
         expect(result).to eq(false)
       end
     end
     
     context 'when player has trained P2P skills' do
-      it 'returns true when parser detects P2P skills' do
+      it 'returns true when parser detects P2P skills (new detailed verification)' do
         # Player with trained P2P skills
         # 9 P2P skills total: 8 at level 1 + Fletching at 50
         stats = {
@@ -332,28 +338,100 @@ RSpec.describe Player, type: :model do
           "smithing_lvl" => 40,
           "mining_lvl" => 60,
           "runecraft_lvl" => 44,
-          :potential_p2p => 49  # Fletching level 50 - 1 base = 49
+          :potential_p2p => 49,  # Fletching level 50 - 1 base = 49
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 58
         }
         
-        result = Player.initial_p2p_check(stats)
+        # With name parameter, uses new detailed verification
+        result = Player.initial_p2p_check(stats, "TestPlayer")
+        expect(result).to eq(true)
+      end
+
+      it 'returns true when total level exceeds F2P maximum (new detailed verification)' do
+        # Player with total level exceeding F2P max
+        stats = {
+          "overall_lvl" => 1510,
+          "attack_lvl" => 99,
+          "strength_lvl" => 99,
+          "defence_lvl" => 99,
+          "hitpoints_lvl" => 99,
+          "ranged_lvl" => 99,
+          "prayer_lvl" => 99,
+          "magic_lvl" => 99,
+          "cooking_lvl" => 99,
+          "woodcutting_lvl" => 99,
+          "fishing_lvl" => 99,
+          "firemaking_lvl" => 99,
+          "crafting_lvl" => 99,
+          "smithing_lvl" => 99,
+          "mining_lvl" => 99,
+          "runecraft_lvl" => 99,
+          :potential_p2p => 0,
+          :f2p_levels_sum => 1485,
+          :members_skill_count => 9,
+          :members_levels_sum => 25
+        }
+        
+        # With name parameter, uses new detailed verification
+        result = Player.initial_p2p_check(stats, "TestPlayer")
         expect(result).to eq(true)
       end
     end
   end
 
-  describe '#check_p2p_stats with false_p2p_flagged list' do
-    let(:player) { Player.new(player_name: "FalseFlaggedPlayer", player_acc_type: "Reg") }
+  describe '#check_p2p_stats with regular players (not in special lists)' do
+    let(:player) { Player.new(player_name: "RegularPlayer", player_acc_type: "Reg") }
 
     before do
-      # Mock the configuration to include our test player in the false_p2p_flagged list
-      allow(F2POSRSRanks::Application.config).to receive(:downcase_false_p2p_flagged)
-        .and_return(['falseflaggedplayer'])
+      # Mock check_p2p_hiscores_content to avoid actual API calls
+      allow_any_instance_of(Player).to receive(:check_p2p_hiscores_content).and_return(false)
     end
 
-    it 'marks player in false_p2p_flagged list as F2P regardless of stats' do
-      # Stats that would normally flag as P2P
+    it 'uses detailed verification for regular players (new system)' do
+      # Regular F2P player stats
       stats = {
-        "overall_lvl" => 1510,  # Exceeds max F2P
+        "overall_lvl" => 838,
+        "attack_lvl" => 60,
+        "strength_lvl" => 60,
+        "defence_lvl" => 60,
+        "hitpoints_lvl" => 60,
+        "ranged_lvl" => 60,
+        "prayer_lvl" => 45,
+        "magic_lvl" => 55,
+        "cooking_lvl" => 70,
+        "woodcutting_lvl" => 60,
+        "fishing_lvl" => 65,
+        "firemaking_lvl" => 50,
+        "crafting_lvl" => 40,
+        "smithing_lvl" => 40,
+        "mining_lvl" => 60,
+        "runecraft_lvl" => 44,
+        :potential_p2p => 0,
+        :f2p_levels_sum => 829,
+        :members_skill_count => 9,
+        :members_levels_sum => 9,
+        :overall_lvl => 838
+      }
+
+      # Save player first
+      player.save(validate: false)
+
+      # Call check_p2p_stats
+      player.check_p2p_stats(stats)
+
+      # Reload to get updated value
+      player.reload
+
+      # Player should NOT be flagged as P2P (detailed verification passed)
+      expect(player.potential_p2p).to eq(0)
+    end
+
+    it 'flags regular players as P2P when they have trained P2P skills' do
+      # Player with P2P skills trained
+      stats = {
+        "overall_lvl" => 1510,
         "attack_lvl" => 99,
         "strength_lvl" => 99,
         "defence_lvl" => 99,
@@ -372,7 +450,7 @@ RSpec.describe Player, type: :model do
         :potential_p2p => 0,
         :f2p_levels_sum => 1485,
         :members_skill_count => 9,
-        :members_levels_sum => 9,
+        :members_levels_sum => 25,
         :overall_lvl => 1510
       }
 
@@ -385,7 +463,140 @@ RSpec.describe Player, type: :model do
       # Reload to get updated value
       player.reload
 
-      # Player should NOT be flagged as P2P due to being in false_p2p_flagged list
+      # Player SHOULD be flagged as P2P due to exceeding F2P max
+      expect(player.potential_p2p).to eq(1)
+    end
+
+    it 'flags regular players as P2P when parser detects P2P content' do
+      # Player with parser-detected P2P content
+      stats = {
+        "overall_lvl" => 887,
+        "attack_lvl" => 60,
+        "strength_lvl" => 60,
+        "defence_lvl" => 60,
+        "hitpoints_lvl" => 60,
+        "ranged_lvl" => 60,
+        "prayer_lvl" => 45,
+        "magic_lvl" => 55,
+        "cooking_lvl" => 70,
+        "woodcutting_lvl" => 60,
+        "fishing_lvl" => 65,
+        "firemaking_lvl" => 50,
+        "crafting_lvl" => 40,
+        "smithing_lvl" => 40,
+        "mining_lvl" => 60,
+        "runecraft_lvl" => 44,
+        :potential_p2p => 49,  # Parser detected P2P (e.g., Fletching trained)
+        :f2p_levels_sum => 829,
+        :members_skill_count => 9,
+        :members_levels_sum => 58,
+        :overall_lvl => 887
+      }
+
+      # Save player first
+      player.save(validate: false)
+
+      # Call check_p2p_stats
+      player.check_p2p_stats(stats)
+
+      # Reload to get updated value
+      player.reload
+
+      # Player SHOULD be flagged as P2P due to parser detection
+      expect(player.potential_p2p).to eq(1)
+    end
+  end
+
+  describe '#check_p2p_stats with false_p2p_flagged list' do
+    let(:player) { Player.new(player_name: "FalseFlaggedPlayer", player_acc_type: "Reg") }
+
+    before do
+      # Mock the configuration to include our test player in the false_p2p_flagged list
+      allow(F2POSRSRanks::Application.config).to receive(:downcase_false_p2p_flagged)
+        .and_return(['falseflaggedplayer'])
+    end
+
+    it 'marks player in false_p2p_flagged list as P2P when they have trained P2P skills' do
+      # Stats that would flag as P2P (total level exceeds F2P max)
+      stats = {
+        "overall_lvl" => 1510,  # Exceeds max F2P (1494)
+        "attack_lvl" => 99,
+        "strength_lvl" => 99,
+        "defence_lvl" => 99,
+        "hitpoints_lvl" => 99,
+        "ranged_lvl" => 99,
+        "prayer_lvl" => 99,
+        "magic_lvl" => 99,
+        "cooking_lvl" => 99,
+        "woodcutting_lvl" => 99,
+        "fishing_lvl" => 99,
+        "firemaking_lvl" => 99,
+        "crafting_lvl" => 99,
+        "smithing_lvl" => 99,
+        "mining_lvl" => 99,
+        "runecraft_lvl" => 99,
+        :potential_p2p => 0,
+        :f2p_levels_sum => 1485,
+        :members_skill_count => 9,
+        :members_levels_sum => 25,  # Some P2P skills trained
+        :overall_lvl => 1510
+      }
+
+      # Save player first
+      player.save(validate: false)
+
+      # Mock check_p2p_hiscores_content to avoid actual API calls
+      allow(player).to receive(:check_p2p_hiscores_content).and_return(false)
+
+      # Call check_p2p_stats
+      player.check_p2p_stats(stats)
+
+      # Reload to get updated value
+      player.reload
+
+      # Player SHOULD be flagged as P2P due to trained P2P skills (detailed verification)
+      expect(player.potential_p2p).to eq(1)
+    end
+
+    it 'marks player in false_p2p_flagged list as F2P when they pass detailed checks' do
+      # Stats that are truly F2P
+      stats = {
+        "overall_lvl" => 838,  # F2P skills (829) + base P2P (9)
+        "attack_lvl" => 60,
+        "strength_lvl" => 60,
+        "defence_lvl" => 60,
+        "hitpoints_lvl" => 60,
+        "ranged_lvl" => 60,
+        "prayer_lvl" => 45,
+        "magic_lvl" => 55,
+        "cooking_lvl" => 70,
+        "woodcutting_lvl" => 60,
+        "fishing_lvl" => 65,
+        "firemaking_lvl" => 50,
+        "crafting_lvl" => 40,
+        "smithing_lvl" => 40,
+        "mining_lvl" => 60,
+        "runecraft_lvl" => 44,
+        :potential_p2p => 0,
+        :f2p_levels_sum => 829,
+        :members_skill_count => 9,
+        :members_levels_sum => 9,
+        :overall_lvl => 838
+      }
+
+      # Save player first
+      player.save(validate: false)
+
+      # Mock check_p2p_hiscores_content to avoid actual API calls
+      allow(player).to receive(:check_p2p_hiscores_content).and_return(false)
+
+      # Call check_p2p_stats
+      player.check_p2p_stats(stats)
+
+      # Reload to get updated value
+      player.reload
+
+      # Player should NOT be flagged as P2P (detailed verification passed)
       expect(player.potential_p2p).to eq(0)
     end
   end

@@ -10,11 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_12_10_052738) do
-
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_stat_statements"
-  enable_extension "plpgsql"
+ActiveRecord::Schema.define(version: 2025_12_24_175155) do
 
   create_table "clans", force: :cascade do |t|
     t.string "name"
@@ -29,7 +25,7 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.string "link2_name"
   end
 
-  create_table "items", id: :serial, force: :cascade do |t|
+  create_table "items", force: :cascade do |t|
     t.string "name"
     t.integer "itemid"
     t.string "icon"
@@ -46,10 +42,10 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "players", id: :serial, force: :cascade do |t|
+  create_table "players", force: :cascade do |t|
     t.string "player_name"
     t.string "player_acc_type"
-    t.bigint "overall_xp"
+    t.integer "overall_xp"
     t.integer "overall_lvl"
     t.float "overall_ehp"
     t.integer "attack_xp"
@@ -98,7 +94,6 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.integer "runecraft_lvl"
     t.float "runecraft_ehp"
     t.float "potential_p2p"
-    t.string "slug"
     t.integer "overall_rank"
     t.integer "attack_rank"
     t.integer "defence_rank"
@@ -356,19 +351,19 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.integer "runecraft_xp_year_max"
     t.float "runecraft_ehp_year_start"
     t.float "runecraft_ehp_year_max"
-    t.bigint "overall_xp_day_start"
+    t.integer "overall_xp_day_start"
     t.integer "overall_xp_day_max"
     t.float "overall_ehp_day_start"
     t.float "overall_ehp_day_max"
-    t.bigint "overall_xp_week_start"
+    t.integer "overall_xp_week_start"
     t.integer "overall_xp_week_max"
     t.float "overall_ehp_week_start"
     t.float "overall_ehp_week_max"
-    t.bigint "overall_xp_month_start"
+    t.integer "overall_xp_month_start"
     t.integer "overall_xp_month_max"
     t.float "overall_ehp_month_start"
     t.float "overall_ehp_month_max"
-    t.bigint "overall_xp_year_start"
+    t.integer "overall_xp_year_start"
     t.integer "overall_xp_year_max"
     t.float "overall_ehp_year_start"
     t.float "overall_ehp_year_max"
@@ -389,10 +384,9 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.integer "failed_updates", default: 0
     t.datetime "created_at"
     t.datetime "updated_at"
-
   end
 
-  create_table "users", id: :serial, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "pass"
     t.datetime "created_at", null: false

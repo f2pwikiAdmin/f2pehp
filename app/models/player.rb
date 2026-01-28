@@ -1166,16 +1166,18 @@ class Player < ActiveRecord::Base
   def detailed_p2p_verification(stats)
     # Check 0: Parser detected P2P content
     # If the parser already detected members-only skill training or activity evidence
-    if stats["potential_p2p"].to_i > 0
-      Rails.logger.info "Player #{player_name} marked as P2P: Parser detected P2P content (potential_p2p = #{stats['potential_p2p']})"
+    # Access with symbol key (stats hash uses mixed keys, symbols for calculated fields)
+    potential_p2p_value = (stats[:potential_p2p] || stats["potential_p2p"]).to_i
+    if potential_p2p_value > 0
+      Rails.logger.info "Player #{player_name} marked as P2P: Parser detected P2P content (potential_p2p = #{potential_p2p_value})"
       return true
     end
 
     # Check 1: P2P XP levels
     # Check if total level exceeds F2P maximum or if any P2P skill is trained
-    overall = stats[:overall_lvl].to_i
-    f2p_sum = stats[:f2p_levels_sum].to_i
-    members_count = stats[:members_skill_count].to_i
+    overall = (stats[:overall_lvl] || stats["overall_lvl"]).to_i
+    f2p_sum = (stats[:f2p_levels_sum] || stats["f2p_levels_sum"]).to_i
+    members_count = (stats[:members_skill_count] || stats["members_skill_count"]).to_i
 
     # Check if total level exceeds F2P maximum
     if overall > F2P_MAX_TOTAL
@@ -1289,23 +1291,11 @@ class Player < ActiveRecord::Base
     return false
   end
 
-  def self.initial_p2p_check(stats, name = nil)
-    # ALL new players now use detailed verification
+  def self.initial_p2p_check(stats, name)
+    # ALL new players now use detailed verification (new 4-point system)
     # This provides comprehensive P2P detection for everyone
-    if name
-      return initial_detailed_p2p_check(stats, name)
-    end
-
-    # Fallback to old logic if name is not provided (shouldn't happen in normal flow)
-    return true if stats["potential_p2p"].to_i > 0
-
-    actual_f2p_lvls = 0
-    (SKILLS - ["overall"]).each do |skill|
-      actual_f2p_lvls += (stats["#{skill}_lvl"] or 0)
-    end
-
-    return true if (stats["overall_lvl"] - 9) > actual_f2p_lvls
-    return false
+    # Old verification logic has been completely removed
+    return initial_detailed_p2p_check(stats, name)
   end
 
   # Detailed P2P check for initial player creation (for all new players)
@@ -1313,15 +1303,17 @@ class Player < ActiveRecord::Base
   # Returns false if player is F2P (should be allowed)
   def self.initial_detailed_p2p_check(stats, name)
     # Check 0: Parser detected P2P content
-    if stats["potential_p2p"].to_i > 0
-      Rails.logger.info "Player #{name} marked as P2P (creation): Parser detected P2P content (potential_p2p = #{stats['potential_p2p']})"
+    # Access with symbol key (stats hash uses mixed keys, symbols for calculated fields)
+    potential_p2p_value = (stats[:potential_p2p] || stats["potential_p2p"]).to_i
+    if potential_p2p_value > 0
+      Rails.logger.info "Player #{name} marked as P2P (creation): Parser detected P2P content (potential_p2p = #{potential_p2p_value})"
       return true
     end
 
     # Check 1: P2P XP levels
-    overall = stats[:overall_lvl].to_i
-    f2p_sum = stats[:f2p_levels_sum].to_i
-    members_count = stats[:members_skill_count].to_i
+    overall = (stats[:overall_lvl] || stats["overall_lvl"]).to_i
+    f2p_sum = (stats[:f2p_levels_sum] || stats["f2p_levels_sum"]).to_i
+    members_count = (stats[:members_skill_count] || stats["members_skill_count"]).to_i
 
     # Check if total level exceeds F2P maximum
     if overall > F2P_MAX_TOTAL

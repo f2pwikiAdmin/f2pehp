@@ -4,17 +4,35 @@ RSpec.describe Player, type: :model do
   describe '.rank_sort_sql' do
     it 'generates SQL that treats negative ranks as high values' do
       sql = Player.rank_sort_sql('attack_rank')
-      expect(sql).to eq('CASE WHEN attack_rank < 0 THEN 2147483647 ELSE attack_rank END ASC')
+      expect(sql).to eq("CASE WHEN attack_rank < 0 THEN #{Player::UNRANKED_SORT_VALUE} ELSE attack_rank END ASC")
     end
 
     it 'works with different rank column names' do
       sql = Player.rank_sort_sql('lms_rank')
-      expect(sql).to eq('CASE WHEN lms_rank < 0 THEN 2147483647 ELSE lms_rank END ASC')
+      expect(sql).to eq("CASE WHEN lms_rank < 0 THEN #{Player::UNRANKED_SORT_VALUE} ELSE lms_rank END ASC")
     end
 
     it 'works with boss KC rank columns' do
       sql = Player.rank_sort_sql('obor_kc_rank')
-      expect(sql).to eq('CASE WHEN obor_kc_rank < 0 THEN 2147483647 ELSE obor_kc_rank END ASC')
+      expect(sql).to eq("CASE WHEN obor_kc_rank < 0 THEN #{Player::UNRANKED_SORT_VALUE} ELSE obor_kc_rank END ASC")
+    end
+
+    it 'raises ArgumentError for invalid column names with SQL injection attempts' do
+      expect { Player.rank_sort_sql("attack_rank; DROP TABLE players;") }.to raise_error(ArgumentError, /Invalid rank column name/)
+    end
+
+    it 'raises ArgumentError for column names with special characters' do
+      expect { Player.rank_sort_sql("attack_rank OR 1=1") }.to raise_error(ArgumentError, /Invalid rank column name/)
+    end
+
+    it 'raises ArgumentError for column names with quotes' do
+      expect { Player.rank_sort_sql("attack_rank'") }.to raise_error(ArgumentError, /Invalid rank column name/)
+    end
+
+    it 'accepts valid column names with underscores and numbers' do
+      expect { Player.rank_sort_sql('obor_kc_rank') }.not_to raise_error
+      expect { Player.rank_sort_sql('bryo_kc_rank') }.not_to raise_error
+      expect { Player.rank_sort_sql('clues_beginner_rank') }.not_to raise_error
     end
   end
 

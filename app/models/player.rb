@@ -9,6 +9,9 @@ class Player < ActiveRecord::Base
   has_many :clans, through: :player_clan_links
   SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft overall]
 
+  # Maximum value used for sorting unranked players (rank < 0) to the end of the list
+  UNRANKED_SORT_VALUE = 2147483647  # Max 32-bit signed integer
+
   TIMES = %w[day week month year]
 
   ACCOUNT_TYPES = %w[Reg IM HCIM UIM]
@@ -525,11 +528,18 @@ class Player < ActiveRecord::Base
   # Generates SQL expression for sorting by rank that treats rank < 0 as unranked
   # and places them after all valid ranks (which are positive numbers).
   # This is used to sort players properly without changing how rank is stored in the database.
-  # 
+  #
   # @param rank_column [String] the name of the rank column (e.g., "attack_rank", "lms_rank")
   # @return [String] SQL expression for proper rank sorting
+  # @raise [ArgumentError] if rank_column contains invalid characters
   def self.rank_sort_sql(rank_column)
-    "CASE WHEN #{rank_column} < 0 THEN 2147483647 ELSE #{rank_column} END ASC"
+    # Validate rank_column to prevent SQL injection
+    # Allow only alphanumeric characters and underscores
+    unless rank_column.to_s.match?(/\A[a-z0-9_]+\z/i)
+      raise ArgumentError, "Invalid rank column name: #{rank_column}"
+    end
+    
+    "CASE WHEN #{rank_column} < 0 THEN #{UNRANKED_SORT_VALUE} ELSE #{rank_column} END ASC"
   end
 
   # The characters +, _, \s, -, %20 count as the same when doing a lookup on hiscores.

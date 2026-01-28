@@ -10,17 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_12_10_052738) do
-
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_stat_statements"
-  enable_extension "plpgsql"
-
+ActiveRecord::Schema[7.0].define(version: 2025_12_24_175155) do
   create_table "clans", force: :cascade do |t|
     t.string "name"
     t.string "symbol_link"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "pass"
     t.string "description"
     t.string "link1"
@@ -29,27 +24,27 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.string "link2_name"
   end
 
-  create_table "items", id: :serial, force: :cascade do |t|
+  create_table "items", force: :cascade do |t|
     t.string "name"
     t.integer "itemid"
     t.string "icon"
     t.integer "alch"
     t.integer "current"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "player_clan_links", force: :cascade do |t|
     t.integer "player_id"
     t.integer "clan_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "players", id: :serial, force: :cascade do |t|
+  create_table "players", force: :cascade do |t|
     t.string "player_name"
     t.string "player_acc_type"
-    t.bigint "overall_xp"
+    t.integer "overall_xp"
     t.integer "overall_lvl"
     t.float "overall_ehp"
     t.integer "attack_xp"
@@ -98,7 +93,6 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.integer "runecraft_lvl"
     t.float "runecraft_ehp"
     t.float "potential_p2p"
-    t.string "slug"
     t.integer "overall_rank"
     t.integer "attack_rank"
     t.integer "defence_rank"
@@ -356,19 +350,19 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.integer "runecraft_xp_year_max"
     t.float "runecraft_ehp_year_start"
     t.float "runecraft_ehp_year_max"
-    t.bigint "overall_xp_day_start"
+    t.integer "overall_xp_day_start"
     t.integer "overall_xp_day_max"
     t.float "overall_ehp_day_start"
     t.float "overall_ehp_day_max"
-    t.bigint "overall_xp_week_start"
+    t.integer "overall_xp_week_start"
     t.integer "overall_xp_week_max"
     t.float "overall_ehp_week_start"
     t.float "overall_ehp_week_max"
-    t.bigint "overall_xp_month_start"
+    t.integer "overall_xp_month_start"
     t.integer "overall_xp_month_max"
     t.float "overall_ehp_month_start"
     t.float "overall_ehp_month_max"
-    t.bigint "overall_xp_year_start"
+    t.integer "overall_xp_year_start"
     t.integer "overall_xp_year_max"
     t.float "overall_ehp_year_start"
     t.float "overall_ehp_year_max"
@@ -379,7 +373,7 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.integer "clues_all_rank"
     t.integer "clues_beginner_rank"
     t.boolean "hcim_has_died", default: false
-    t.datetime "hcim_has_died_registered_at"
+    t.datetime "hcim_has_died_registered_at", precision: nil
     t.integer "obor_kc"
     t.integer "bryo_kc"
     t.integer "obor_kc_rank"
@@ -387,16 +381,15 @@ ActiveRecord::Schema.define(version: 2025_12_10_052738) do
     t.integer "lms_score"
     t.integer "lms_rank"
     t.integer "failed_updates", default: 0
-    t.datetime "created_at"
-    t.datetime "updated_at"
-
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
   end
 
-  create_table "users", id: :serial, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "pass"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
 end

@@ -1,9 +1,9 @@
 source 'https://rubygems.org'
 
-ruby '3.1.4'
+ruby '3.2.3'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '6.1.3.1'
+gem 'rails', '7.0.4.3'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0.6'
 # Use Uglifier as compressor for JavaScript assets
@@ -50,8 +50,8 @@ group :development, :test do
   gem 'dotenv-rails'
 end
 
-group :production do
-  gem 'pg', '~> 1.1.4'
+group :production, :test do
+  gem 'pg', '>= 1.1'
 end
 
 group :development do

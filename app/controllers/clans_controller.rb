@@ -215,24 +215,24 @@ class ClansController < ApplicationController
       elsif @skill.include?("lowest_lvl")
         ordering = "overall_ehp DESC"
       elsif @skill.include?("lms")
-        ordering = "lms_score DESC, lms_rank ASC"
+        ordering = "lms_score DESC, #{Player.rank_sort_sql('lms_rank')}"
       elsif @skill.include?("_kc")
-        ordering = "#{@skill} DESC, #{@skill}_rank ASC"
+        ordering = "#{@skill} DESC, #{Player.rank_sort_sql("#{@skill}_rank")}"
       else
         case @sort_by
         when "ehp"
           @player_ehp_header = 'hilite'
-          ordering = "#{@skill}_ehp DESC, #{@skill}_lvl DESC, #{@skill}_xp DESC, #{@skill}_rank ASC, players.id ASC"
+          ordering = "#{@skill}_ehp DESC, #{@skill}_lvl DESC, #{@skill}_xp DESC, #{Player.rank_sort_sql("#{@skill}_rank")}, players.id ASC"
         when "lvl"
           @player_lvl_header = 'hilite'
           if @skill == "combat"
             ordering = "#{@skill}_lvl DESC, overall_ehp DESC"
           else
-            ordering = "#{@skill}_lvl DESC, #{@skill}_xp DESC, #{@skill}_rank ASC"
+            ordering = "#{@skill}_lvl DESC, #{@skill}_xp DESC, #{Player.rank_sort_sql("#{@skill}_rank")}"
           end
         when "xp"
           @player_xp_header = 'hilite'
-          ordering = "#{@skill}_xp DESC, #{@skill}_rank ASC"
+          ordering = "#{@skill}_xp DESC, #{Player.rank_sort_sql("#{@skill}_rank")}"
         end
       end
     elsif @display == "gains"

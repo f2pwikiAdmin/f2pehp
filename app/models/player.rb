@@ -522,6 +522,16 @@ class Player < ActiveRecord::Base
     false
   end
 
+  # Generates SQL expression for sorting by rank that treats rank < 0 as unranked
+  # and places them after all valid ranks (which are positive numbers).
+  # This is used to sort players properly without changing how rank is stored in the database.
+  # 
+  # @param rank_column [String] the name of the rank column (e.g., "attack_rank", "lms_rank")
+  # @return [String] SQL expression for proper rank sorting
+  def self.rank_sort_sql(rank_column)
+    "CASE WHEN #{rank_column} < 0 THEN 2147483647 ELSE #{rank_column} END ASC"
+  end
+
   # The characters +, _, \s, -, %20 count as the same when doing a lookup on hiscores.
   def self.sanitize_name(str)
     if str.downcase == "_yrak"

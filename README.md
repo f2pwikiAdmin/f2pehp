@@ -21,7 +21,7 @@ To contribute a code change, please create a separate branch and submit a pull r
 
 ### 1. Install Git, Ruby, and Bundler
 
-We recommend installing Ruby 2.7.3, but other recent versions may suffice.
+We recommend installing Ruby 3.2.3 as specified in the Gemfile.
 
 #### Windows
 

@@ -1202,6 +1202,23 @@ class Player < ActiveRecord::Base
     player
   end
 
+  # Sentinel value used to represent the worst possible rank for unranked (-1) players
+  # This ensures -1 values sort as the worst rank rather than the best
+  UNRANKED_SENTINEL = 2147483647  # Max 32-bit integer
+
+  # Converts a rank value for safe comparison, treating -1 as the worst rank
+  # Returns the sentinel value for -1, otherwise returns the rank unchanged
+  def self.normalize_rank_value(rank)
+    rank == -1 ? UNRANKED_SENTINEL : rank
+  end
+
+  # Converts a rank column reference to a SQL expression that treats -1 as the worst rank
+  # This allows rank columns to be used in WHERE clauses and ORDER BY with proper sorting
+  # Example: normalize_rank_column("attack_rank") => "CASE WHEN attack_rank = -1 THEN 2147483647 ELSE attack_rank END"
+  def self.normalize_rank_column(column)
+    "CASE WHEN #{column} = -1 THEN #{UNRANKED_SENTINEL} ELSE #{column} END"
+  end
+
   # Find the players rank in the database by same arbitrary set of criteria
   # See f2p_skill_rank, f2p_clues_rank, etc. for example usage
   # rank_criteria: A list of [criteria, order] pairs that describe how rank should
@@ -1217,11 +1234,15 @@ class Player < ActiveRecord::Base
       secondary = columns.take(columns.length - 1)
 
       secondary_clauses = secondary.map do |col,_|
-        "(#{col} = ?)"
+        # Normalize rank columns for comparison
+        normalized_col = col.end_with?('_rank') ? Player.normalize_rank_column(col) : col
+        "(#{normalized_col} = ?)"
       end.join(" AND ")
       secondary_clauses += " AND" unless secondary_clauses.empty?
 
-      primary_clause = "(#{primary} #{if ord == :DESC then ">" else "<" end} ?)"
+      # Normalize rank columns for comparison
+      normalized_primary = primary.end_with?('_rank') ? Player.normalize_rank_column(primary) : primary
+      primary_clause = "(#{normalized_primary} #{if ord == :DESC then ">" else "<" end} ?)"
 
       "(#{secondary_clauses} #{primary_clause})"
     end.join(" OR ")
@@ -1236,7 +1257,9 @@ class Player < ActiveRecord::Base
       rank_criteria.take(i).map do |col,_|
         # Using eval is definitely a bit of a hack but, I need it to make this
         # method generalize to gains rank
-        eval(col)
+        value = eval(col)
+        # Normalize rank values for comparison
+        col.end_with?('_rank') ? Player.normalize_rank_value(value) : value
       end
     end.flatten
 

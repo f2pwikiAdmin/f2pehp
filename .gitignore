@@ -20,6 +20,9 @@
 coverage/
 .DS_Store
 
+# Ignore precompiled assets.
+/public/assets
+
 # Ignore .rbenv config.
 /.ruby-version
 config/local_env.yml

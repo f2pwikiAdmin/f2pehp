@@ -69,8 +69,9 @@ All checks pass → F2P (potential_p2p = 0)
    - Now calls `detailed_p2p_verification` for ALL players
 
 2. **`initial_p2p_check(stats, name)`**
-   - Now calls `initial_detailed_p2p_check` for ALL new players when name provided
+   - Now calls `initial_detailed_p2p_check` for ALL new players (name parameter is required)
    - **Removed conditional check** for false_p2p_flagged list
+   - **Removed old fallback verification logic entirely** (only new 4-point system is used)
 
 ### Four Comprehensive Checks
 

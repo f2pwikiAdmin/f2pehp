@@ -2,7 +2,7 @@
 - @description = "Frequently asked questions"
 = link_to image_tag("f2pwiki.png"), players_path
 
-= render :partial => "header.html.haml",  :locals => {notice: notice}
+= render :partial => "header",  :locals => {notice: notice}
 
 = content_tag(:div, nil, class: "container", id: "headerCompare", style: "margin: auto; width: 765px; height: 46px; margin-bottom: 0px;")
 = content_tag(:div, nil, class: ["container", "scroll", "wide-scroll-middle"], style: "margin-bottom: 0px;") do

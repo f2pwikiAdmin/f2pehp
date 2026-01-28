@@ -2,7 +2,7 @@
 - @description = "F2P account XP and EHP records set for Day, Week, Month and Year." 
 = link_to image_tag("f2pwiki.png"), players_path
 
-= render :partial => "header.html.haml",  :locals => {notice: notice}
+= render :partial => "header",  :locals => {notice: notice}
 
 - skill_name = "#{@skill}".capitalize
 = content_tag(:div, nil, class: "container", style: "width: 800px;") do 

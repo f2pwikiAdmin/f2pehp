@@ -2,7 +2,7 @@
 - @description = "Combat level and DPS calculators." 
 = link_to image_tag("f2pwiki.png"), players_path
 
-= render :partial => "header.html.haml",  :locals => {notice: notice}
+= render :partial => "header",  :locals => {notice: notice}
 
 = field_set_tag 'DPS Calc', class: ["calc"] do
   = content_tag(:div, nil, class: ["container", "left"], style: "width: 240px; border-right:") do 

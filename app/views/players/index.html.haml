@@ -1,7 +1,7 @@
 - @title = "F2P OSRS Wiki" 
 = link_to image_tag("f2pwiki_banner.png"), players_path
 
-= render :partial => "header.html.haml",  :locals => {notice: notice}
+= render :partial => "header",  :locals => {notice: notice}
   
 = content_tag(:div, nil, class: "container", style: "width: 760px;") do 
   = content_tag(:div, nil, class: ["left", "container"], style: "width: 45%;") do
@@ -335,4 +335,4 @@
               %td= number_with_delimiter(player.overall_ehp.to_f, :delimiter => ",", :separator => ".") 
     = content_tag(:div, nil, class: "container", id: "footerHiscores", style: "margin-left: 15px; width: 380px; height: 36px; margin-top: 0px;")
 
-= render :partial => "supporters.html.haml"
+= render :partial => "supporters"

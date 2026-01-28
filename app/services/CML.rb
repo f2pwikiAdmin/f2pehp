@@ -88,8 +88,7 @@ class CML
         'crafting_xp'    => xps[13],
         'smithing_xp'    => xps[14],
         'mining_xp'      => xps[15],
-        'runecraft_xp'   => xps[21],
-        'sailing_xp'     => xps[28] }
+        'runecraft_xp'   => xps[21] }
     end
   end
 end

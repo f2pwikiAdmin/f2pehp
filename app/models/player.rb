@@ -1137,7 +1137,7 @@ class Player < ActiveRecord::Base
 
   def check_p2p_stats(stats)
     # Players in fakes list should ALWAYS be treated as P2P (potential_p2p = 1)
-    # This takes priority over false_p2p_flagged and false_banned lists
+    # This takes priority over all other checks
     if F2POSRSRanks::Application.config.respond_to?(:downcase_fakes)
       if F2POSRSRanks::Application.config.downcase_fakes.include?(player_name.downcase)
         update(potential_p2p: 1)
@@ -1153,47 +1153,24 @@ class Player < ActiveRecord::Base
       return
     end
 
-    # Players in false_p2p_flagged list undergo detailed verification
-    # This is the new P2P verification route - players must pass detailed checks
-    # to be marked as F2P, otherwise they are marked as P2P
-    if F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(player_name.downcase)
-      # Run detailed verification checks
-      is_p2p = detailed_p2p_verification(stats)
-      update(potential_p2p: is_p2p ? 1 : 0)
-      return
-    end
-
-    # 1) If parser detected any members-only skill training or members-only activity evidence
-    if stats["potential_p2p"].to_i > 0
-      update(potential_p2p: 1)
-      return
-    end
-
-    # 2) Deterministic reconciliation using overall level (no magic numbers):
-    #
-    # expected_overall = sum(f2p skill levels) + (members_skill_count * 1)
-    # If API overall level exceeds expected_overall, at least one members skill > 1
-    # (or our parser missed a members skill) => flag as potential_p2p.
-    overall = stats[:overall_lvl].to_i
-    f2p_sum = stats[:f2p_levels_sum].to_i
-    members_count = stats[:members_skill_count].to_i
-
-    if overall > 0 && members_count > 0
-      expected_overall = f2p_sum + members_count
-      if overall > expected_overall
-        update(potential_p2p: 1)
-        return
-      end
-    end
-
-    # Passes checks
-    update(potential_p2p: 0)
+    # ALL players now undergo detailed verification (new comprehensive P2P detection)
+    # This includes checking: P2P XP levels, boss KC, and clue scrolls
+    # Players in false_p2p_flagged list are also verified through this route
+    is_p2p = detailed_p2p_verification(stats)
+    update(potential_p2p: is_p2p ? 1 : 0)
   end
 
-  # Detailed P2P verification for players in false_p2p_flagged list
+  # Detailed P2P verification for all players
   # Returns true if player has P2P content (should be marked as P2P)
   # Returns false if player is truly F2P
   def detailed_p2p_verification(stats)
+    # Check 0: Parser detected P2P content
+    # If the parser already detected members-only skill training or activity evidence
+    if stats["potential_p2p"].to_i > 0
+      Rails.logger.info "Player #{player_name} marked as P2P: Parser detected P2P content (potential_p2p = #{stats['potential_p2p']})"
+      return true
+    end
+
     # Check 1: P2P XP levels
     # Check if total level exceeds F2P maximum or if any P2P skill is trained
     overall = stats[:overall_lvl].to_i
@@ -1313,11 +1290,13 @@ class Player < ActiveRecord::Base
   end
 
   def self.initial_p2p_check(stats, name = nil)
-    # For players in false_p2p_flagged list, use detailed verification
-    if name && F2POSRSRanks::Application.config.downcase_false_p2p_flagged.include?(name.downcase)
+    # ALL new players now use detailed verification
+    # This provides comprehensive P2P detection for everyone
+    if name
       return initial_detailed_p2p_check(stats, name)
     end
 
+    # Fallback to old logic if name is not provided (shouldn't happen in normal flow)
     return true if stats["potential_p2p"].to_i > 0
 
     actual_f2p_lvls = 0
@@ -1329,8 +1308,16 @@ class Player < ActiveRecord::Base
     return false
   end
 
-  # Detailed P2P check for initial player creation (for false_p2p_flagged players)
+  # Detailed P2P check for initial player creation (for all new players)
+  # Returns true if player has P2P content (should be rejected)
+  # Returns false if player is F2P (should be allowed)
   def self.initial_detailed_p2p_check(stats, name)
+    # Check 0: Parser detected P2P content
+    if stats["potential_p2p"].to_i > 0
+      Rails.logger.info "Player #{name} marked as P2P (creation): Parser detected P2P content (potential_p2p = #{stats['potential_p2p']})"
+      return true
+    end
+
     # Check 1: P2P XP levels
     overall = stats[:overall_lvl].to_i
     f2p_sum = stats[:f2p_levels_sum].to_i

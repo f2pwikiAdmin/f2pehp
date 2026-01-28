@@ -4,6 +4,11 @@ RSpec.describe Player, type: :model do
   describe '#check_p2p_stats' do
     let(:player) { Player.new(player_name: "TestPlayer", player_acc_type: "Reg") }
     
+    # Mock check_p2p_hiscores_content for all tests since detailed verification now applies to all players
+    before do
+      allow_any_instance_of(Player).to receive(:check_p2p_hiscores_content).and_return(false)
+    end
+    
     context 'when player has F2P boss kill counts but no P2P skills' do
       it 'does not flag player as P2P based on Obor KC' do
         # Realistic test data from Jagex API:

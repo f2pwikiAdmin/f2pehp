@@ -1,5 +1,6 @@
 require File.expand_path('../boot', __FILE__)
 
+require 'logger'  # Required for Ruby 3.2+ where logger is no longer a default gem
 require "rails"
 # Pick the frameworks you want:
 require "active_model/railtie"

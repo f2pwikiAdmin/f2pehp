@@ -1,6 +1,9 @@
 require 'open-uri'
 
 class Player < ActiveRecord::Base
+  # Serialize hiscores_extras as JSON to store unmapped hiscores data
+  serialize :hiscores_extras, JSON
+
   before_update :register_hcim_death,
     if: Proc.new { |player| player.player_acc_type_was == 'HCIM' \
                             && player.player_acc_type == 'IM' }
@@ -668,16 +671,46 @@ class Player < ActiveRecord::Base
     stats = calculate_virtual_stats(stats, last_updated=last_updated)
     stats[:updated_at] = Time.now
 
-    # Strip helper keys that are not DB columns before assigning to model
+    # Split stats into known model attributes vs extras
     if stats.is_a?(Hash)
       stats = stats.dup
+      
+      # Remove helper keys that are not DB columns
       %w[f2p_levels_sum members_skill_count members_levels_sum].each do |k|
         stats.delete(k)
         stats.delete(k.to_sym)
       end
+      
+      # Get valid column names for the Player model
+      valid_columns = self.class.column_names.map(&:to_sym)
+      
+      # Separate known attributes from extras
+      extras = {}
+      stats_to_assign = {}
+      
+      stats.each do |key, value|
+        key_sym = key.to_sym
+        key_str = key.to_s
+        
+        # Check if this is a known column (as symbol or string)
+        if valid_columns.include?(key_sym) || valid_columns.include?(key_str.to_sym)
+          stats_to_assign[key] = value
+        else
+          # Store in extras (these are hiscores data without dedicated columns)
+          extras[key_str] = value
+        end
+      end
+      
+      # Store extras in hiscores_extras column if any exist
+      if extras.any?
+        stats_to_assign[:hiscores_extras] = extras.to_json
+      end
+      
+      # Assign only known attributes to the model
+      self.attributes = stats_to_assign
+    else
+      self.attributes = stats
     end
-
-    self.attributes = stats
     self.save(validate: false)
   end
 

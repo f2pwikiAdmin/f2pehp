@@ -1150,7 +1150,8 @@ class Player < ActiveRecord::Base
 
     # Check if any P2P skill is trained beyond base level
     if overall > 0 && members_count > 0
-      expected_overall = f2p_sum + members_count
+      members_sum = (stats[:members_levels_sum] || stats["members_levels_sum"]).to_i
+      expected_overall = f2p_sum + members_sum
       if overall > expected_overall
         trained_p2p_levels = overall - expected_overall
         Rails.logger.info "Player #{player_name} marked as P2P: Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
@@ -1286,7 +1287,8 @@ class Player < ActiveRecord::Base
 
     # Check if any P2P skill is trained beyond base level
     if overall > 0 && members_count > 0
-      expected_overall = f2p_sum + members_count
+      members_sum = (stats[:members_levels_sum] || stats["members_levels_sum"]).to_i
+      expected_overall = f2p_sum + members_sum
       if overall > expected_overall
         trained_p2p_levels = overall - expected_overall
         Rails.logger.info "Player #{name} marked as P2P (creation): Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"

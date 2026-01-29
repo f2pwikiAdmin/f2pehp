@@ -604,4 +604,123 @@ RSpec.describe Hiscores do
       expect(url.to_s).to include('_ultimate')
     end
   end
+
+  describe 'PR #87 - PvP Arena and Collections Logged F2P handling' do
+    context 'CSV parsing' do
+      it 'does NOT flag F2P players with PvP Arena rank as P2P' do
+        csv_data = [
+          '12345,750,15000000',    # Overall
+          '10000,60,300000',       # Attack
+          '10001,60,300000',       # Defence
+          '10002,60,300000',       # Strength
+          '10003,60,300000',       # Hitpoints
+          '10004,60,300000',       # Ranged
+          '10005,45,60000',        # Prayer
+          '10006,55,170000',       # Magic
+          '10007,70,800000',       # Cooking
+          '10008,60,300000',       # Woodcutting
+          '-1,1,0',                # Fletching (P2P, unranked)
+          '10009,65,450000',       # Fishing
+          '10010,50,100000',       # Firemaking
+          '10011,40,40000',        # Crafting
+          '10012,40,40000',        # Smithing
+          '10013,60,300000',       # Mining
+          '-1,1,0',                # Herblore (P2P, unranked)
+          '-1,1,0',                # Agility (P2P, unranked)
+          '-1,1,0',                # Thieving (P2P, unranked)
+          '-1,1,0',                # Slayer (P2P, unranked)
+          '-1,1,0',                # Farming (P2P, unranked)
+          '10014,44,55000',        # Runecraft
+          '-1,1,0',                # Hunter (P2P, unranked)
+          '-1,1,0',                # Construction (P2P, unranked)
+          '-1,1,0',                # Sailing (unranked)
+          # Activities start here
+          '-1,0',                  # Grid Points
+          '-1,0',                  # League Points
+          '-1,0',                  # Deadman Points
+          '-1,0',                  # Bounty Hunter - Hunter
+          '-1,0',                  # Bounty Hunter - Rogue
+          '-1,0',                  # Bounty Hunter (Legacy) - Hunter
+          '-1,0',                  # Bounty Hunter (Legacy) - Rogue
+          '5000,50',               # Clue Scrolls (all)
+          '5001,25',               # Clue Scrolls (beginner)
+          '-1,0',                  # Clue Scrolls (easy) - P2P
+          '-1,0',                  # Clue Scrolls (medium) - P2P
+          '-1,0',                  # Clue Scrolls (hard) - P2P
+          '-1,0',                  # Clue Scrolls (elite) - P2P
+          '-1,0',                  # Clue Scrolls (master) - P2P
+          '3000,500',              # LMS - Rank (F2P)
+          '2500,150',              # PvP Arena - Rank (F2P, has rank 150!)
+          '-1,0',                  # Soul Wars Zeal
+          '-1,0',                  # Rifts closed
+          '-1,0',                  # Colosseum Glory
+          '1000,250',              # Collections Logged (F2P, has 250 collection log!)
+        ].join("\n")
+
+        result = Hiscores.send(:parse_stats_csv, csv_data)
+
+        # Should NOT flag as P2P despite having PvP Arena rank and Collections Logged
+        expect(result["potential_p2p"]).to eq(0)
+        
+        # Should store the values properly
+        expect(result[:pvp_arena_rank_score]).to eq(150)
+        expect(result[:pvp_arena_rank_rank]).to eq(2500)
+        expect(result[:collections_logged_score]).to eq(250)
+        expect(result[:collections_logged_rank]).to eq(1000)
+      end
+    end
+
+    context 'JSON parsing' do
+      it 'does NOT flag F2P players with PvP Arena rank as P2P' do
+        json_data = {
+          'skills' => [
+            { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
+            { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Defence', 'rank' => 10001, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Strength', 'rank' => 10002, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Hitpoints', 'rank' => 10003, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Ranged', 'rank' => 10004, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Prayer', 'rank' => 10005, 'level' => 45, 'xp' => 60000 },
+            { 'name' => 'Magic', 'rank' => 10006, 'level' => 55, 'xp' => 170000 },
+            { 'name' => 'Cooking', 'rank' => 10007, 'level' => 70, 'xp' => 800000 },
+            { 'name' => 'Woodcutting', 'rank' => 10008, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Fishing', 'rank' => 10009, 'level' => 65, 'xp' => 450000 },
+            { 'name' => 'Firemaking', 'rank' => 10010, 'level' => 50, 'xp' => 100000 },
+            { 'name' => 'Crafting', 'rank' => 10011, 'level' => 40, 'xp' => 40000 },
+            { 'name' => 'Smithing', 'rank' => 10012, 'level' => 40, 'xp' => 40000 },
+            { 'name' => 'Mining', 'rank' => 10013, 'level' => 60, 'xp' => 300000 },
+            { 'name' => 'Runecraft', 'rank' => 10014, 'level' => 44, 'xp' => 55000 },
+            # P2P skills - unranked (rank=-1, level=1, xp=0)
+            { 'name' => 'Fletching', 'rank' => -1, 'level' => 1, 'xp' => 0 },
+            { 'name' => 'Herblore', 'rank' => -1, 'level' => 1, 'xp' => 0 },
+            { 'name' => 'Agility', 'rank' => -1, 'level' => 1, 'xp' => 0 },
+            { 'name' => 'Thieving', 'rank' => -1, 'level' => 1, 'xp' => 0 },
+            { 'name' => 'Slayer', 'rank' => -1, 'level' => 1, 'xp' => 0 },
+            { 'name' => 'Farming', 'rank' => -1, 'level' => 1, 'xp' => 0 },
+            { 'name' => 'Hunter', 'rank' => -1, 'level' => 1, 'xp' => 0 },
+            { 'name' => 'Construction', 'rank' => -1, 'level' => 1, 'xp' => 0 },
+            # Minigames
+            { 'name' => 'Clue Scrolls (all)', 'rank' => 5000, 'score' => 50 },
+            { 'name' => 'Clue Scrolls (beginner)', 'rank' => 5001, 'score' => 25 },
+            { 'name' => 'LMS - Rank', 'rank' => 3000, 'score' => 500 },
+            { 'name' => 'PvP Arena - Rank', 'rank' => 2500, 'score' => 150 },
+            { 'name' => 'Collections Logged', 'rank' => 1000, 'score' => 250 },
+            { 'name' => 'Obor', 'rank' => 2000, 'score' => 10 },
+            { 'name' => 'Bryophyta', 'rank' => 2001, 'score' => 8 }
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # Should NOT flag as P2P despite having PvP Arena rank and Collections Logged
+        expect(result["potential_p2p"]).to eq(0)
+        
+        # Should store the values properly
+        expect(result[:pvp_arena_rank_score]).to eq(150)
+        expect(result[:pvp_arena_rank_rank]).to eq(2500)
+        expect(result[:collections_logged_score]).to eq(250)
+        expect(result[:collections_logged_rank]).to eq(1000)
+      end
+    end
+  end
 end

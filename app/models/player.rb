@@ -1150,7 +1150,8 @@ class Player < ActiveRecord::Base
 
     # Check if any P2P skill is trained beyond base level
     if overall > 0 && members_count > 0
-      expected_overall = f2p_sum + members_count
+      members_sum = (stats[:members_levels_sum] || stats["members_levels_sum"]).to_i
+      expected_overall = f2p_sum + members_sum
       if overall > expected_overall
         trained_p2p_levels = overall - expected_overall
         Rails.logger.info "Player #{player_name} marked as P2P: Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
@@ -1286,7 +1287,8 @@ class Player < ActiveRecord::Base
 
     # Check if any P2P skill is trained beyond base level
     if overall > 0 && members_count > 0
-      expected_overall = f2p_sum + members_count
+      members_sum = (stats[:members_levels_sum] || stats["members_levels_sum"]).to_i
+      expected_overall = f2p_sum + members_sum
       if overall > expected_overall
         trained_p2p_levels = overall - expected_overall
         Rails.logger.info "Player #{name} marked as P2P (creation): Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
@@ -1344,6 +1346,14 @@ class Player < ActiveRecord::Base
   # filter: SQL clause used to restrict which accounts are included in the ranking
   #         curently used to exclude low ehp accounts in gains and record ranks.
   def f2p_rank(rank_criteria, filter=nil)
+    # P2P players are not eligible for F2P rankings
+    unless is_f2p?
+      # Return a rank worse than all F2P players
+      # Count all F2P players and return count + 1
+      f2p_count = Player.where(Player.sql_f2p_filter).count
+      return f2p_count + 1
+    end
+
     # Construct where clause used to rank players according to provided columns
     where_clause = (1..rank_criteria.length).map do |i|
       columns = rank_criteria.take(i)
@@ -1359,7 +1369,7 @@ class Player < ActiveRecord::Base
 
       "(#{secondary_clauses} #{primary_clause})"
     end.join(" OR ")
-    
+
     # Include F2P players (potential_p2p <= 0)
     where_clause = "#{Player.sql_f2p_filter} AND (#{where_clause}) #{"AND (#{filter})" if filter}"
 

@@ -423,11 +423,14 @@ class Hiscores
         # Process based on activity type
         case internal_activity_name
         when 'p2p_minigame'
-          # Members activity/minigame detected => flag as P2P
-          # Flag if score > 0 (indicates P2P activity participation)
-          if score > 0
-            stats["potential_p2p"] = 1
-          end
+          # Members activity/minigame
+          # TEMPORARY MITIGATION: Activity-based P2P detection is disabled due to unstable
+          # OSRS hiscores CSV format causing false positives. Only skills-based detection
+          # is used until a JSON/name-based solution is implemented.
+          # Flag if score > 0 (indicates P2P activity participation) - DISABLED
+          # if score > 0
+          #   stats["potential_p2p"] = 1
+          # end
         when 'temp_gamemode'
           # Temporary game mode (Leagues, Grid Points, etc.)
           # Do NOT flag as P2P - these can have F2P components
@@ -554,12 +557,15 @@ class Hiscores
             stats["potential_p2p"] = 1
           end
         when 'p2p_minigame'
-          # Members activity/minigame detected => flag as P2P (do NOT accumulate)
-          # Flag if score > 0 (indicates P2P activity participation)
-          score = [(skill_data['score'] || 0).to_i, 0].max
-          if score > 0
-            stats["potential_p2p"] = 1
-          end
+          # Members activity/minigame
+          # TEMPORARY MITIGATION: Activity-based P2P detection is disabled due to unstable
+          # OSRS hiscores CSV format causing false positives. Only skills-based detection
+          # is used until a JSON/name-based solution is implemented.
+          # Flag if score > 0 (indicates P2P activity participation) - DISABLED
+          # score = [(skill_data['score'] || 0).to_i, 0].max
+          # if score > 0
+          #   stats["potential_p2p"] = 1
+          # end
         when 'temp_gamemode'
           # Temporary game mode (Leagues, Grid Points, etc.)
           # Do NOT flag as P2P - these can have F2P components

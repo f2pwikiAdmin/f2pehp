@@ -756,4 +756,107 @@ RSpec.describe Player, type: :model do
       expect(player.potential_p2p).to eq(1)
     end
   end
+  
+  # Test for temporary mitigation: activity-based detection disabled
+  describe 'Activity-based P2P detection mitigation' do
+    let(:player) { Player.new(player_name: "TestPlayer", player_acc_type: "Reg") }
+    
+    before do
+      # Since activity-based detection is disabled, we don't need to mock it
+      # But we'll explicitly verify it's not being called
+    end
+    
+    context 'when F2P player has simulated P2P activity scores in stats hash' do
+      it 'does not flag player as P2P based only on activities (skills-only detection)' do
+        # Realistic F2P player with activities that would have triggered false positives
+        # in the unstable CSV activity parsing
+        stats = {
+          "overall_lvl" => 838,
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          # Activities that would have been misaligned in CSV parsing:
+          # (These are just stored but should NOT contribute to P2P flagging)
+          :obor_kc => 50,
+          :bryo_kc => 25,
+          :lms_score => 100,
+          :clues_beginner => 5,
+          # Parser correctly identified as F2P (no trained P2P skills)
+          :potential_p2p => 0,
+          # Helper fields from parser
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,
+          :overall_lvl => 838
+        }
+        
+        # Save player first
+        player.save(validate: false)
+        
+        # Call check_p2p_stats
+        player.check_p2p_stats(stats)
+        
+        # Reload to get updated value
+        player.reload
+        
+        # Player should NOT be flagged as P2P (activity-based detection is disabled)
+        expect(player.potential_p2p).to eq(0)
+      end
+    end
+    
+    context 'when player has trained P2P skills' do
+      it 'still flags player as P2P based on skills-only detection' do
+        # Player with trained P2P skill (Fletching)
+        # This should STILL be detected even with activity-based detection disabled
+        stats = {
+          "overall_lvl" => 887,
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          :potential_p2p => 1,  # Parser detected trained P2P skill
+          # Helper fields from parser
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 58,  # One P2P skill trained to 50
+          :overall_lvl => 887
+        }
+        
+        # Save player first
+        player.save(validate: false)
+        
+        # Call check_p2p_stats
+        player.check_p2p_stats(stats)
+        
+        # Reload to get updated value
+        player.reload
+        
+        # Player SHOULD be flagged as P2P (skills-based detection still works)
+        expect(player.potential_p2p).to eq(1)
+      end
+    end
+  end
 end

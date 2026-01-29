@@ -541,13 +541,15 @@ RSpec.describe Hiscores do
         expect(result["potential_p2p"]).to eq(0)
       end
 
-      it 'flags P2P for minigames with actual scores' do
-        # Minigames with real scores should flag as P2P
+      # TEMPORARY MITIGATION: Activity-based P2P detection is disabled
+      # This test now verifies that P2P activities do NOT flag players
+      it 'does not flag P2P for minigames with actual scores (mitigation)' do
+        # Minigames with real scores should NOT flag as P2P due to mitigation
         json_data = {
           'skills' => [
             { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
             { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
-            # P2P minigames with actual scores
+            # P2P minigames with actual scores (would have flagged before mitigation)
             { 'name' => 'Barrows Chests', 'rank' => 5000, 'score' => 150 },
             { 'name' => 'Chambers of Xeric', 'rank' => 3000, 'score' => 25 }
           ]
@@ -555,8 +557,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Should flag as P2P (value = 1) when minigames have scores
-        expect(result["potential_p2p"]).to eq(1)
+        # TEMPORARY MITIGATION: Should NOT flag as P2P (activities disabled)
+        expect(result["potential_p2p"]).to eq(0)
       end
 
       it 'handles P2P minigames with missing score field correctly' do
@@ -576,21 +578,23 @@ RSpec.describe Hiscores do
         expect(result["potential_p2p"]).to eq(0)
       end
 
-      it 'flags P2P for unranked minigames with positive scores' do
-        # Even unranked minigames with scores should flag as P2P
+      # TEMPORARY MITIGATION: Activity-based P2P detection is disabled
+      # This test now verifies that P2P activities do NOT flag players
+      it 'does not flag P2P for unranked minigames with positive scores (mitigation)' do
+        # Even unranked minigames with scores should NOT flag as P2P due to mitigation
         json_data = {
           'skills' => [
             { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
             { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
-            # Unranked but with score (possible edge case)
+            # Unranked but with score (would have flagged before mitigation)
             { 'name' => 'Giant Mole', 'rank' => -1, 'score' => 5 }
           ]
         }
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Should flag as P2P (value = 1) since score > 0
-        expect(result["potential_p2p"]).to eq(1)
+        # TEMPORARY MITIGATION: Should NOT flag as P2P (activities disabled)
+        expect(result["potential_p2p"]).to eq(0)
       end
     end
 

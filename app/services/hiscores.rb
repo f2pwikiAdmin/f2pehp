@@ -44,9 +44,9 @@ class Hiscores
     'Hunter' => 'p2p',
     'Construction' => 'p2p',
     'Sailing' => 'p2p',
-    'Grid Points' => 'p2p_minigame',
-    'League Points' => 'p2p_minigame',
-    'Deadman Points' => 'p2p_minigame',
+    'Grid Points' => 'temp_gamemode',  # Temporary game mode - may have F2P components
+    'League Points' => 'temp_gamemode',  # Leagues have F2P content - do NOT flag as P2P
+    'Deadman Points' => 'p2p_minigame',  # Deadman is members-only
     'Bounty Hunter - Hunter' => 'p2p_minigame',
     'Bounty Hunter - Rogue' => 'p2p_minigame',
     'Bounty Hunter (Legacy) - Hunter' => 'p2p_minigame',
@@ -420,6 +420,11 @@ class Hiscores
           if score > 0
             stats["potential_p2p"] = 1
           end
+        when 'temp_gamemode'
+          # Temporary game mode (Leagues, Grid Points, etc.)
+          # Do NOT flag as P2P - these can have F2P components
+          # Just store the score for tracking but don't set potential_p2p
+          # These are ignored in P2P detection
         when 'lms'
           # LMS is F2P
           stats[:lms_score] = score
@@ -529,6 +534,11 @@ class Hiscores
           if score > 0
             stats["potential_p2p"] = 1
           end
+        when 'temp_gamemode'
+          # Temporary game mode (Leagues, Grid Points, etc.)
+          # Do NOT flag as P2P - these can have F2P components
+          # Just store the score for tracking but don't set potential_p2p
+          # These are ignored in P2P detection
         when 'lms'
           # LMS is F2P
           score = [(skill_data['score'] || 0).to_i, 0].max

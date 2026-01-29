@@ -668,4 +668,92 @@ RSpec.describe Player, type: :model do
       expect(@p2p_player.is_f2p?).to be false
     end
   end
+
+  describe '#check_p2p_stats with missing helper fields' do
+    let(:player) { Player.new(player_name: "TestPlayerNoHelpers", player_acc_type: "Reg") }
+    
+    before do
+      allow_any_instance_of(Player).to receive(:check_p2p_hiscores_content).and_return(false)
+    end
+    
+    it 'does not falsely flag F2P player as P2P when helper fields are missing' do
+      # This simulates the bug scenario: stats hash without helper fields
+      # (e.g., when recalculate_current_ehp is called or rake task builds incomplete hash)
+      stats = {
+        "overall_lvl" => 838,  # F2P level
+        "attack_lvl" => 60,
+        "strength_lvl" => 60,
+        "defence_lvl" => 60,
+        "hitpoints_lvl" => 60,
+        "ranged_lvl" => 60,
+        "prayer_lvl" => 45,
+        "magic_lvl" => 55,
+        "cooking_lvl" => 70,
+        "woodcutting_lvl" => 60,
+        "fishing_lvl" => 65,
+        "firemaking_lvl" => 50,
+        "crafting_lvl" => 40,
+        "smithing_lvl" => 40,
+        "mining_lvl" => 60,
+        "runecraft_lvl" => 44,
+        "potential_p2p" => 0
+        # NOTE: No helper fields (f2p_levels_sum, members_skill_count, members_levels_sum)
+      }
+      
+      # Save player first
+      player.save(validate: false)
+      
+      # Call check_p2p_stats with incomplete stats
+      player.check_p2p_stats(stats)
+      
+      # Reload to get updated value
+      player.reload
+      
+      # Player should NOT be falsely flagged as P2P
+      # The fix ensures Check 1b is skipped when helper fields are missing
+      expect(player.potential_p2p).to eq(0)
+    end
+    
+    it 'still correctly flags P2P when total level exceeds F2P max, even without helper fields' do
+      stats = {
+        "overall_lvl" => 1600,  # Exceeds F2P max of 1494
+        "attack_lvl" => 99,
+        "potential_p2p" => 0
+        # NOTE: No helper fields
+      }
+      
+      # Save player first
+      player.save(validate: false)
+      
+      # Call check_p2p_stats
+      player.check_p2p_stats(stats)
+      
+      # Reload to get updated value
+      player.reload
+      
+      # Player should be flagged as P2P (Check 1a works without helper fields)
+      expect(player.potential_p2p).to eq(1)
+    end
+    
+    it 'still correctly flags P2P when parser detects P2P, even without helper fields' do
+      stats = {
+        "overall_lvl" => 838,
+        "attack_lvl" => 60,
+        "potential_p2p" => 1  # Parser detected P2P
+        # NOTE: No helper fields
+      }
+      
+      # Save player first
+      player.save(validate: false)
+      
+      # Call check_p2p_stats
+      player.check_p2p_stats(stats)
+      
+      # Reload to get updated value
+      player.reload
+      
+      # Player should be flagged as P2P (Check 0 works without helper fields)
+      expect(player.potential_p2p).to eq(1)
+    end
+  end
 end

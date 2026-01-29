@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_12_24_175155) do
+ActiveRecord::Schema[7.0].define(version: 2026_01_29_165315) do
   create_table "clans", force: :cascade do |t|
     t.string "name"
     t.string "symbol_link"
@@ -383,6 +383,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_24_175155) do
     t.integer "failed_updates", default: 0
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
+    t.text "hiscores_extras"
   end
 
   create_table "users", force: :cascade do |t|

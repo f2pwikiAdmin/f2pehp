@@ -574,13 +574,13 @@ class Player < ActiveRecord::Base
   end
 
   def calc_combat(stats_hash)
-    att = stats_hash["attack_lvl"]
-    str = stats_hash["strength_lvl"]
-    defence = stats_hash["defence_lvl"]
-    hp = stats_hash["hitpoints_lvl"]
-    ranged = stats_hash["ranged_lvl"]
-    magic = stats_hash["magic_lvl"]
-    pray = stats_hash["prayer_lvl"]
+    att = stats_hash["attack_lvl"] || self.read_attribute("attack_lvl")
+    str = stats_hash["strength_lvl"] || self.read_attribute("strength_lvl")
+    defence = stats_hash["defence_lvl"] || self.read_attribute("defence_lvl")
+    hp = stats_hash["hitpoints_lvl"] || self.read_attribute("hitpoints_lvl")
+    ranged = stats_hash["ranged_lvl"] || self.read_attribute("ranged_lvl")
+    magic = stats_hash["magic_lvl"] || self.read_attribute("magic_lvl")
+    pray = stats_hash["prayer_lvl"] || self.read_attribute("prayer_lvl")
 
     base = 0.25 * (defence + hp + (pray/2).floor)
     melee = 0.325 * (att + str)
@@ -703,7 +703,10 @@ class Player < ActiveRecord::Base
       
       # Store extras in hiscores_extras column if any exist
       if extras.any?
-        stats_to_assign[:hiscores_extras] = extras.to_json
+        stats_to_assign[:hiscores_extras] = extras
+      else
+        # Clear hiscores_extras if no extras to store
+        stats_to_assign[:hiscores_extras] = nil
       end
       
       # Assign only known attributes to the model
@@ -857,6 +860,9 @@ class Player < ActiveRecord::Base
   end
 
   def calc_skill_ehp(xp, tiers, xphrs)
+    # Handle nil xp by defaulting to 0, and convert to integer
+    xp = (xp || 0).to_i
+    
     ehp = 0
     tiers.each.with_index do |tier, idx|
       tier = tier.to_f
@@ -885,14 +891,14 @@ class Player < ActiveRecord::Base
     ttm = 0
     F2POSRSRanks::Application.config.skills.each do |skill|
       if skill != "p2p" and skill != "overall" and skill != "lms" and skill != "p2p_minigame" and skill != "clues_all" and skill != "clues_beginner" and skill != "obor_kc" and skill != "bryophyta_kc"
-        skill_xp = stats_hash["#{skill}_xp"]
+        skill_xp = stats_hash["#{skill}_xp"] || self.read_attribute("#{skill}_xp")
         if lvl_or_xp == "lvl" and skill_xp >= 13034431
           next
         elsif lvl_or_xp == "xp" and skill_xp == 200000000
           next
         end
 
-        skill_ehp = stats_hash["#{skill}_ehp"]
+        skill_ehp = stats_hash["#{skill}_ehp"] || self.read_attribute("#{skill}_ehp")
         adjusted_skill_ehp = calc_skill_ehp(skill_xp, ehp["#{skill}_tiers"], ehp["#{skill}_xphrs"])
         if lvl_or_xp == "lvl"
           max_ehp = calc_max_lvl_ehp(ehp["#{skill}_tiers"], ehp["#{skill}_xphrs"])
@@ -934,7 +940,8 @@ class Player < ActiveRecord::Base
     bonuses = {}
     bonus_xps.each do |ratio, bonus_for, bonus_from, start_xp, end_xp|
       skill_from = stats_hash["#{bonus_from}_xp"]
-      if skill_from <= start_xp.to_i
+      # Skip if skill_from is nil (skill not included in this update) or below threshold
+      if skill_from.nil? || skill_from <= start_xp.to_i
         next
       end
 
@@ -961,6 +968,10 @@ class Player < ActiveRecord::Base
     stats_list.each.with_index do |skill, skill_idx|
       skill_lvl = stats_hash["#{skill}_lvl"]
       skill_xp = stats_hash["#{skill}_xp"]
+      
+      # Fallback to current database values if not provided in update
+      skill_lvl ||= self.read_attribute("#{skill}_lvl")
+      skill_xp ||= self.read_attribute("#{skill}_xp")
 
       skill_tiers = ehp["#{skill}_tiers"]
       skill_xphrs = ehp["#{skill}_xphrs"]
@@ -1050,6 +1061,9 @@ class Player < ActiveRecord::Base
   end
 
   def calc_tiered_ehp(skill_tiers, skill_xphrs, skill_xp)
+    # Handle nil skill_xp by defaulting to 0, and convert to integer
+    skill_xp = (skill_xp || 0).to_i
+    
     skill_ehp = 0.0
     skill_tiers.each.with_index do |skill_tier, tier_idx|
       skill_tier = skill_tier.to_f

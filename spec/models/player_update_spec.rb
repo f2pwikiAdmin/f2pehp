@@ -64,9 +64,9 @@ RSpec.describe Player, type: :model do
       expect(player.overall_xp).to eq(1100000)
       expect(player.overall_lvl).to eq(510)
       
-      # Verify extras were stored
+      # Verify extras were stored (auto-deserialized by serialize)
       expect(player.hiscores_extras).to be_present
-      extras = JSON.parse(player.hiscores_extras)
+      extras = player.hiscores_extras
       expect(extras['pvp_arena_rank_score']).to eq(150)
       expect(extras['pvp_arena_rank_rank']).to eq(2500)
       expect(extras['collections_logged_score']).to eq(250)
@@ -89,8 +89,8 @@ RSpec.describe Player, type: :model do
       # Known attribute should be set directly
       expect(player.lms_score).to eq(500)
       
-      # Unknown key should be in hiscores_extras
-      extras = JSON.parse(player.hiscores_extras)
+      # Unknown key should be in hiscores_extras (auto-deserialized by serialize)
+      extras = player.hiscores_extras
       expect(extras['pvp_arena_rank_score']).to eq(100)
       expect(extras).not_to have_key('lms_score')
       expect(extras).not_to have_key('overall_xp')

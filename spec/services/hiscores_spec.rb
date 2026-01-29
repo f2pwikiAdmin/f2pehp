@@ -237,6 +237,140 @@ RSpec.describe Hiscores do
         # Unranked sailing should not contribute to P2P detection
         expect(result["potential_p2p"]).to eq(0)
       end
+      
+      # Test for temporary mitigation: activity-based P2P detection disabled
+      it 'does not flag F2P player as P2P based on P2P activities (mitigation)' do
+        # F2P player with simulated misaligned P2P boss KCs/clues that would have
+        # caused false positives in unstable CSV parsing
+        csv_data = [
+          '12345,750,15000000',    # Overall
+          '10000,60,300000',       # Attack
+          '10001,60,300000',       # Defence
+          '10002,60,300000',       # Strength
+          '10003,60,300000',       # Hitpoints
+          '10004,60,300000',       # Ranged
+          '10005,45,60000',        # Prayer
+          '10006,55,170000',       # Magic
+          '10007,70,800000',       # Cooking
+          '10008,60,300000',       # Woodcutting
+          '-1,1,0',                # Fletching (P2P, unranked)
+          '10009,65,450000',       # Fishing
+          '10010,50,100000',       # Firemaking
+          '10011,40,40000',        # Crafting
+          '10012,40,40000',        # Smithing
+          '10013,60,300000',       # Mining
+          '-1,1,0',                # Herblore (P2P, unranked)
+          '-1,1,0',                # Agility (P2P, unranked)
+          '-1,1,0',                # Thieving (P2P, unranked)
+          '-1,1,0',                # Slayer (P2P, unranked)
+          '-1,1,0',                # Farming (P2P, unranked)
+          '10014,44,55000',        # Runecraft
+          '-1,1,0',                # Hunter (P2P, unranked)
+          '-1,1,0',                # Construction (P2P, unranked)
+          '-1,1,0',                # Sailing (unranked)
+          # Activities - simulate misaligned/unstable data that could cause false positives
+          '-1,0',                  # Grid Points
+          '-1,0',                  # League Points
+          '-1,0',                  # Deadman Points
+          '-1,0',                  # Bounty Hunter - Hunter
+          '-1,0',                  # Bounty Hunter - Rogue
+          '-1,0',                  # Bounty Hunter (Legacy) - Hunter
+          '-1,0',                  # Bounty Hunter (Legacy) - Rogue
+          '5000,50',               # Clue Scrolls (all)
+          '5001,25',               # Clue Scrolls (beginner)
+          '100,10',                # Clue Scrolls (easy) - P2P clue (would have flagged before)
+          '100,5',                 # Clue Scrolls (medium) - P2P clue
+          '-1,0',                  # Clue Scrolls (hard)
+          '-1,0',                  # Clue Scrolls (elite)
+          '-1,0',                  # Clue Scrolls (master)
+          '3000,500',              # LMS - Rank
+          '-1,0',                  # PvP Arena - Rank
+          '-1,0',                  # Soul Wars Zeal - P2P
+          '-1,0',                  # Rifts closed
+          '-1,0',                  # Colosseum Glory
+          '-1,0',                  # Collections Logged
+          '-1,0',                  # Abyssal Sire
+          '-1,0',                  # Alchemical Hydra
+          '-1,0',                  # Amoxliatl
+          '-1,0',                  # Araxxor
+          '-1,0',                  # Artio
+          '200,50',                # Barrows Chests - P2P boss (would have flagged before)
+          '2001,8',                # Bryophyta (F2P boss)
+          '-1,0',                  # Callisto
+          '-1,0',                  # Calvar'ion
+          '-1,0',                  # Cerberus
+          '-1,0',                  # Chambers of Xeric
+          '-1,0',                  # Chambers of Xeric: Challenge Mode
+          '-1,0',                  # Chaos Elemental
+          '-1,0',                  # Chaos Fanatic
+          '-1,0',                  # Commander Zilyana
+          '-1,0',                  # Corporeal Beast
+          '-1,0',                  # Crazy Archaeologist
+          '-1,0',                  # Dagannoth Prime
+          '-1,0',                  # Dagannoth Rex
+          '-1,0',                  # Dagannoth Supreme
+          '-1,0',                  # Deranged Archaeologist
+          '-1,0',                  # Doom of Mokhaiotl
+          '-1,0',                  # Duke Sucellus
+          '-1,0',                  # General Graardor
+          '-1,0',                  # Giant Mole
+          '-1,0',                  # Grotesque Guardians
+          '-1,0',                  # Hespori
+          '-1,0',                  # Kalphite Queen
+          '-1,0',                  # King Black Dragon
+          '-1,0',                  # Kraken
+          '-1,0',                  # Kree'Arra
+          '-1,0',                  # K'ril Tsutsaroth
+          '-1,0',                  # Lunar Chests
+          '-1,0',                  # Mimic
+          '-1,0',                  # Nex
+          '-1,0',                  # Nightmare
+          '-1,0',                  # Phosani's Nightmare
+          '2000,10',               # Obor (F2P boss)
+          '-1,0',                  # Phantom Muspah
+          '-1,0',                  # Sarachnis
+          '-1,0',                  # Scorpia
+          '-1,0',                  # Scurrius
+          '-1,0',                  # Shellbane Gryphon
+          '-1,0',                  # Skotizo
+          '-1,0',                  # Sol Heredit
+          '-1,0',                  # Spindel
+          '-1,0',                  # Tempoross
+          '-1,0',                  # The Gauntlet
+          '-1,0',                  # The Corrupted Gauntlet
+          '-1,0',                  # The Hueycoatl
+          '-1,0',                  # The Leviathan
+          '-1,0',                  # The Royal Titans
+          '-1,0',                  # The Whisperer
+          '-1,0',                  # Theatre of Blood
+          '-1,0',                  # Theatre of Blood: Hard Mode
+          '-1,0',                  # Thermy
+          '-1,0',                  # Tombs of Amascut
+          '-1,0',                  # Tombs of Amascut: Expert Mode
+          '-1,0',                  # TzKal-Zuk
+          '-1,0',                  # TzTok-Jad
+          '-1,0',                  # Vardorvis
+          '-1,0',                  # Venenatis
+          '-1,0',                  # Vet'ion
+          '-1,0',                  # Vorkath
+          '-1,0',                  # Wintertodt
+          '-1,0',                  # Yama
+          '-1,0',                  # Zalcano
+          '300,100',               # Zulrah - P2P boss (would have flagged before)
+        ].join("\n")
+
+        result = Hiscores.send(:parse_stats_csv, csv_data)
+
+        # TEMPORARY MITIGATION: Activity-based P2P detection is disabled
+        # Player should NOT be flagged as P2P even with P2P boss KC and clues
+        # Only skills-based detection is used
+        expect(result["potential_p2p"]).to eq(0)
+        
+        # Activities should still be parsed and stored (for future use)
+        expect(result[:obor_kc]).to eq(10)
+        expect(result[:bryo_kc]).to eq(8)
+        expect(result[:lms_score]).to eq(500)
+      end
     end
 
     context 'with invalid CSV data' do
@@ -407,13 +541,15 @@ RSpec.describe Hiscores do
         expect(result["potential_p2p"]).to eq(0)
       end
 
-      it 'flags P2P for minigames with actual scores' do
-        # Minigames with real scores should flag as P2P
+      # TEMPORARY MITIGATION: Activity-based P2P detection is disabled
+      # This test now verifies that P2P activities do NOT flag players
+      it 'does not flag P2P for minigames with actual scores (mitigation)' do
+        # Minigames with real scores should NOT flag as P2P due to mitigation
         json_data = {
           'skills' => [
             { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
             { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
-            # P2P minigames with actual scores
+            # P2P minigames with actual scores (would have flagged before mitigation)
             { 'name' => 'Barrows Chests', 'rank' => 5000, 'score' => 150 },
             { 'name' => 'Chambers of Xeric', 'rank' => 3000, 'score' => 25 }
           ]
@@ -421,8 +557,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Should flag as P2P (value = 1) when minigames have scores
-        expect(result["potential_p2p"]).to eq(1)
+        # TEMPORARY MITIGATION: Should NOT flag as P2P (activities disabled)
+        expect(result["potential_p2p"]).to eq(0)
       end
 
       it 'handles P2P minigames with missing score field correctly' do
@@ -442,21 +578,23 @@ RSpec.describe Hiscores do
         expect(result["potential_p2p"]).to eq(0)
       end
 
-      it 'flags P2P for unranked minigames with positive scores' do
-        # Even unranked minigames with scores should flag as P2P
+      # TEMPORARY MITIGATION: Activity-based P2P detection is disabled
+      # This test now verifies that P2P activities do NOT flag players
+      it 'does not flag P2P for unranked minigames with positive scores (mitigation)' do
+        # Even unranked minigames with scores should NOT flag as P2P due to mitigation
         json_data = {
           'skills' => [
             { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
             { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
-            # Unranked but with score (possible edge case)
+            # Unranked but with score (would have flagged before mitigation)
             { 'name' => 'Giant Mole', 'rank' => -1, 'score' => 5 }
           ]
         }
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Should flag as P2P (value = 1) since score > 0
-        expect(result["potential_p2p"]).to eq(1)
+        # TEMPORARY MITIGATION: Should NOT flag as P2P (activities disabled)
+        expect(result["potential_p2p"]).to eq(0)
       end
     end
 

@@ -1170,8 +1170,10 @@ class Player < ActiveRecord::Base
       end
     end
 
-    # ALL players now undergo detailed verification (new comprehensive P2P detection)
-    # This includes checking: P2P XP levels, boss KC, and clue scrolls
+    # ALL players now undergo detailed verification (skills-based P2P detection)
+    # TEMPORARY MITIGATION: Activity-based checks (boss KC, clue scrolls) are disabled
+    # due to unstable OSRS hiscores CSV format causing false positives.
+    # This includes checking: P2P skill XP levels and deterministic reconciliation
     # REMOVED: false_banned bypass - all players should go through the same verification
     is_p2p = detailed_p2p_verification(stats)
     update(potential_p2p: is_p2p ? 1 : 0)
@@ -1222,17 +1224,20 @@ class Player < ActiveRecord::Base
 
     # Check 2: P2P boss KC (excluding F2P bosses Obor and Bryophyta)
     # Check 3: P2P clue scrolls (excluding beginner clues which are F2P)
-    # These checks are done by fetching raw hiscores data
-    begin
-      has_p2p_content = check_p2p_hiscores_content
-      if has_p2p_content
-        Rails.logger.info "Player #{player_name} marked as P2P: Has P2P boss KC or clue scrolls"
-        return true
-      end
-    rescue => e
-      Rails.logger.warn "Could not verify P2P hiscores content for #{player_name}: #{e.message}"
-      # If we can't check, assume F2P (benefit of the doubt)
-    end
+    # TEMPORARY MITIGATION: Activity-based P2P detection is disabled due to unstable
+    # OSRS hiscores CSV format causing false positives. Only skills-based detection
+    # is used until a JSON/name-based solution is implemented.
+    # These checks are done by fetching raw hiscores data - DISABLED
+    # begin
+    #   has_p2p_content = check_p2p_hiscores_content
+    #   if has_p2p_content
+    #     Rails.logger.info "Player #{player_name} marked as P2P: Has P2P boss KC or clue scrolls"
+    #     return true
+    #   end
+    # rescue => e
+    #   Rails.logger.warn "Could not verify P2P hiscores content for #{player_name}: #{e.message}"
+    #   # If we can't check, assume F2P (benefit of the doubt)
+    # end
 
     # Passed all checks - player is truly F2P
     Rails.logger.info "Player #{player_name} passed detailed P2P verification - marked as F2P"
@@ -1241,6 +1246,9 @@ class Player < ActiveRecord::Base
 
   # Check if player has P2P boss KC or P2P clue scrolls
   # Returns true if player has any P2P content in hiscores
+  # TEMPORARY MITIGATION: This method is currently DISABLED to prevent false positives.
+  # Activity-based P2P detection is disabled due to unstable OSRS hiscores CSV format.
+  # Only skills-based detection is used until a JSON/name-based solution is implemented.
   def check_p2p_hiscores_content
 
     # Build the API URL

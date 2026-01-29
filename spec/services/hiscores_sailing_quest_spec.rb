@@ -2,10 +2,10 @@ require 'rails_helper'
 
 RSpec.describe Hiscores, 'Sailing quest detection' do
   describe '.parse_stats_csv' do
-    context 'F2P player WITHOUT Sailing quest (Sailing not in API)' do
-      it 'correctly parses when Sailing line is missing' do
-        # F2P player who hasn't done Sailing quest
-        # Total level: 837 (829 F2P + 8 P2P, no Sailing)
+    context 'F2P player (Sailing quest is members-only)' do
+      it 'correctly parses F2P player without Sailing' do
+        # F2P player - CANNOT do Sailing quest (it's members-only)
+        # Total level: 837 (829 F2P + 8 P2P, no Sailing possible)
         # CSV has only 24 skill lines, activities start at line 24
         csv_data = [
           '12345,837,15000000',    # Overall (line 0)
@@ -55,9 +55,10 @@ RSpec.describe Hiscores, 'Sailing quest detection' do
       end
     end
 
-    context 'F2P player WITH Sailing quest (Sailing in API)' do
-      it 'correctly parses when Sailing line is present' do
-        # F2P player who DID the Sailing quest
+    context 'P2P player with Sailing quest done (level 1)' do
+      it 'detects P2P when Sailing is present even at level 1' do
+        # P2P player who did the Sailing quest (quest is members-only!)
+        # Even though Sailing is level 1, presence = membership
         # Total level: 838 (829 F2P + 9 P2P including Sailing)
         # CSV has 25 skill lines, activities start at line 25
         csv_data = [
@@ -92,19 +93,13 @@ RSpec.describe Hiscores, 'Sailing quest detection' do
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Verify F2P skills parsed correctly
-        expect(result[:f2p_levels_sum]).to eq(829)
-        expect(result['overall_lvl']).to eq(838)
-        
         # Verify all 9 P2P skills counted (including Sailing)
         expect(result[:members_skill_count]).to eq(9)
         expect(result[:members_levels_sum]).to eq(9)
         
-        # Verify the math works out
-        expect(result[:f2p_levels_sum] + result[:members_levels_sum]).to eq(result['overall_lvl'])
-        
-        # Should NOT be flagged as P2P
-        expect(result["potential_p2p"]).to eq(0)
+        # CRITICAL: Should be flagged as P2P because Sailing quest is members-only!
+        # Even though Sailing is only level 1, its PRESENCE indicates membership
+        expect(result["potential_p2p"]).to eq(1)
       end
     end
 

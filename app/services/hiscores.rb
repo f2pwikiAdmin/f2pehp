@@ -43,7 +43,7 @@ class Hiscores
     'Runecraft' => 'runecraft',
     'Hunter' => 'p2p',
     'Construction' => 'p2p',
-    'Sailing' => 'p2p',  # May not be present for F2P players without Sailing quest
+    'Sailing' => 'p2p',  # Members-only quest - presence indicates P2P membership
     'Grid Points' => 'temp_gamemode',  # Temporary game mode - may have F2P components
     'League Points' => 'temp_gamemode',  # Leagues have F2P content - do NOT flag as P2P
     'Deadman Points' => 'p2p_minigame',  # Deadman is members-only
@@ -310,7 +310,8 @@ class Hiscores
       
       # CSV line order matches this skill/activity order
       # Lines 0-24: Skills (Overall, Attack, Defence, ..., Construction, Sailing)
-      # Note: Sailing (line 24) may not be present for F2P players who haven't done the Sailing quest
+      # Note: Sailing (line 24) ONLY for P2P players - quest is members-only!
+      # F2P players: 24 skills (no Sailing), P2P players: 25 skills (with Sailing)
       # Lines 25+ (or 24+ if no Sailing): Activities (Clue Scrolls, Bounty Hunter, LMS, Bosses, etc.)
       csv_skill_order = [
         'Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer', 'Magic',
@@ -345,13 +346,21 @@ class Hiscores
       ]
       
       # Detect if Sailing is actually present in the CSV data
-      # F2P players without the Sailing quest may not have line 24 (Sailing)
+      # IMPORTANT: Sailing quest is MEMBERS-ONLY - F2P players CANNOT do it
+      # If Sailing appears at ANY level (even 1), player has membership → P2P
       # Detection: Check if line 24 exists and has 3 values (skill) vs 2 values (activity)
       sailing_present = false
       if lines.length > 24
         line_24_values = lines[24].split(',').map(&:strip)
         # Skills have 3 values (rank, level, xp), activities have 2 (rank, score)
         sailing_present = line_24_values.length >= 3
+      end
+      
+      # If Sailing is present, player has done a members-only quest → P2P
+      # Mark as P2P immediately (even if Sailing is only level 1)
+      if sailing_present
+        stats["potential_p2p"] = 1
+        Rails.logger.info "Sailing skill detected - marking as P2P (Sailing quest requires membership)"
       end
       
       # Adjust skill order if Sailing is not present

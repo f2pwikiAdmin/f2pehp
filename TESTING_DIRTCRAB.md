@@ -78,9 +78,9 @@ This tests the verification logic with synthetic data:
 Total F2P maximum         = 1493
 ```
 
-Note: Sailing skill is omitted as F2P players may not have it in their hiscores.
+Note: Sailing quest is MEMBERS-ONLY - F2P players cannot have Sailing at all.
 
-Any player with total level > 1493 has trained P2P skills.
+Any player with total level > 1493 OR with Sailing present has P2P membership.
 
 ## Testing Other Players
 

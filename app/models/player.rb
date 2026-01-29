@@ -24,11 +24,11 @@ class Player < ActiveRecord::Base
   # - 15 F2P skills (Attack, Defence, Strength, Hitpoints, Ranged, Prayer, Magic,
   #   Cooking, Woodcutting, Fishing, Firemaking, Crafting, Smithing, Mining, Runecraft)
   #   at 99 each = 1485
-  # - 9 P2P skills (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction, Sailing)
-  #   at base level 1 each = 9
-  # - Total = 1494
-  # Note: F2P players who did the Sailing quest will have all 9 P2P skills at level 1
-  F2P_MAX_TOTAL = 1494
+  # - 8 P2P skills (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction)
+  #   at base level 1 each = 8
+  # - Total = 1493
+  # Note: Sailing quest is MEMBERS-ONLY - F2P players cannot have Sailing
+  F2P_MAX_TOTAL = 1493
 
   # P2P bosses (excluding F2P bosses Obor and Bryophyta)
   P2P_BOSSES = [

@@ -12,7 +12,7 @@
 # What it does:
 #   1. Fetches hiscores data for each player in the false_p2p_flagged list
 #   2. Checks if they have kill counts for any P2P bosses
-#   3. Excludes F2P bosses (Obor, Bryophyta, and Brutus) from the check
+#   3. Excludes F2P bosses (Obor and Bryophyta) from the check
 #   4. Reports which players should be removed from the list
 #
 # Output:
@@ -21,11 +21,11 @@
 #   - Summary with actionable recommendations
 
 namespace :players do
-  desc "Check false_p2p_flagged list for players with P2P boss KC (excluding Obor, Bryophyta, and Brutus)"
+  desc "Check false_p2p_flagged list for players with P2P boss KC (excluding Obor and Bryophyta)"
   task check_boss_kc: :environment do
     # P2P boss names from OSRS hiscores API
     # These are the boss names that appear in the API response, mapped to p2p_minigame
-    # Obor, Bryophyta, and Brutus are F2P bosses and should be excluded from this check
+    # Obor and Bryophyta are F2P bosses and should be excluded from this check
     P2P_BOSSES = [
       'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
       'Callisto', "Calvar'ion", 'Cerberus', 'Chambers of Xeric',
@@ -62,7 +62,7 @@ namespace :players do
         'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
         'Colosseum Glory', 'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
         'Chaos Elemental', 'Callisto', "Calvar'ion", 'Cerberus', 'Chambers of Xeric',
-        'Chambers of Xeric: Challenge Mode', 'Bryophyta', 'Brutus', 'Chaos Fanatic', 'Commander Zilyana',
+        'Chambers of Xeric: Challenge Mode', 'Bryophyta', 'Chaos Fanatic', 'Commander Zilyana',
         'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
         'Dagannoth Supreme', 'Deranged Archaeologist', 'Duke Sucellus', 'General Graardor',
         'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen', 'King Black Dragon',
@@ -104,7 +104,7 @@ namespace :players do
     puts "=" * 80
     puts ""
     puts "NOTE: This check looks specifically for P2P boss kill counts."
-    puts "Obor, Bryophyta, and Brutus are excluded as they are F2P bosses."
+    puts "Obor and Bryophyta are excluded as they are F2P bosses."
     puts ""
 
     false_flagged_list = F2POSRSRanks::Application.config.false_p2p_flagged

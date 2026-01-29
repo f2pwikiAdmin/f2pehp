@@ -49,7 +49,7 @@ namespace :players do
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
         'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
         'Colosseum Glory', 'Collections Logged', 'Abyssal Sire', 'Alchemical Hydra', 'Amoxliatl',
-        'Araxxor', 'Artio', 'Barrows Chests', 'Bryophyta', 'Brutus', 'Callisto', "Calvar'ion", 'Cerberus',
+        'Araxxor', 'Artio', 'Barrows Chests', 'Bryophyta', 'Callisto', "Calvar'ion", 'Cerberus',
         'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic',
         'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
         'Dagannoth Supreme', 'Deranged Archaeologist', 'Doom of Mokhaiotl', 'Duke Sucellus',

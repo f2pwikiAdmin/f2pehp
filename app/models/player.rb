@@ -22,7 +22,7 @@ class Player < ActiveRecord::Base
   # With 9 P2P skills at base level 1 = 1494
   F2P_MAX_TOTAL = 1494
 
-  # P2P bosses (excluding F2P bosses Obor, Bryophyta, and Brutus)
+  # P2P bosses (excluding F2P bosses Obor and Bryophyta)
   P2P_BOSSES = [
     'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
     'Callisto', "Calvar'ion", 'Cerberus', 'Chambers of Xeric',
@@ -1221,7 +1221,7 @@ class Player < ActiveRecord::Base
       'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
       'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
       'Colosseum Glory', 'Collections Logged', 'Abyssal Sire', 'Alchemical Hydra', 'Amoxliatl',
-      'Araxxor', 'Artio', 'Barrows Chests', 'Bryophyta', 'Brutus', 'Callisto', "Calvar'ion", 'Cerberus',
+      'Araxxor', 'Artio', 'Barrows Chests', 'Bryophyta', 'Callisto', "Calvar'ion", 'Cerberus',
       'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic',
       'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
       'Dagannoth Supreme', 'Deranged Archaeologist', 'Doom of Mokhaiotl', 'Duke Sucellus',

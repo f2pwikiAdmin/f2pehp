@@ -105,7 +105,7 @@ class Hiscores
     'Phantom Muspah' => 'p2p_minigame',
     'Sarachnis' => 'p2p_minigame',
     'Scorpia' => 'p2p_minigame',
-    'Scurrius' => 'p2p_minigame',
+    'Scurrius' => 'scurrius_kc',
     'Shellbane Gryphon' => 'p2p_minigame',
     'Skotizo' => 'p2p_minigame',
     'Sol Heredit' => 'p2p_minigame',

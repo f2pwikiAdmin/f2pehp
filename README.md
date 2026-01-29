@@ -143,7 +143,7 @@ bundle exec rake players:check_false_p2p_flagged
 
 #### Check for P2P Boss KC
 
-Checks if players in the false_p2p_flagged list have kill counts for P2P bosses (excluding F2P bosses Obor and Bryophyta):
+Checks if players in the false_p2p_flagged list have kill counts for P2P bosses (excluding F2P bosses Obor, Bryophyta, and Brutus):
 
 ```bash
 bundle exec rake players:check_boss_kc

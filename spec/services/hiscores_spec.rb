@@ -60,6 +60,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Calvar'ion
           '-1,0',                  # Cerberus
           '2001,8',                # Bryophyta (activity index 25 - F2P boss)
+          '-1,0',                  # Brutus (F2P boss)
           '-1,0',                  # Chambers of Xeric
           '-1,0',                  # Chambers of Xeric: Challenge Mode
           '-1,0',                  # Chaos Elemental

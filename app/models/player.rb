@@ -1139,8 +1139,6 @@ class Player < ActiveRecord::Base
     # Check 1: P2P XP levels
     # Check if total level exceeds F2P maximum or if any P2P skill is trained
     overall = (stats[:overall_lvl] || stats["overall_lvl"]).to_i
-    f2p_sum = (stats[:f2p_levels_sum] || stats["f2p_levels_sum"]).to_i
-    members_count = (stats[:members_skill_count] || stats["members_skill_count"]).to_i
 
     # Check if total level exceeds F2P maximum
     if overall > F2P_MAX_TOTAL
@@ -1149,13 +1147,22 @@ class Player < ActiveRecord::Base
     end
 
     # Check if any P2P skill is trained beyond base level
-    if overall > 0 && members_count > 0
+    # IMPORTANT: Only perform this check if helper fields are present (they come from hiscores parser)
+    # If they're missing, we can't reliably determine P2P skill training from levels alone
+    has_helper_fields = stats.key?(:f2p_levels_sum) || stats.key?("f2p_levels_sum")
+    if has_helper_fields && overall > 0
+      f2p_sum = (stats[:f2p_levels_sum] || stats["f2p_levels_sum"]).to_i
+      members_count = (stats[:members_skill_count] || stats["members_skill_count"]).to_i
       members_sum = (stats[:members_levels_sum] || stats["members_levels_sum"]).to_i
-      expected_overall = f2p_sum + members_sum
-      if overall > expected_overall
-        trained_p2p_levels = overall - expected_overall
-        Rails.logger.info "Player #{player_name} marked as P2P: Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
-        return true
+      
+      # Only check if we have members data
+      if members_count > 0
+        expected_overall = f2p_sum + members_sum
+        if overall > expected_overall
+          trained_p2p_levels = overall - expected_overall
+          Rails.logger.info "Player #{player_name} marked as P2P: Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
+          return true
+        end
       end
     end
 
@@ -1276,8 +1283,6 @@ class Player < ActiveRecord::Base
 
     # Check 1: P2P XP levels
     overall = (stats[:overall_lvl] || stats["overall_lvl"]).to_i
-    f2p_sum = (stats[:f2p_levels_sum] || stats["f2p_levels_sum"]).to_i
-    members_count = (stats[:members_skill_count] || stats["members_skill_count"]).to_i
 
     # Check if total level exceeds F2P maximum
     if overall > F2P_MAX_TOTAL
@@ -1286,13 +1291,22 @@ class Player < ActiveRecord::Base
     end
 
     # Check if any P2P skill is trained beyond base level
-    if overall > 0 && members_count > 0
+    # IMPORTANT: Only perform this check if helper fields are present (they come from hiscores parser)
+    # If they're missing, we can't reliably determine P2P skill training from levels alone
+    has_helper_fields = stats.key?(:f2p_levels_sum) || stats.key?("f2p_levels_sum")
+    if has_helper_fields && overall > 0
+      f2p_sum = (stats[:f2p_levels_sum] || stats["f2p_levels_sum"]).to_i
+      members_count = (stats[:members_skill_count] || stats["members_skill_count"]).to_i
       members_sum = (stats[:members_levels_sum] || stats["members_levels_sum"]).to_i
-      expected_overall = f2p_sum + members_sum
-      if overall > expected_overall
-        trained_p2p_levels = overall - expected_overall
-        Rails.logger.info "Player #{name} marked as P2P (creation): Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
-        return true
+      
+      # Only check if we have members data
+      if members_count > 0
+        expected_overall = f2p_sum + members_sum
+        if overall > expected_overall
+          trained_p2p_levels = overall - expected_overall
+          Rails.logger.info "Player #{name} marked as P2P (creation): Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
+          return true
+        end
       end
     end
 

@@ -10,7 +10,14 @@ namespace :players do
       old_value = player.potential_p2p
 
       # Build stats hash from current player attributes
-      
+      stats = {}
+      Player::SKILLS.each do |skill|
+        stats["#{skill}_lvl"] = player.read_attribute("#{skill}_lvl")
+        stats["#{skill}_xp"] = player.read_attribute("#{skill}_xp")
+        stats["#{skill}_rank"] = player.read_attribute("#{skill}_rank")
+      end
+      # Note: Helper fields (f2p_levels_sum, members_skill_count, members_levels_sum) are not included
+      # The verification logic will skip Check 1b when these are missing, which is correct behavior
 
       # Call the p2p check method with current player stats
       player.check_p2p_stats(stats)

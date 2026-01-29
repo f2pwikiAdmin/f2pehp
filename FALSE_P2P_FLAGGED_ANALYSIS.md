@@ -1,8 +1,23 @@
 # Analysis: false_p2p_flagged List Usage
 
-## Executive Summary
+## ARCHIVED - List Removed 2026-01-29
 
-The `false_p2p_flagged` list is **now redundant** with the new comprehensive 4-point verification system. It was originally created as a workaround for false positives, but with the improved verification, players should be correctly identified without needing a manual override list.
+**The false_p2p_flagged list has been removed from the codebase.**
+
+See `ARCHIVED_false_p2p_flagged_list.rb` for the archived list (500+ player names).
+
+## Rationale for Removal
+
+The comprehensive 4-point verification system correctly identifies F2P vs P2P players without needing manual overrides:
+- Players with `potential_p2p <= 0` are automatically included in F2P rankings
+- Players with `potential_p2p > 0` are excluded from F2P rankings
+- If verification incorrectly flags a player, the verification logic should be fixed, not worked around
+
+## Original Analysis (Historical)
+
+### Executive Summary
+
+The `false_p2p_flagged` list was **redundant** with the new comprehensive 4-point verification system. It was originally created as a workaround for false positives, but with the improved verification, players should be correctly identified without needing a manual override list.
 
 ## Current State
 

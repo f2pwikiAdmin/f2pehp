@@ -7,6 +7,7 @@
 # Ignore bundler config.
 /.bundle
 /vendor/bundle
+test_p2p_detection.rb
 
 # Ignore the default SQLite database.
 /db/*.sqlite3

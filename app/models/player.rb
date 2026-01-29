@@ -22,7 +22,7 @@ class Player < ActiveRecord::Base
   # With 9 P2P skills at base level 1 = 1494
   F2P_MAX_TOTAL = 1494
 
-  # P2P bosses (excluding F2P bosses Obor and Bryophyta)
+  # P2P bosses (excluding F2P bosses Obor, Bryophyta, and Scurrius)
   P2P_BOSSES = [
     'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
     'Callisto', "Calvar'ion", 'Cerberus', 'Chambers of Xeric',
@@ -33,7 +33,7 @@ class Player < ActiveRecord::Base
     'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen',
     'King Black Dragon', 'Kraken', "Kree'Arra", "K'ril Tsutsaroth",
     'Lunar Chests', 'Mimic', 'Nex', 'Nightmare', "Phosani's Nightmare",
-    'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Scurrius', 'Skotizo',
+    'Phantom Muspah', 'Sarachnis', 'Scorpia', 'Skotizo',
     'Sol Heredit', 'Spindel', 'Tempoross', 'The Gauntlet',
     'The Corrupted Gauntlet', 'The Leviathan', 'The Whisperer',
     'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',

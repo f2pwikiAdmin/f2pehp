@@ -105,7 +105,7 @@ class Hiscores
     'Phantom Muspah' => 'p2p_minigame',
     'Sarachnis' => 'p2p_minigame',
     'Scorpia' => 'p2p_minigame',
-    'Scurrius' => 'p2p_minigame',
+    'Scurrius' => 'scurrius_kc',
     'Shellbane Gryphon' => 'p2p_minigame',
     'Skotizo' => 'p2p_minigame',
     'Sol Heredit' => 'p2p_minigame',
@@ -432,6 +432,10 @@ class Hiscores
           # F2P boss KC
           stats[:bryo_kc] = score
           stats[:bryo_kc_rank] = rank
+        when 'scurrius_kc'
+          # F2P boss KC
+          stats[:scurrius_kc] = score
+          stats[:scurrius_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
           # F2P clue scrolls: treat as score-like
           stats[internal_activity_name] = score
@@ -544,6 +548,11 @@ class Hiscores
           score = [(skill_data['score'] || 0).to_i, 0].max
           stats[:bryo_kc] = score > 0 ? score : lvl
           stats[:bryo_kc_rank] = rank
+        when 'scurrius_kc'
+          # F2P boss KC
+          score = [(skill_data['score'] || 0).to_i, 0].max
+          stats[:scurrius_kc] = score > 0 ? score : lvl
+          stats[:scurrius_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
           # F2P clue scrolls: treat as score-like
           score = [(skill_data['score'] || 0).to_i, 0].max

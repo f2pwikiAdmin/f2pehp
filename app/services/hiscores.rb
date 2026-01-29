@@ -59,11 +59,11 @@ class Hiscores
     'Clue Scrolls (elite)' => 'p2p_minigame',
     'Clue Scrolls (master)' => 'p2p_minigame',
     'LMS - Rank' => 'lms',
-    'PvP Arena - Rank' => 'pvp_arena_rank',
+    'PvP Arena - Rank' => 'p2p_minigame',
     'Soul Wars Zeal' => 'p2p_minigame',
     'Rifts closed' => 'p2p_minigame',
     'Colosseum Glory' => 'p2p_minigame',
-    'Collections Logged' => 'collections_logged',
+    'Collections Logged' => 'p2p_minigame',
     'Abyssal Sire' => 'p2p_minigame',
     'Alchemical Hydra' => 'p2p_minigame',
     'Amoxliatl' => 'p2p_minigame',
@@ -437,14 +437,6 @@ class Hiscores
           # LMS is F2P
           stats[:lms_score] = score
           stats[:lms_rank] = rank
-        when 'pvp_arena_rank'
-          # PvP Arena Rank is accessible to F2P accounts
-          stats[:pvp_arena_rank_score] = score
-          stats[:pvp_arena_rank_rank] = rank
-        when 'collections_logged'
-          # Collections Logged is accessible to F2P accounts
-          stats[:collections_logged_score] = score
-          stats[:collections_logged_rank] = rank
         when 'obor_kc'
           # F2P boss KC
           stats[:obor_kc] = score
@@ -568,16 +560,6 @@ class Hiscores
           score = [(skill_data['score'] || 0).to_i, 0].max
           stats[:lms_score] = score > 0 ? score : lvl
           stats[:lms_rank] = rank
-        when 'pvp_arena_rank'
-          # PvP Arena Rank is accessible to F2P accounts
-          score = [(skill_data['score'] || 0).to_i, 0].max
-          stats[:pvp_arena_rank_score] = score > 0 ? score : lvl
-          stats[:pvp_arena_rank_rank] = rank
-        when 'collections_logged'
-          # Collections Logged is accessible to F2P accounts
-          score = [(skill_data['score'] || 0).to_i, 0].max
-          stats[:collections_logged_score] = score > 0 ? score : lvl
-          stats[:collections_logged_rank] = rank
         when 'obor_kc'
           # F2P boss KC
           score = [(skill_data['score'] || 0).to_i, 0].max

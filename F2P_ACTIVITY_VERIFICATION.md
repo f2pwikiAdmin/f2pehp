@@ -32,7 +32,7 @@ The verification checks ONLY these F2P-specific activities:
 ### Methods Added
 
 #### Instance Method: `check_f2p_activity_signals(stats)`
-Located in `app/models/player.rb` (~line 1248)
+Located in `app/models/player.rb`
 
 Called during player updates to check and log F2P activity signals.
 
@@ -52,7 +52,7 @@ Player TestPlayer has no F2P boss KC or beginner clues (acceptable - not require
 ```
 
 #### Class Method: `check_initial_f2p_activity_signals(stats, name)`
-Located in `app/models/player.rb` (~line 1384)
+Located in `app/models/player.rb`
 
 Called during initial player creation to check and log F2P activity signals.
 

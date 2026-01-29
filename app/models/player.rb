@@ -1255,32 +1255,8 @@ class Player < ActiveRecord::Base
   # @param stats [Hash] Stats hash from hiscores parser
   # @return [void] Logs verification signals but doesn't affect verification outcome
   def check_f2p_activity_signals(stats)
-    verification_signals = []
-    
-    # Check Obor KC (F2P boss)
-    obor_kc = (stats[:obor_kc] || stats["obor_kc"]).to_i
-    if obor_kc > 0
-      verification_signals << "Obor KC: #{obor_kc}"
-    end
-    
-    # Check Bryophyta KC (F2P boss) - note: stored as bryo_kc in DB
-    bryo_kc = (stats[:bryo_kc] || stats["bryo_kc"]).to_i
-    if bryo_kc > 0
-      verification_signals << "Bryophyta KC: #{bryo_kc}"
-    end
-    
-    # Check beginner clues (F2P activity)
-    beginner_clues = (stats[:clues_beginner] || stats["clues_beginner"]).to_i
-    if beginner_clues > 0
-      verification_signals << "Beginner clues: #{beginner_clues}"
-    end
-    
-    # Log positive signals if any exist
-    if verification_signals.any?
-      Rails.logger.info "Player #{player_name} F2P activity verification signals: #{verification_signals.join(', ')}"
-    else
-      Rails.logger.info "Player #{player_name} has no F2P boss KC or beginner clues (acceptable - not required for F2P verification)"
-    end
+    verification_signals = self.class.build_f2p_activity_signals(stats)
+    self.class.log_f2p_activity_signals(player_name, verification_signals)
   end
 
   # Check if player has P2P boss KC or P2P clue scrolls
@@ -1427,31 +1403,44 @@ class Player < ActiveRecord::Base
   # @param name [String] Player name for logging
   # @return [void] Logs verification signals but doesn't affect verification outcome
   def self.check_initial_f2p_activity_signals(stats, name)
-    verification_signals = []
+    verification_signals = build_f2p_activity_signals(stats)
+    log_f2p_activity_signals(name, verification_signals, creation: true)
+  end
+
+  private
+
+  # Build array of F2P activity verification signals from stats
+  # @param stats [Hash] Stats hash from hiscores parser
+  # @return [Array<String>] Array of signal strings (e.g., ["Obor KC: 50", "Beginner clues: 15"])
+  def self.build_f2p_activity_signals(stats)
+    signals = []
     
     # Check Obor KC (F2P boss)
     obor_kc = (stats[:obor_kc] || stats["obor_kc"]).to_i
-    if obor_kc > 0
-      verification_signals << "Obor KC: #{obor_kc}"
-    end
+    signals << "Obor KC: #{obor_kc}" if obor_kc > 0
     
     # Check Bryophyta KC (F2P boss) - note: stored as bryo_kc in DB
     bryo_kc = (stats[:bryo_kc] || stats["bryo_kc"]).to_i
-    if bryo_kc > 0
-      verification_signals << "Bryophyta KC: #{bryo_kc}"
-    end
+    signals << "Bryophyta KC: #{bryo_kc}" if bryo_kc > 0
     
     # Check beginner clues (F2P activity)
     beginner_clues = (stats[:clues_beginner] || stats["clues_beginner"]).to_i
-    if beginner_clues > 0
-      verification_signals << "Beginner clues: #{beginner_clues}"
-    end
+    signals << "Beginner clues: #{beginner_clues}" if beginner_clues > 0
     
-    # Log positive signals if any exist
-    if verification_signals.any?
-      Rails.logger.info "Player #{name} F2P activity verification signals (creation): #{verification_signals.join(', ')}"
+    signals
+  end
+
+  # Log F2P activity verification signals
+  # @param player_name [String] Name of player for logging
+  # @param signals [Array<String>] Array of verification signal strings
+  # @param creation [Boolean] Whether this is during player creation (default: false)
+  def self.log_f2p_activity_signals(player_name, signals, creation: false)
+    suffix = creation ? " (creation)" : ""
+    
+    if signals.any?
+      Rails.logger.info "Player #{player_name} F2P activity verification signals#{suffix}: #{signals.join(', ')}"
     else
-      Rails.logger.info "Player #{name} has no F2P boss KC or beginner clues (acceptable - not required for F2P verification)"
+      Rails.logger.info "Player #{player_name} has no F2P boss KC or beginner clues (acceptable - not required for F2P verification)"
     end
   end
 

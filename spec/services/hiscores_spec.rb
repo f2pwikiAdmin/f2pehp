@@ -383,10 +383,8 @@ RSpec.describe Hiscores do
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Unranked sailing at level 1 shouldn't flag P2P
-        # members_levels_sum = 1
-        # members_skill_count = 1
-        # potential_p2p = (1 - 1) = 0
+        # Unranked sailing at level 1 with 0 XP should NOT flag as P2P
+        # The condition `lvl > 1 || xp > 0` evaluates to false for this case
         expect(result["potential_p2p"]).to eq(0)
       end
 

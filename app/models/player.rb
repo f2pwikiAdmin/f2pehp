@@ -18,8 +18,15 @@ class Player < ActiveRecord::Base
     IM: %w[Reg]
   }
 
-  # Maximum F2P total level: 15 skills × 99 = 1485
-  # With 9 P2P skills at base level 1 = 1494
+  # Maximum F2P total level calculation:
+  # - 15 F2P skills (Attack, Defence, Strength, Hitpoints, Ranged, Prayer, Magic,
+  #   Cooking, Woodcutting, Fishing, Firemaking, Crafting, Smithing, Mining, Runecraft) at 99 = 1485
+  # - 9 P2P skills (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter,
+  #   Construction, Sailing) at base level 1 = 9
+  # - Total: 1485 + 9 = 1494
+  #
+  # IMPORTANT: Both F2P and P2P accounts have all 25 skills (including Sailing) in hiscores.
+  # F2P accounts simply have untrained P2P skills at level 1 with 0 XP.
   F2P_MAX_TOTAL = 1494
 
   # P2P bosses (excluding F2P bosses Obor and Bryophyta)

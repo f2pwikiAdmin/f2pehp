@@ -291,6 +291,11 @@ class Hiscores
     # The API returns newline-separated CSV values in a fixed order.
     # Each line contains: rank,level,xp for skills or rank,score for activities/bosses.
     #
+    # IMPORTANT: Both F2P and P2P accounts return 25 skill lines (lines 0-24), including Sailing.
+    # The presence of 25 skills does NOT indicate P2P membership.
+    # P2P detection is based on whether any members-only skill shows training beyond default
+    # (level > 1 or xp > 0). Unranked P2P skills at level 1 with 0 XP do NOT flag as P2P.
+    #
     # @param csv_data [String] CSV response from OSRS hiscores API
     # @return [Hash, false] Parsed stats hash or false if data is invalid
     def parse_stats_csv(csv_data)
@@ -365,8 +370,11 @@ class Hiscores
         # Process based on skill type
         case internal_skill_name
         when 'p2p'
-          # Members skill detected (level > 1 OR xp > 0) => flag as P2P
-          # Also track counts for Player model's deterministic reconciliation
+          # Members-only skill (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction, Sailing)
+          # IMPORTANT: Presence of these skills does NOT indicate P2P membership.
+          # Only flag as P2P if the skill shows evidence of training beyond default (level > 1 OR xp > 0).
+          # Unranked skills at level 1 with 0 XP (e.g., "-1,1,0") are NOT flagged as P2P.
+          # Track counts for Player model's deterministic reconciliation
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
           if lvl > 1 || xp > 0
@@ -459,6 +467,11 @@ class Hiscores
     # This approach is dynamic and reliable - it doesn't depend on array positions,
     # making it resilient to Jagex adding/reordering skills in the API response.
     #
+    # IMPORTANT: Both F2P and P2P accounts have 25 skills, including Sailing.
+    # The presence of these skills does NOT indicate P2P membership.
+    # P2P detection is based on whether any members-only skill shows training beyond default
+    # (level > 1 or xp > 0). Unranked P2P skills at level 1 with 0 XP do NOT flag as P2P.
+    #
     # @param data [Hash] JSON response from OSRS hiscores API with 'skills' array
     # @param restrict_fields [Array<String>] Optional list of internal skill names to parse
     # @return [Hash, false] Parsed stats hash or false if data is invalid
@@ -520,8 +533,11 @@ class Hiscores
 
         case internal_skill_name
         when 'p2p'
-          # Members skill detected (level > 1 OR xp > 0) => flag as P2P (do NOT accumulate xp)
-          # Also track counts for Player model's deterministic reconciliation
+          # Members-only skill (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction, Sailing)
+          # IMPORTANT: Presence of these skills does NOT indicate P2P membership.
+          # Only flag as P2P if the skill shows evidence of training beyond default (level > 1 OR xp > 0).
+          # Unranked skills at level 1 with 0 XP are NOT flagged as P2P.
+          # Track counts for Player model's deterministic reconciliation
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
           if lvl > 1 || xp > 0

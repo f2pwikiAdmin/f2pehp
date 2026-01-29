@@ -74,11 +74,13 @@ This tests the verification logic with synthetic data:
 ### F2P Maximum Calculation
 ```
 15 F2P skills × 99 levels = 1485
-9 P2P skills × 1 level    = 9
-Total F2P maximum         = 1494
+8 P2P skills × 1 level    = 8
+Total F2P maximum         = 1493
 ```
 
-Any player with total level > 1494 has trained P2P skills.
+Note: Sailing skill is omitted as F2P players may not have it in their hiscores.
+
+Any player with total level > 1493 has trained P2P skills.
 
 ## Testing Other Players
 

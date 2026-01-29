@@ -24,7 +24,7 @@ class Player < ActiveRecord::Base
   # - 9 P2P skills (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter,
   #   Construction, Sailing) at base level 1 = 9
   # - Total: 1485 + 9 = 1494
-  # 
+  #
   # IMPORTANT: Both F2P and P2P accounts have all 25 skills (including Sailing) in hiscores.
   # F2P accounts simply have untrained P2P skills at level 1 with 0 XP.
   F2P_MAX_TOTAL = 1494

@@ -21,7 +21,7 @@ Added clarification that:
 - P2P detection is based on whether members-only skills show training beyond default (level > 1 or xp > 0)
 - Unranked P2P skills at level 1 with 0 XP do NOT flag as P2P
 
-#### P2P skill detection logic (lines 367-379)
+#### P2P skill detection logic (lines 372-383)
 Enhanced comment to explicitly state:
 - Lists all members-only skills including Sailing
 - Emphasizes that presence alone does NOT indicate membership

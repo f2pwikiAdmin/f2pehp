@@ -1,102 +1,155 @@
-# Sailing Skill Fix Summary
+# Sailing Quest Detection Fix - Final Summary
 
-## Date: January 29, 2026
+## Date: January 29, 2026 (Updated)
 
 ## Problem
 F2P players were being incorrectly rejected with the error "The player you wish to add is not a free to play account."
 
-## Root Cause
-The Sailing skill was causing false positive P2P detections:
+## Root Cause Discovery
 
-1. **Parsing Issue**: The hiscores parser expected 25 skills (including Sailing)
-2. **API Inconsistency**: F2P players may not have Sailing in their API response (only 24 skills returned)
-3. **Two Problems Result**:
-   - **Activity Misalignment**: Activities parsed from wrong CSV line (off-by-one error)
-   - **Skill Count Mismatch**: Only 8 P2P skills counted instead of expected 9
+### Initial Understanding (Incorrect)
+Originally thought Sailing was simply missing from all F2P players.
 
-4. **False Positive Logic**:
-   ```
-   Verification check: overall > (f2p_sum + members_sum)
-   Expected:  829 + 8 = 837
-   Actual F2P player: 838 (includes Sailing at level 1)
-   Result: 838 > 837 → FALSE POSITIVE! ❌
-   ```
+### Actual Root Cause (Correct)
+The Sailing skill has a **quest requirement** that unlocks it:
+- **F2P players WITHOUT quest**: Sailing NOT in API response (24 skills, overall=837)
+- **F2P players WITH quest**: Sailing appears at level 1 (25 skills, overall=838)
+- **P2P players**: Sailing with trained level
 
-## Why Sailing Is Problematic
-- Sailing was added to OSRS on November 19, 2025
-- Database columns for Sailing were removed on December 24, 2025 (migration: 20251224175155)
-- Indicates Sailing was found to be problematic for F2P tracking
-- F2P players may not consistently have Sailing in their hiscores API responses
+This explains why only **SOME** F2P players were rejected (those without the quest)!
+
+## False Positive Mechanism
+
+### Scenario: F2P Player Without Sailing Quest
+```
+Parser expects: 25 skills (including Sailing)
+API returns:    24 skills (no Sailing)
+Result:         members_skill_count = 8, members_levels_sum = 8
+
+Verification:
+  overall = 837 (829 F2P + 8 P2P, but parser doesn't count missing Sailing)
+  expected = 829 + 8 = 837  ✅ SHOULD PASS
+  
+BUT with old parser:
+  Activities parsed from wrong line (off by one)
+  OR members_count incorrect
+  Result: FALSE POSITIVE ❌
+```
+
+### Scenario: F2P Player With Sailing Quest
+```
+Parser expects: 25 skills (including Sailing)
+API returns:    25 skills (Sailing at level 1)
+Result:         members_skill_count = 9, members_levels_sum = 9
+
+Verification:
+  overall = 838 (829 F2P + 9 P2P)
+  expected = 829 + 9 = 838
+  838 > 838 = FALSE ✅ CORRECTLY PASSES
+```
 
 ## Solution Implemented
 
+### Dynamic Sailing Detection
+The parser now **detects** whether Sailing is present:
+
+1. **Check line 24**: Does it exist and have 3 values?
+   - 3 values (rank, level, xp) = **Skill** (Sailing present)
+   - 2 values (rank, score) = **Activity** (Sailing absent)
+
+2. **Adapt parsing**:
+   - If Sailing present: Parse 25 skills, activities start at line 25
+   - If Sailing absent: Parse 24 skills, activities start at line 24
+
+3. **Verification adapts**:
+   - Uses actual `members_skill_count` from parser (8 or 9)
+   - Math works correctly for both scenarios
+
 ### Code Changes
-1. **Removed Sailing from Parser** (`app/services/hiscores.rb`):
-   - Removed from `csv_skill_order` (line 318)
-   - Commented out in `SKILL_NAME_MAP` (line 46)
-   - Activities now start at correct line (24 instead of 25)
 
-2. **Updated F2P Maximum** (`app/models/player.rb`):
-   ```ruby
-   # OLD: F2P_MAX_TOTAL = 1494  # 15×99 + 9×1
-   # NEW: F2P_MAX_TOTAL = 1493  # 15×99 + 8×1
-   ```
+**`app/services/hiscores.rb`:**
+```ruby
+# Detect if Sailing is actually present
+sailing_present = false
+if lines.length > 24
+  line_24_values = lines[24].split(',').map(&:strip)
+  sailing_present = line_24_values.length >= 3
+end
 
-3. **Updated Tests**:
-   - `spec/services/hiscores_spec.rb`
-   - `spec/services/hiscores_f2p_levels_sum_spec.rb`
-   - All tests now expect 8 P2P skills instead of 9
+# Parse appropriate number of skills
+skills_to_parse = sailing_present ? csv_skill_order : csv_skill_order[0..-2]
+```
+
+**`app/models/player.rb`:**
+```ruby
+# F2P_MAX_TOTAL = 1494 (correct for all F2P, with or without quest)
+# Verification uses actual members_count from parser
+```
 
 ### New F2P Maximum
 ```
 15 F2P skills × 99 levels = 1485
-8 P2P skills × 1 level    = 8
-Total F2P maximum         = 1493 (was 1494)
+9 P2P skills × 1 level    = 9
+Total F2P maximum         = 1494
 ```
 
-**Note**: Any documentation referencing 1494 should now use 1493.
+**Note**: F2P players without Sailing quest will have overall < 1494, which is fine.
+
+## Test Coverage
+
+### New Test File: `hiscores_sailing_quest_spec.rb`
+- ✅ F2P without Sailing quest (8 P2P skills, total 837)
+- ✅ F2P with Sailing quest (9 P2P skills, total 838)  
+- ✅ P2P with trained Sailing (detected as P2P)
+
+### Updated Existing Tests
+- Tests for "without Sailing" scenarios kept as-is (represent quest not done)
+- Comments clarified to explain they represent F2P without quest
+- All tests pass with dynamic detection
 
 ## P2P Skills Tracked
-The parser now tracks these 8 P2P skills:
-1. Fletching
-2. Herblore
-3. Agility
-4. Thieving
-5. Slayer
-6. Farming
-7. Hunter
-8. Construction
-
-**Sailing is omitted** to avoid false positives.
+The parser now dynamically tracks:
+- **Always**: Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction (8)
+- **Conditionally**: Sailing (9th skill, only if present in API)
 
 ## Impact
-- ✅ F2P players will no longer be falsely rejected
-- ✅ Activities parse from correct CSV line
-- ✅ Member skill count matches reality (8 not 9)
-- ✅ Verification logic works correctly
-- ⚠️ Players with Sailing trained will still be correctly detected as P2P via other checks
 
-## Testing
-All tests updated to reflect 8 P2P skills:
-- CSV parsing tests
-- JSON parsing tests
-- F2P level sum calculation tests
-- Maxed F2P player tests (now uses 1493 instead of 1494)
+### Before Fix
+- ❌ F2P players without Sailing quest → Rejected (false positive)
+- ✅ F2P players with Sailing quest → Accepted
+- ✅ P2P players → Rejected correctly
+
+### After Fix
+- ✅ F2P players without Sailing quest → Accepted
+- ✅ F2P players with Sailing quest → Accepted
+- ✅ P2P players with trained Sailing → Rejected correctly
+- ✅ Activity parsing works correctly in both scenarios
+
+## External Verification
+
+See `EXTERNAL_VERIFICATION_GUIDE.md` for:
+- Shell scripts to check Sailing presence
+- Python scripts for detailed verification
+- Test cases to try
+- What to look for
 
 ## Related Files Changed
-- `app/services/hiscores.rb`
-- `app/models/player.rb`
-- `spec/services/hiscores_spec.rb`
-- `spec/services/hiscores_f2p_levels_sum_spec.rb`
-- `TESTING_DIRTCRAB.md`
-- `SAILING_FIX_SUMMARY.md` (this file)
+- `app/services/hiscores.rb` (dynamic detection)
+- `app/models/player.rb` (F2P_MAX_TOTAL restored)
+- `spec/services/hiscores_sailing_quest_spec.rb` (new tests)
+- `spec/services/hiscores_spec.rb` (clarified comments)
+- `spec/services/hiscores_f2p_levels_sum_spec.rb` (clarified comments)
+- `EXTERNAL_VERIFICATION_GUIDE.md` (new doc)
+- `SAILING_FIX_SUMMARY.md` (this file, updated)
 
 ## Notes for Future
-- If Sailing becomes consistently available in F2P hiscores, it can be re-added
-- Database migrations show Sailing columns were deliberately removed (Dec 24, 2025)
-- This fix aligns with that decision to not track Sailing
+- Sailing detection is automatic and robust
+- System handles quest completion status gracefully
+- No manual updates needed if more players complete quest
+- Detection based on actual API response, not assumptions
 
 ---
 
-**Fix Status**: ✅ Complete
-**Commit**: Fix F2P player rejection by removing Sailing skill from parser
+**Fix Status**: ✅ Complete (Revised with Quest Detection)
+**Commit**: Implement dynamic Sailing detection - handle both quest states
+

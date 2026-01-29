@@ -91,7 +91,7 @@ All checks pass → F2P (potential_p2p = 0)
 
 #### Check 3: P2P Boss KC & Clue Scrolls
 - Checks for kill counts on P2P-only bosses
-- **Excludes F2P bosses**: Obor and Bryophyta
+- **Excludes F2P bosses**: Obor, Bryophyta, and Scurrius
 - Checks for completions of P2P clue scrolls
 - **Excludes beginner clues** (F2P content)
 - Any P2P boss KC or clue completion means P2P access

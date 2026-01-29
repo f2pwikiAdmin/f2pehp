@@ -137,6 +137,7 @@ RSpec.describe Hiscores do
         expect(result[:lms_score]).to eq(500)
         expect(result[:obor_kc]).to eq(10)
         expect(result[:bryo_kc]).to eq(8)
+        expect(result[:brutus_kc]).to eq(0)  # Brutus is F2P boss, unranked in test
         
         # Most importantly: potential_p2p should be 0 for unranked P2P skills
         expect(result["potential_p2p"]).to eq(0)
@@ -295,7 +296,8 @@ RSpec.describe Hiscores do
             { 'name' => 'Clue Scrolls (beginner)', 'rank' => 5001, 'level' => 25, 'xp' => 0 },
             { 'name' => 'LMS - Rank', 'rank' => 3000, 'level' => 500, 'xp' => 0 },
             { 'name' => 'Obor', 'rank' => 2000, 'level' => 10, 'xp' => 0 },
-            { 'name' => 'Bryophyta', 'rank' => 2001, 'level' => 8, 'xp' => 0 }
+            { 'name' => 'Bryophyta', 'rank' => 2001, 'level' => 8, 'xp' => 0 },
+            { 'name' => 'Brutus', 'rank' => 2002, 'level' => 5, 'xp' => 0 }
           ]
         }
 
@@ -320,6 +322,7 @@ RSpec.describe Hiscores do
         expect(result[:lms_score]).to eq(500)
         expect(result[:obor_kc]).to eq(10)
         expect(result[:bryo_kc]).to eq(8)
+        expect(result[:brutus_kc]).to eq(5)  # Brutus is F2P boss
         
         # Most importantly: potential_p2p should be 0 for unranked P2P skills
         expect(result["potential_p2p"]).to eq(0)

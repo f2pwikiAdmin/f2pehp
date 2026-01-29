@@ -12,8 +12,6 @@ F2POSRSRanks::Application.configure do
    config.downcase_fakes = config.fakes.map(&:downcase)
    config.banned = ["F2Prod", "Sharply Stab", "Wachbirne", "Nanitronic", "Hc Tppk", "iron s4v4gez", "Mr J Valeska", "atwilburn92"]
    config.downcase_banned = config.banned.map(&:downcase)
-   config.false_banned = ["cacapoopoo71", "RuneWzrd"]
-   config.downcase_false_banned = config.false_banned.map(&:downcase)
    # Players incorrectly flagged as P2P by the detection system (temporary until automatic solution)
     # NOTE: This list is for players falsely flagged by P2P minigame/boss KC bugs only.
     # Players who have actually trained P2P skills (Fletching, Herblore, etc.) should be removed.

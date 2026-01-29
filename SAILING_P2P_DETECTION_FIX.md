@@ -14,26 +14,26 @@ Previously, there was confusion about whether the presence of the Sailing skill 
 
 ### 1. Updated Comments in `app/services/hiscores.rb`
 
-#### `parse_stats_csv` method (lines 290-302)
+#### `parse_stats_csv` method (lines 290-301)
 Added clarification that:
 - Both F2P and P2P accounts return 25 skill lines
 - The presence of 25 skills does NOT indicate P2P membership
 - P2P detection is based on whether members-only skills show training beyond default (level > 1 or xp > 0)
 - Unranked P2P skills at level 1 with 0 XP do NOT flag as P2P
 
-#### P2P skill detection logic (lines 372-383)
+#### P2P skill detection logic (lines 372-382)
 Enhanced comment to explicitly state:
 - Lists all members-only skills including Sailing
 - Emphasizes that presence alone does NOT indicate membership
 - Only flags as P2P if skill shows evidence of training beyond default
 - Clarifies that unranked skills at `-1,1,0` are NOT flagged
 
-#### `parse_stats` method (JSON parser) (lines 466-478)
+#### `parse_stats` method (JSON parser) (lines 466-477)
 Added similar clarification for the JSON parser path.
 
 ### 2. Updated `app/models/player.rb`
 
-#### F2P_MAX_TOTAL constant (lines 20-30)
+#### F2P_MAX_TOTAL constant (lines 21-30)
 Expanded comment to show detailed calculation:
 - Lists all 15 F2P skills
 - Lists all 9 P2P skills (including Sailing)
@@ -42,7 +42,7 @@ Expanded comment to show detailed calculation:
 
 ### 3. Updated Test Comments in `spec/services/hiscores_spec.rb`
 
-#### "handles unranked sailing correctly" test (lines 384-390)
+#### "handles unranked sailing correctly" test (lines 386-387)
 Removed outdated calculation formula comment that suggested a different algorithm.
 Updated to clarify that the condition `lvl > 1 || xp > 0` evaluates to false for unranked Sailing.
 

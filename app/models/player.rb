@@ -1239,9 +1239,48 @@ class Player < ActiveRecord::Base
     #   # If we can't check, assume F2P (benefit of the doubt)
     # end
 
+    # Additional verification: Check F2P-specific activities as positive signals
+    # This provides extra confidence that the player is truly F2P
+    check_f2p_activity_signals(stats)
+
     # Passed all checks - player is truly F2P
     Rails.logger.info "Player #{player_name} passed detailed P2P verification - marked as F2P"
     return false
+  end
+
+  # Check F2P-specific activities (Obor/Bryophyta KC and beginner clues) as positive verification signals
+  # This method logs F2P activity as an additional confidence signal but does NOT use absence as a P2P indicator
+  # Missing data or zero values are acceptable - they don't indicate P2P membership
+  # 
+  # @param stats [Hash] Stats hash from hiscores parser
+  # @return [void] Logs verification signals but doesn't affect verification outcome
+  def check_f2p_activity_signals(stats)
+    verification_signals = []
+    
+    # Check Obor KC (F2P boss)
+    obor_kc = (stats[:obor_kc] || stats["obor_kc"]).to_i
+    if obor_kc > 0
+      verification_signals << "Obor KC: #{obor_kc}"
+    end
+    
+    # Check Bryophyta KC (F2P boss) - note: stored as bryo_kc in DB
+    bryo_kc = (stats[:bryo_kc] || stats["bryo_kc"]).to_i
+    if bryo_kc > 0
+      verification_signals << "Bryophyta KC: #{bryo_kc}"
+    end
+    
+    # Check beginner clues (F2P activity)
+    beginner_clues = (stats[:clues_beginner] || stats["clues_beginner"]).to_i
+    if beginner_clues > 0
+      verification_signals << "Beginner clues: #{beginner_clues}"
+    end
+    
+    # Log positive signals if any exist
+    if verification_signals.any?
+      Rails.logger.info "Player #{player_name} F2P activity verification signals: #{verification_signals.join(', ')}"
+    else
+      Rails.logger.info "Player #{player_name} has no F2P boss KC or beginner clues (acceptable - not required for F2P verification)"
+    end
   end
 
   # Check if player has P2P boss KC or P2P clue scrolls
@@ -1372,12 +1411,48 @@ class Player < ActiveRecord::Base
       end
     end
 
-    # For creation, we can't check hiscores content as easily since we don't have a player object yet
-    # So we'll rely on the XP checks above, and the full hiscores check will happen on first update
+    # Additional verification: Check F2P-specific activities as positive signals
+    # This provides extra confidence that the player is truly F2P
+    check_initial_f2p_activity_signals(stats, name)
     
     # Passed checks - player is F2P
     Rails.logger.info "Player #{name} passed detailed P2P verification (creation) - allowing creation as F2P"
     return false
+  end
+
+  # Check F2P-specific activities during initial player creation
+  # This is a class method version of check_f2p_activity_signals for use during player creation
+  # 
+  # @param stats [Hash] Stats hash from hiscores parser
+  # @param name [String] Player name for logging
+  # @return [void] Logs verification signals but doesn't affect verification outcome
+  def self.check_initial_f2p_activity_signals(stats, name)
+    verification_signals = []
+    
+    # Check Obor KC (F2P boss)
+    obor_kc = (stats[:obor_kc] || stats["obor_kc"]).to_i
+    if obor_kc > 0
+      verification_signals << "Obor KC: #{obor_kc}"
+    end
+    
+    # Check Bryophyta KC (F2P boss) - note: stored as bryo_kc in DB
+    bryo_kc = (stats[:bryo_kc] || stats["bryo_kc"]).to_i
+    if bryo_kc > 0
+      verification_signals << "Bryophyta KC: #{bryo_kc}"
+    end
+    
+    # Check beginner clues (F2P activity)
+    beginner_clues = (stats[:clues_beginner] || stats["clues_beginner"]).to_i
+    if beginner_clues > 0
+      verification_signals << "Beginner clues: #{beginner_clues}"
+    end
+    
+    # Log positive signals if any exist
+    if verification_signals.any?
+      Rails.logger.info "Player #{name} F2P activity verification signals (creation): #{verification_signals.join(', ')}"
+    else
+      Rails.logger.info "Player #{name} has no F2P boss KC or beginner clues (acceptable - not required for F2P verification)"
+    end
   end
 
   def self.create_new(name)

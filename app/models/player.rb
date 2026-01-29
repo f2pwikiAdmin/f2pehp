@@ -1144,18 +1144,11 @@ class Player < ActiveRecord::Base
         return
       end
     end
-    
-    # False-banned players should always be marked as F2P (potential_p2p = 0)
-    # in config/initializers/assets.rb (line 15)
-    # Example: config.false_banned = ["cacapoopoo71", "RuneWzrd"]
-    if F2POSRSRanks::Application.config.downcase_false_banned.include?(player_name.downcase)
-      update(potential_p2p: 0)
-      return
-    end
 
     # ALL players now undergo detailed verification (new comprehensive P2P detection)
     # This includes checking: P2P XP levels, boss KC, and clue scrolls
     # Players in false_p2p_flagged list are also verified through this route
+    # REMOVED: false_banned bypass - all players should go through the same verification
     is_p2p = detailed_p2p_verification(stats)
     update(potential_p2p: is_p2p ? 1 : 0)
   end

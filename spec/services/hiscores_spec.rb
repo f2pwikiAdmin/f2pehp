@@ -31,7 +31,8 @@ RSpec.describe Hiscores do
           '10014,44,55000',        # Runecraft
           '-1,1,0',                # Hunter (P2P, unranked)
           '-1,1,0',                # Construction (P2P, unranked)
-          # Activities start here (line 24 in CSV - Sailing omitted as F2P players may not have it)
+          # Sailing omitted - F2P player without Sailing quest
+          # Activities start here (line 24 in CSV)
           '-1,0',                  # Grid Points
           '-1,0',                  # League Points
           '-1,0',                  # Deadman Points

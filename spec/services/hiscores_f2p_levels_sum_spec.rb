@@ -4,10 +4,10 @@ require 'rails_helper'
 RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
   describe '.parse_stats_csv' do
     it 'correctly calculates f2p_levels_sum without including overall' do
-      # Test data for a F2P player with total level 837
+      # Test data for a F2P player with total level 837 (WITHOUT Sailing quest)
       # 15 F2P skills sum to 829, 8 P2P skills all at level 1 (sum to 8)
       # Overall from Jagex API: 837 (829 + 8)
-      # Note: Sailing omitted as F2P players may not have it in API response
+      # Note: Sailing NOT in API response - player hasn't done Sailing quest
       csv_data = [
         '12345,837,15000000',    # Overall: 837 (should NOT be added to f2p_levels_sum)
         '10000,60,300000',       # Attack: 60
@@ -58,10 +58,10 @@ RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
     end
 
     it 'correctly calculates f2p_levels_sum for maxed F2P player' do
-      # Test data for a maxed F2P player
+      # Test data for a maxed F2P player (WITHOUT Sailing quest)
       # 15 F2P skills at 99 = 1485, 8 P2P skills at 1 = 8
-      # Overall from Jagex API: 1493 (1485 + 8) - exactly at F2P maximum
-      # Note: Sailing omitted as F2P players may not have it in API response
+      # Overall from Jagex API: 1493 (1485 + 8)
+      # Note: Sailing NOT in API response - F2P maximum without Sailing quest
       csv_data = [
         '1,1493,200000000',      # Overall: 1493 (F2P maximum without Sailing)
         '1,99,13034431',         # Attack: 99
@@ -111,7 +111,7 @@ RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
   describe '.parse_stats' do
     it 'correctly calculates f2p_levels_sum without including overall (JSON parser)' do
       # Test the JSON parser has the same fix
-      # Note: overall is 837 (829 F2P + 8 P2P), Sailing omitted
+      # Note: F2P player WITHOUT Sailing quest - overall is 837 (829 F2P + 8 P2P)
       json_data = {
         'skills' => [
           {'name' => 'Overall', 'rank' => 12345, 'level' => 837, 'xp' => 15000000},

@@ -43,7 +43,7 @@ class Hiscores
     'Runecraft' => 'runecraft',
     'Hunter' => 'p2p',
     'Construction' => 'p2p',
-    # Note: Sailing omitted as it may not be present in API responses for F2P players
+    'Sailing' => 'p2p',  # May not be present for F2P players without Sailing quest
     'Grid Points' => 'temp_gamemode',  # Temporary game mode - may have F2P components
     'League Points' => 'temp_gamemode',  # Leagues have F2P content - do NOT flag as P2P
     'Deadman Points' => 'p2p_minigame',  # Deadman is members-only
@@ -309,14 +309,14 @@ class Hiscores
       }
       
       # CSV line order matches this skill/activity order
-      # Lines 0-23: Skills (Overall, Attack, Defence, ..., Construction)
-      # Note: Sailing is omitted as it may not be present in API responses for F2P players
-      # Lines 24+: Activities (Clue Scrolls, Bounty Hunter, LMS, Bosses, etc.)
+      # Lines 0-24: Skills (Overall, Attack, Defence, ..., Construction, Sailing)
+      # Note: Sailing (line 24) may not be present for F2P players who haven't done the Sailing quest
+      # Lines 25+ (or 24+ if no Sailing): Activities (Clue Scrolls, Bounty Hunter, LMS, Bosses, etc.)
       csv_skill_order = [
         'Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer', 'Magic',
         'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing',
         'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer', 'Farming', 'Runecraft', 'Hunter',
-        'Construction'
+        'Construction', 'Sailing'
       ]
       
       # Activities and bosses order (after skills)
@@ -344,8 +344,21 @@ class Hiscores
         'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Yama', 'Zalcano', 'Zulrah'
       ]
       
-      # Parse skills (first 25 lines)
-      csv_skill_order.each_with_index do |skill_name, idx|
+      # Detect if Sailing is actually present in the CSV data
+      # F2P players without the Sailing quest may not have line 24 (Sailing)
+      # Detection: Check if line 24 exists and has 3 values (skill) vs 2 values (activity)
+      sailing_present = false
+      if lines.length > 24
+        line_24_values = lines[24].split(',').map(&:strip)
+        # Skills have 3 values (rank, level, xp), activities have 2 (rank, score)
+        sailing_present = line_24_values.length >= 3
+      end
+      
+      # Adjust skill order if Sailing is not present
+      skills_to_parse = sailing_present ? csv_skill_order : csv_skill_order[0..-2]
+      
+      # Parse skills (first 24 or 25 lines depending on Sailing presence)
+      skills_to_parse.each_with_index do |skill_name, idx|
         next if idx >= lines.length
         
         line = lines[idx]
@@ -393,8 +406,9 @@ class Hiscores
         end
       end
       
-      # Parse activities and bosses (lines 25+)
-      activity_start_idx = csv_skill_order.length
+      # Parse activities and bosses (start after skills)
+      # If Sailing is present: line 25+, if absent: line 24+
+      activity_start_idx = skills_to_parse.length
       csv_activity_order.each_with_index do |activity_name, idx|
         line_idx = activity_start_idx + idx
         next if line_idx >= lines.length

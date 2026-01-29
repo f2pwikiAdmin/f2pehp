@@ -506,31 +506,10 @@ class Player < ActiveRecord::Base
     "(#{quoted_names.join(",")})"
   end
 
-  def self.sql_false_p2p_flagged
-    # Return list of downcase false_p2p_flagged names for SQL IN clause
-    # Returns empty list if config is not available or list is empty
-    # IMPORTANT: Excludes players in fakes list (fakes list takes priority)
-    return "()" unless F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
-    
-    flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
-    return "()" if flagged_names.empty?
-    
-    # Remove any players that are in the fakes list (fakes take priority)
-    if F2POSRSRanks::Application.config.respond_to?(:downcase_fakes)
-      fakes_names = F2POSRSRanks::Application.config.downcase_fakes || []
-      flagged_names = flagged_names - fakes_names
-    end
-    
-    return "()" if flagged_names.empty?
-    
-    quoted_names = flagged_names.map{ |name| "'#{name}'" }
-    "(#{quoted_names.join(",")})"
-  end
-
   def self.sql_f2p_filter
     # Returns SQL fragment that filters for F2P players
-    # Includes both players with potential_p2p <= 0 AND players in false_p2p_flagged list
-    "(potential_p2p <= 0 OR LOWER(player_name) IN #{sql_false_p2p_flagged})"
+    # Only includes players with potential_p2p <= 0
+    "(potential_p2p <= 0)"
   end
 
   def is_f2p?
@@ -543,16 +522,8 @@ class Player < ActiveRecord::Base
       return false if fakes_names.include?(player_name.downcase)
     end
     
-    # Returns true if potential_p2p <= 0 OR player is in false_p2p_flagged list
-    return true if potential_p2p.to_i <= 0
-    
-    # Check if player name is in false_p2p_flagged list
-    if F2POSRSRanks::Application.config.respond_to?(:downcase_false_p2p_flagged)
-      flagged_names = F2POSRSRanks::Application.config.downcase_false_p2p_flagged || []
-      return flagged_names.include?(player_name.downcase)
-    end
-    
-    false
+    # Returns true if potential_p2p <= 0
+    potential_p2p.to_i <= 0
   end
 
   # The characters +, _, \s, -, %20 count as the same when doing a lookup on hiscores.
@@ -1147,7 +1118,6 @@ class Player < ActiveRecord::Base
 
     # ALL players now undergo detailed verification (new comprehensive P2P detection)
     # This includes checking: P2P XP levels, boss KC, and clue scrolls
-    # Players in false_p2p_flagged list are also verified through this route
     # REMOVED: false_banned bypass - all players should go through the same verification
     is_p2p = detailed_p2p_verification(stats)
     update(potential_p2p: is_p2p ? 1 : 0)
@@ -1390,9 +1360,7 @@ class Player < ActiveRecord::Base
       "(#{secondary_clauses} #{primary_clause})"
     end.join(" OR ")
     
-    # Include players who are either:
-    # 1. Not flagged as P2P (potential_p2p <= 0), OR
-    # 2. In the false_p2p_flagged list (should be treated as F2P regardless of flag)
+    # Include F2P players (potential_p2p <= 0)
     where_clause = "#{Player.sql_f2p_filter} AND (#{where_clause}) #{"AND (#{filter})" if filter}"
 
     # Construct parameter list to fill holes in constructed where clause

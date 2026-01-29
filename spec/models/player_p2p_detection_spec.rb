@@ -143,6 +143,98 @@ RSpec.describe Player, type: :model do
         # Player should NOT be flagged as P2P
         expect(player.potential_p2p).to eq(0)
       end
+      
+      it 'does not flag player as P2P based on Scurrius KC' do
+        # Scurrius is an F2P boss added in January 2024
+        # Located in Varrock Sewers, accessible to F2P players
+        # Realistic test data from Jagex API
+        stats = {
+          "overall_lvl" => 838,  # F2P skills (829) + base P2P (9)
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          :scurrius_kc => 100,
+          :scurrius_kc_rank => 2000,
+          :potential_p2p => 0,  # Parser correctly identified as F2P
+          # Helper fields from parser
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 838
+        }
+        
+        # Save player first
+        player.save(validate: false)
+        
+        # Call check_p2p_stats
+        player.check_p2p_stats(stats)
+        
+        # Reload to get updated value
+        player.reload
+        
+        # Player should NOT be flagged as P2P
+        expect(player.potential_p2p).to eq(0)
+      end
+      
+      it 'does not flag player as P2P based on all F2P boss KCs (Obor, Bryophyta, Scurrius)' do
+        # Realistic test data from Jagex API
+        stats = {
+          "overall_lvl" => 838,  # F2P skills (829) + base P2P (9)
+          "attack_lvl" => 60,
+          "strength_lvl" => 60,
+          "defence_lvl" => 60,
+          "hitpoints_lvl" => 60,
+          "ranged_lvl" => 60,
+          "prayer_lvl" => 45,
+          "magic_lvl" => 55,
+          "cooking_lvl" => 70,
+          "woodcutting_lvl" => 60,
+          "fishing_lvl" => 65,
+          "firemaking_lvl" => 50,
+          "crafting_lvl" => 40,
+          "smithing_lvl" => 40,
+          "mining_lvl" => 60,
+          "runecraft_lvl" => 44,
+          :obor_kc => 50,
+          :obor_kc_rank => 1000,
+          :bryo_kc => 25,
+          :bryo_kc_rank => 500,
+          :scurrius_kc => 100,
+          :scurrius_kc_rank => 2000,
+          :potential_p2p => 0,  # Parser correctly identified as F2P
+          # Helper fields from parser
+          :f2p_levels_sum => 829,
+          :members_skill_count => 9,
+          :members_levels_sum => 9,
+          :p2p_minigame_score_sum => 0,
+          :overall_lvl => 838
+        }
+        
+        # Save player first
+        player.save(validate: false)
+        
+        # Call check_p2p_stats
+        player.check_p2p_stats(stats)
+        
+        # Reload to get updated value
+        player.reload
+        
+        # Player should NOT be flagged as P2P
+        expect(player.potential_p2p).to eq(0)
+      end
     end
     
     context 'when player has trained P2P skills' do

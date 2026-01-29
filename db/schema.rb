@@ -11,6 +11,9 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.0].define(version: 2026_01_29_165315) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "clans", force: :cascade do |t|
     t.string "name"
     t.string "symbol_link"
@@ -24,7 +27,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_29_165315) do
     t.string "link2_name"
   end
 
-  create_table "items", force: :cascade do |t|
+  create_table "items", id: :serial, force: :cascade do |t|
     t.string "name"
     t.integer "itemid"
     t.string "icon"
@@ -41,10 +44,10 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_29_165315) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "players", force: :cascade do |t|
+  create_table "players", id: :serial, force: :cascade do |t|
     t.string "player_name"
     t.string "player_acc_type"
-    t.integer "overall_xp"
+    t.bigint "overall_xp"
     t.integer "overall_lvl"
     t.float "overall_ehp"
     t.integer "attack_xp"
@@ -350,19 +353,19 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_29_165315) do
     t.integer "runecraft_xp_year_max"
     t.float "runecraft_ehp_year_start"
     t.float "runecraft_ehp_year_max"
-    t.integer "overall_xp_day_start"
+    t.bigint "overall_xp_day_start"
     t.integer "overall_xp_day_max"
     t.float "overall_ehp_day_start"
     t.float "overall_ehp_day_max"
-    t.integer "overall_xp_week_start"
+    t.bigint "overall_xp_week_start"
     t.integer "overall_xp_week_max"
     t.float "overall_ehp_week_start"
     t.float "overall_ehp_week_max"
-    t.integer "overall_xp_month_start"
+    t.bigint "overall_xp_month_start"
     t.integer "overall_xp_month_max"
     t.float "overall_ehp_month_start"
     t.float "overall_ehp_month_max"
-    t.integer "overall_xp_year_start"
+    t.bigint "overall_xp_year_start"
     t.integer "overall_xp_year_max"
     t.float "overall_ehp_year_start"
     t.float "overall_ehp_year_max"
@@ -386,7 +389,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_29_165315) do
     t.text "hiscores_extras"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", id: :serial, force: :cascade do |t|
     t.string "name"
     t.string "pass"
     t.datetime "created_at", precision: nil, null: false

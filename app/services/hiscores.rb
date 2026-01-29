@@ -377,6 +377,12 @@ class Hiscores
           stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
           stats["#{internal_skill_name}_rank"] = rank
           stats[:f2p_levels_sum] += stats["#{internal_skill_name}_lvl"].to_i
+        when 'overall'
+          # Overall is the total level, not an individual skill
+          # Store it but do NOT add it to f2p_levels_sum (would be double-counting)
+          stats["#{internal_skill_name}_lvl"] = lvl
+          stats["#{internal_skill_name}_xp"] = xp
+          stats["#{internal_skill_name}_rank"] = rank
         else
           # F2P skills (store + include in f2p level sum)
           stats["#{internal_skill_name}_lvl"] = lvl
@@ -549,6 +555,12 @@ class Hiscores
           stats["#{internal_skill_name}_xp"] = [xp, MIN_HITPOINTS_XP].max
           stats["#{internal_skill_name}_rank"] = rank
           stats[:f2p_levels_sum] += stats["#{internal_skill_name}_lvl"].to_i
+        when 'overall'
+          # Overall is the total level, not an individual skill
+          # Store it but do NOT add it to f2p_levels_sum (would be double-counting)
+          stats["#{internal_skill_name}_lvl"] = lvl
+          stats["#{internal_skill_name}_xp"] = xp
+          stats["#{internal_skill_name}_rank"] = rank
         else
           # F2P skills (store + include in f2p level sum)
           stats["#{internal_skill_name}_lvl"] = lvl

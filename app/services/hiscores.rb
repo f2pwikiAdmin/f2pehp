@@ -43,7 +43,7 @@ class Hiscores
     'Runecraft' => 'runecraft',
     'Hunter' => 'p2p',
     'Construction' => 'p2p',
-    'Sailing' => 'p2p',
+    # Note: Sailing omitted as it may not be present in API responses for F2P players
     'Grid Points' => 'temp_gamemode',  # Temporary game mode - may have F2P components
     'League Points' => 'temp_gamemode',  # Leagues have F2P content - do NOT flag as P2P
     'Deadman Points' => 'p2p_minigame',  # Deadman is members-only
@@ -309,13 +309,14 @@ class Hiscores
       }
       
       # CSV line order matches this skill/activity order
-      # Lines 0-24: Skills (Overall, Attack, Defence, ..., Construction, Sailing)
-      # Lines 25+: Activities (Clue Scrolls, Bounty Hunter, LMS, Bosses, etc.)
+      # Lines 0-23: Skills (Overall, Attack, Defence, ..., Construction)
+      # Note: Sailing is omitted as it may not be present in API responses for F2P players
+      # Lines 24+: Activities (Clue Scrolls, Bounty Hunter, LMS, Bosses, etc.)
       csv_skill_order = [
         'Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer', 'Magic',
         'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing',
         'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer', 'Farming', 'Runecraft', 'Hunter',
-        'Construction', 'Sailing'
+        'Construction'
       ]
       
       # Activities and bosses order (after skills)

@@ -4,11 +4,12 @@ require 'rails_helper'
 RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
   describe '.parse_stats_csv' do
     it 'correctly calculates f2p_levels_sum without including overall' do
-      # Test data for a F2P player with total level 838
-      # 15 F2P skills sum to 829, 9 P2P skills all at level 1 (sum to 9)
-      # Overall from Jagex API: 838 (829 + 9)
+      # Test data for a F2P player with total level 837
+      # 15 F2P skills sum to 829, 8 P2P skills all at level 1 (sum to 8)
+      # Overall from Jagex API: 837 (829 + 8)
+      # Note: Sailing omitted as F2P players may not have it in API response
       csv_data = [
-        '12345,838,15000000',    # Overall: 838 (should NOT be added to f2p_levels_sum)
+        '12345,837,15000000',    # Overall: 837 (should NOT be added to f2p_levels_sum)
         '10000,60,300000',       # Attack: 60
         '10001,60,300000',       # Defence: 60
         '10002,60,300000',       # Strength: 60
@@ -32,25 +33,24 @@ RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
         '10014,44,55000',        # Runecraft: 44
         '-1,1,0',                # Hunter (P2P, unranked, level 1)
         '-1,1,0',                # Construction (P2P, unranked, level 1)
-        '-1,1,0',                # Sailing (P2P, unranked, level 1)
       ].join("\n")
 
       result = Hiscores.send(:parse_stats_csv, csv_data)
 
       # THE FIX: f2p_levels_sum should be the sum of individual F2P skills ONLY
       # F2P skills sum: 60+60+60+60+60+45+55+70+60+65+50+40+40+60+44 = 829
-      # This should NOT include the overall level (838)
+      # This should NOT include the overall level (837)
       expect(result[:f2p_levels_sum]).to eq(829)
       
       # Overall should be stored separately
-      expect(result['overall_lvl']).to eq(838)
+      expect(result['overall_lvl']).to eq(837)
       
-      # Members skills should sum to 9 (all at level 1)
-      expect(result[:members_skill_count]).to eq(9)
-      expect(result[:members_levels_sum]).to eq(9)
+      # Members skills should sum to 8 (all at level 1, Sailing omitted)
+      expect(result[:members_skill_count]).to eq(8)
+      expect(result[:members_levels_sum]).to eq(8)
       
       # CRITICAL: The fix ensures f2p_levels_sum + members_levels_sum = overall
-      # This allows Check 2 in Player#detailed_p2p_verification to work correctly
+      # This allows Check 1b in Player#initial_detailed_p2p_check to work correctly
       expect(result[:f2p_levels_sum] + result[:members_levels_sum]).to eq(result['overall_lvl'])
       
       # Player should not be flagged as P2P (no trained P2P skills)
@@ -59,10 +59,11 @@ RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
 
     it 'correctly calculates f2p_levels_sum for maxed F2P player' do
       # Test data for a maxed F2P player
-      # 15 F2P skills at 99 = 1485, 9 P2P skills at 1 = 9
-      # Overall from Jagex API: 1494 (1485 + 9) - exactly at F2P maximum
+      # 15 F2P skills at 99 = 1485, 8 P2P skills at 1 = 8
+      # Overall from Jagex API: 1493 (1485 + 8) - exactly at F2P maximum
+      # Note: Sailing omitted as F2P players may not have it in API response
       csv_data = [
-        '1,1494,200000000',     # Overall: 1494 (F2P maximum)
+        '1,1493,200000000',      # Overall: 1493 (F2P maximum without Sailing)
         '1,99,13034431',         # Attack: 99
         '1,99,13034431',         # Defence: 99
         '1,99,13034431',         # Strength: 99
@@ -86,7 +87,6 @@ RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
         '1,99,13034431',         # Runecraft: 99
         '-1,1,0',                # Hunter (P2P, unranked, level 1)
         '-1,1,0',                # Construction (P2P, unranked, level 1)
-        '-1,1,0',                # Sailing (P2P, unranked, level 1)
       ].join("\n")
 
       result = Hiscores.send(:parse_stats_csv, csv_data)
@@ -94,11 +94,11 @@ RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
       # f2p_levels_sum should be 15 * 99 = 1485
       expect(result[:f2p_levels_sum]).to eq(1485)
       
-      # Overall should be 1494 (F2P maximum)
-      expect(result['overall_lvl']).to eq(1494)
+      # Overall should be 1493 (F2P maximum without Sailing)
+      expect(result['overall_lvl']).to eq(1493)
       
-      # Members skills should sum to 9 (all at level 1)
-      expect(result[:members_levels_sum]).to eq(9)
+      # Members skills should sum to 8 (all at level 1, Sailing omitted)
+      expect(result[:members_levels_sum]).to eq(8)
       
       # The calculation should match
       expect(result[:f2p_levels_sum] + result[:members_levels_sum]).to eq(result['overall_lvl'])
@@ -111,9 +111,10 @@ RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
   describe '.parse_stats' do
     it 'correctly calculates f2p_levels_sum without including overall (JSON parser)' do
       # Test the JSON parser has the same fix
+      # Note: overall is 837 (829 F2P + 8 P2P), Sailing omitted
       json_data = {
         'skills' => [
-          {'name' => 'Overall', 'rank' => 12345, 'level' => 838, 'xp' => 15000000},
+          {'name' => 'Overall', 'rank' => 12345, 'level' => 837, 'xp' => 15000000},
           {'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000},
           {'name' => 'Defence', 'rank' => 10001, 'level' => 60, 'xp' => 300000},
           {'name' => 'Strength', 'rank' => 10002, 'level' => 60, 'xp' => 300000},
@@ -137,17 +138,17 @@ RSpec.describe Hiscores, 'f2p_levels_sum calculation fix' do
           {'name' => 'Runecraft', 'rank' => 10014, 'level' => 44, 'xp' => 55000},
           {'name' => 'Hunter', 'rank' => -1, 'level' => 1, 'xp' => 0},
           {'name' => 'Construction', 'rank' => -1, 'level' => 1, 'xp' => 0},
-          {'name' => 'Sailing', 'rank' => -1, 'level' => 1, 'xp' => 0},
         ]
       }
 
       result = Hiscores.send(:parse_stats, json_data)
 
-      # Same expectations as CSV parser
+      # Same expectations as CSV parser (Sailing omitted)
+      # Note: overall is 837 (829 F2P + 8 P2P), matching CSV test
       expect(result[:f2p_levels_sum]).to eq(829)
-      expect(result['overall_lvl']).to eq(838)
-      expect(result[:members_skill_count]).to eq(9)
-      expect(result[:members_levels_sum]).to eq(9)
+      expect(result['overall_lvl']).to eq(837)
+      expect(result[:members_skill_count]).to eq(8)
+      expect(result[:members_levels_sum]).to eq(8)
       expect(result[:f2p_levels_sum] + result[:members_levels_sum]).to eq(result['overall_lvl'])
       expect(result["potential_p2p"]).to eq(0)
     end

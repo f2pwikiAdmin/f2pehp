@@ -31,8 +31,7 @@ RSpec.describe Hiscores do
           '10014,44,55000',        # Runecraft
           '-1,1,0',                # Hunter (P2P, unranked)
           '-1,1,0',                # Construction (P2P, unranked)
-          '-1,1,0',                # Sailing (unranked)
-          # Activities start here (line 35 in CSV, index 0 in activities)
+          # Activities start here (line 24 in CSV - Sailing omitted as F2P players may not have it)
           '-1,0',                  # Grid Points
           '-1,0',                  # League Points
           '-1,0',                  # Deadman Points
@@ -168,7 +167,7 @@ RSpec.describe Hiscores do
         expect(result["potential_p2p"]).to eq(1)
       end
 
-      it 'detects sailing as P2P indicator' do
+      it 'detects P2P training via member skill (Herblore)' do
         csv_data = [
           '12345,750,15000000',    # Overall
           '10000,60,300000',       # Attack
@@ -186,7 +185,7 @@ RSpec.describe Hiscores do
           '10011,40,40000',        # Crafting
           '10012,40,40000',        # Smithing
           '10013,60,300000',       # Mining
-          '-1,1,0',                # Herblore
+          '1000,30,15000',         # Herblore - with level 30! (P2P skill trained)
           '-1,1,0',                # Agility
           '-1,1,0',                # Thieving
           '-1,1,0',                # Slayer
@@ -194,16 +193,15 @@ RSpec.describe Hiscores do
           '10014,44,55000',        # Runecraft
           '-1,1,0',                # Hunter
           '-1,1,0',                # Construction
-          '1000,30,15000',         # Sailing - with level 30! (P2P skill)
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Sailing level should flag as P2P (value = 1) when detected
+        # Herblore level should flag as P2P (value = 1) when detected
         expect(result["potential_p2p"]).to eq(1)
       end
 
-      it 'handles unranked sailing correctly' do
+      it 'handles unranked P2P skills correctly (all at level 1)' do
         csv_data = [
           '12345,750,15000000',    # Overall
           '10000,60,300000',       # Attack
@@ -221,7 +219,7 @@ RSpec.describe Hiscores do
           '10011,40,40000',        # Crafting
           '10012,40,40000',        # Smithing
           '10013,60,300000',       # Mining
-          '-1,1,0',                # Herblore
+          '-1,1,0',                # Herblore - unranked (P2P skill at level 1)
           '-1,1,0',                # Agility
           '-1,1,0',                # Thieving
           '-1,1,0',                # Slayer
@@ -229,12 +227,11 @@ RSpec.describe Hiscores do
           '10014,44,55000',        # Runecraft
           '-1,1,0',                # Hunter
           '-1,1,0',                # Construction
-          '-1,1,0',                # Sailing - unranked (P2P skill)
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
 
-        # Unranked sailing should not contribute to P2P detection
+        # Unranked P2P skills at level 1 should not contribute to P2P detection
         expect(result["potential_p2p"]).to eq(0)
       end
     end
@@ -355,35 +352,35 @@ RSpec.describe Hiscores do
         expect(result["potential_p2p"]).to eq(1)
       end
 
-      it 'detects sailing as P2P indicator' do
+      it 'detects trained P2P skills (Herblore) as P2P indicator' do
         json_data = {
           'skills' => [
             { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
             { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
             # Other F2P skills...
-            { 'name' => 'Sailing', 'rank' => 1000, 'level' => 30, 'xp' => 15000 }
+            { 'name' => 'Herblore', 'rank' => 1000, 'level' => 30, 'xp' => 15000 }
           ]
         }
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Sailing level should flag as P2P (value = 1) when detected
+        # Herblore level should flag as P2P (value = 1) when detected
         expect(result["potential_p2p"]).to eq(1)
       end
 
-      it 'handles unranked sailing correctly' do
+      it 'handles unranked P2P skills correctly' do
         json_data = {
           'skills' => [
             { 'name' => 'Overall', 'rank' => 12345, 'level' => 750, 'xp' => 15000000 },
             { 'name' => 'Attack', 'rank' => 10000, 'level' => 60, 'xp' => 300000 },
-            # Sailing unranked
-            { 'name' => 'Sailing', 'rank' => -1, 'level' => 1, 'xp' => 0 }
+            # Herblore unranked
+            { 'name' => 'Herblore', 'rank' => -1, 'level' => 1, 'xp' => 0 }
           ]
         }
 
         result = Hiscores.send(:parse_stats, json_data)
 
-        # Unranked sailing at level 1 shouldn't flag P2P
+        # Unranked P2P skill at level 1 shouldn't flag P2P
         # members_levels_sum = 1
         # members_skill_count = 1
         # potential_p2p = (1 - 1) = 0

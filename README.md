@@ -4,6 +4,17 @@
 
 F2P.wiki is an open source Old School RuneScape hiscores for Free-to-play players. 
 
+## P2P Detection System
+
+The application uses a robust P2P (members) detection system to ensure only F2P players are tracked. The system:
+
+- **Parses all OSRS skills** from the hiscores API, including members-only skills (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction, Sailing)
+- **Uses direct evidence checks** to determine P2P status: if ANY members-only skill has level > 1 OR xp > 0, the account is flagged as P2P
+- **Handles skill list changes** gracefully without requiring code updates
+- **Accurately identifies F2P players** at any total level up to the F2P maximum of 1494
+
+For detailed information about the P2P detection logic and recent improvements, see [P2P_DETECTION_FIX.md](P2P_DETECTION_FIX.md).
+
 ## Contributing
 
 We are happy to receive any and all help!

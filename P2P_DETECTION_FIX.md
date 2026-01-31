@@ -199,7 +199,10 @@ When OSRS adds new member skills:
 - `spec/models/player_p2p_verification_spec.rb` - Verification tests
 
 ### Key Constants
-- `F2P_MAX_TOTAL = 1494` - Maximum F2P total level (15 skills × 99 + 9 member skills × 1)
+- `F2P_MAX_TOTAL = 1494` - Maximum F2P total level
+  - 15 F2P skills at 99 = 1485 (Attack, Defence, Strength, Hitpoints, Ranged, Prayer, Magic, Cooking, Woodcutting, Fishing, Firemaking, Crafting, Smithing, Mining, Runecraft)
+  - 9 member skills at 1 = 9 (Fletching, Herblore, Agility, Thieving, Slayer, Farming, Hunter, Construction, Sailing)
+  - Total: 1485 + 9 = 1494 (24 skills total, excluding Overall which is a sum not a skill)
 - `MEMBERS_ONLY_SKILLS` - List of 9 member skills
 - `SKILL_NAME_MAP` - Maps OSRS API skill names to internal names
 

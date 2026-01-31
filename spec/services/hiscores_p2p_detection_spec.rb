@@ -67,6 +67,7 @@ RSpec.describe Hiscores, 'P2P detection with member skill evidence' do
         expect(result['sailing_xp']).to eq(0)
 
         # Verify helper fields
+        # Note: members_skill_count includes Sailing (the newly added P2P skill)
         expect(result[:members_skill_count]).to eq(9)
         expect(result[:members_levels_sum]).to eq(9)
         

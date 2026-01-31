@@ -374,6 +374,13 @@ class Hiscores
           # IMPORTANT: Presence of these skills does NOT indicate P2P membership.
           # Only flag as P2P if the skill shows evidence of training beyond default (level > 1 OR xp > 0).
           # Unranked skills at level 1 with 0 XP (e.g., "-1,1,0") are NOT flagged as P2P.
+          
+          # Store individual skill fields using the actual skill name for direct access
+          skill_key = skill_name.downcase.gsub(/\s+/, '_')
+          stats["#{skill_key}_lvl"] = lvl
+          stats["#{skill_key}_xp"] = xp
+          stats["#{skill_key}_rank"] = rank
+          
           # Track counts for Player model's deterministic reconciliation
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl
@@ -550,6 +557,13 @@ class Hiscores
           # IMPORTANT: Presence of these skills does NOT indicate P2P membership.
           # Only flag as P2P if the skill shows evidence of training beyond default (level > 1 OR xp > 0).
           # Unranked skills at level 1 with 0 XP are NOT flagged as P2P.
+          
+          # Store individual skill fields using the actual skill name for direct access
+          skill_key = json_skill_name.downcase.gsub(/\s+/, '_')
+          stats["#{skill_key}_lvl"] = lvl
+          stats["#{skill_key}_xp"] = xp
+          stats["#{skill_key}_rank"] = rank
+          
           # Track counts for Player model's deterministic reconciliation
           stats[:members_skill_count] += 1
           stats[:members_levels_sum] += lvl

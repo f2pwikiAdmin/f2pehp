@@ -32,6 +32,12 @@ class Player < ActiveRecord::Base
   # F2P accounts simply have untrained P2P skills at level 1 with 0 XP.
   F2P_MAX_TOTAL = 1494
 
+  # Members-only skills (P2P skills)
+  # These skills are only trainable on members worlds
+  # F2P accounts have these skills at level 1 with 0 XP
+  # If ANY of these skills have level > 1 OR xp > 0, the account is P2P
+  MEMBERS_ONLY_SKILLS = %w[fletching herblore agility thieving slayer farming hunter construction sailing].freeze
+
   # P2P bosses (excluding F2P bosses Obor and Bryophyta)
   P2P_BOSSES = [
     'Abyssal Sire', 'Alchemical Hydra', 'Artio', 'Barrows Chests',
@@ -1202,28 +1208,20 @@ class Player < ActiveRecord::Base
       return true
     end
 
-    # Check if any P2P skill is trained beyond base level
-    # IMPORTANT: Only perform this check if helper fields are present (they come from hiscores parser)
-    # If they're missing, we can't reliably determine P2P skill training from levels alone
-    has_helper_fields = stats.key?(:f2p_levels_sum) || stats.key?("f2p_levels_sum")
-    if has_helper_fields && overall > 0
-      f2p_sum = (stats[:f2p_levels_sum] || stats["f2p_levels_sum"]).to_i
-      members_count = (stats[:members_skill_count] || stats["members_skill_count"]).to_i
-      members_sum = (stats[:members_levels_sum] || stats["members_levels_sum"]).to_i
+    # Check 2: Direct members-only skill evidence check
+    # If ANY members-only skill has level > 1 OR xp > 0, the account is P2P
+    # This is a robust check that works regardless of skill list changes
+    MEMBERS_ONLY_SKILLS.each do |skill|
+      lvl = (stats["#{skill}_lvl"] || stats[:"#{skill}_lvl"]).to_i
+      xp = (stats["#{skill}_xp"] || stats[:"#{skill}_xp"]).to_i
       
-      # Only check if we have members data
-      if members_count > 0
-        expected_overall = f2p_sum + members_sum
-        if overall > expected_overall
-          trained_p2p_levels = overall - expected_overall
-          Rails.logger.info "Player #{player_name} marked as P2P: Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
-          return true
-        end
+      if lvl > 1 || xp > 0
+        Rails.logger.info "Player #{player_name} marked as P2P: Has trained members skill #{skill} (level: #{lvl}, xp: #{xp})"
+        return true
       end
     end
 
-    # Check 2: P2P boss KC (excluding F2P bosses Obor and Bryophyta)
-    # Check 3: P2P clue scrolls (excluding beginner clues which are F2P)
+    # Check 3: P2P boss KC and clue scrolls
     # TEMPORARY MITIGATION: Activity-based P2P detection is disabled due to unstable
     # OSRS hiscores CSV format causing false positives. Only skills-based detection
     # is used until a JSON/name-based solution is implemented.
@@ -1352,23 +1350,16 @@ class Player < ActiveRecord::Base
       return true
     end
 
-    # Check if any P2P skill is trained beyond base level
-    # IMPORTANT: Only perform this check if helper fields are present (they come from hiscores parser)
-    # If they're missing, we can't reliably determine P2P skill training from levels alone
-    has_helper_fields = stats.key?(:f2p_levels_sum) || stats.key?("f2p_levels_sum")
-    if has_helper_fields && overall > 0
-      f2p_sum = (stats[:f2p_levels_sum] || stats["f2p_levels_sum"]).to_i
-      members_count = (stats[:members_skill_count] || stats["members_skill_count"]).to_i
-      members_sum = (stats[:members_levels_sum] || stats["members_levels_sum"]).to_i
+    # Check 2: Direct members-only skill evidence check
+    # If ANY members-only skill has level > 1 OR xp > 0, the account is P2P
+    # This is a robust check that works regardless of skill list changes
+    MEMBERS_ONLY_SKILLS.each do |skill|
+      lvl = (stats["#{skill}_lvl"] || stats[:"#{skill}_lvl"]).to_i
+      xp = (stats["#{skill}_xp"] || stats[:"#{skill}_xp"]).to_i
       
-      # Only check if we have members data
-      if members_count > 0
-        expected_overall = f2p_sum + members_sum
-        if overall > expected_overall
-          trained_p2p_levels = overall - expected_overall
-          Rails.logger.info "Player #{name} marked as P2P (creation): Has trained P2P skills (#{trained_p2p_levels} levels beyond base)"
-          return true
-        end
+      if lvl > 1 || xp > 0
+        Rails.logger.info "Player #{name} marked as P2P (creation): Has trained members skill #{skill} (level: #{lvl}, xp: #{xp})"
+        return true
       end
     end
 

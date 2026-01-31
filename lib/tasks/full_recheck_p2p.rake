@@ -44,18 +44,19 @@ namespace :players do
           # This will update the potential_p2p field and save the record
           player.check_p2p_stats(stats)
           
-          # Check if potential_p2p actually changed
+          # Restore the original updated_at timestamp to avoid triggering timestamp changes
+          # This is done regardless of whether potential_p2p changed, since check_p2p_stats
+          # calls update() which touches the timestamp
+          if old_updated_at && player.updated_at != old_updated_at
+            player.update_column(:updated_at, old_updated_at)
+          end
+          
+          # Check if potential_p2p actually changed and update counters/output
           if old_value != player.potential_p2p
-            # Value changed - restore the original updated_at to avoid triggering timestamp changes
-            player.update_column(:updated_at, old_updated_at) if old_updated_at
             updated_count += 1
             puts "[#{processed_count}/#{total}] ✓ Updated #{player.player_name} (ID: #{player.id}): #{old_value} -> #{player.potential_p2p}"
-          else
-            # Value didn't change - restore updated_at since check_p2p_stats touched it
-            player.update_column(:updated_at, old_updated_at) if old_updated_at && player.updated_at != old_updated_at
-            if processed_count % 50 == 0
-              puts "[#{processed_count}/#{total}] No change for #{player.player_name} (ID: #{player.id})"
-            end
+          elsif processed_count % 50 == 0
+            puts "[#{processed_count}/#{total}] No change for #{player.player_name} (ID: #{player.id})"
           end
         else
           skipped_count += 1
@@ -72,7 +73,7 @@ namespace :players do
       end
       
       # Throttle requests to avoid hammering the hiscores API
-      sleep sleep_time if processed_count < total
+      sleep sleep_time
     end
 
     elapsed_time = Time.now - start_time

@@ -129,6 +129,39 @@ The app should now be running at [http://localhost:3000](http://localhost:3000) 
 
 ## Available Rake Tasks
 
+### Full P2P Recheck
+
+Performs a comprehensive P2P verification for all players by fetching fresh hiscores data and updating the `potential_p2p` flag using the existing model logic.
+
+This task is useful for:
+- Validating P2P status after logic updates
+- Correcting false positives/negatives in bulk
+- Periodic verification of player statuses
+
+```bash
+# Basic usage - process all players
+bundle exec rake players:full_recheck_p2p
+
+# Limit to 10 players for testing
+bundle exec rake players:full_recheck_p2p LIMIT=10
+
+# Start from a specific player ID
+bundle exec rake players:full_recheck_p2p START_ID=1000
+
+# Adjust sleep time between requests (default: 0.2 seconds)
+bundle exec rake players:full_recheck_p2p SLEEP=0.5
+
+# Combine options
+bundle exec rake players:full_recheck_p2p START_ID=1000 LIMIT=100 SLEEP=0.3
+```
+
+**Environment Variables:**
+- `LIMIT` - Maximum number of players to process
+- `START_ID` - Start processing at/after this player ID
+- `SLEEP` - Seconds to wait between players (default: 0.2)
+
+**Note:** This task fetches live hiscores data for each player, so it may take considerable time for large player bases. The task is resilient to network errors and will continue processing if individual fetches fail.
+
 ### Check False P2P Flagged List
 
 The application maintains a list of players incorrectly flagged as P2P (members) when they are actually F2P. These rake tasks help validate and maintain this list.

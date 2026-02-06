@@ -20,6 +20,9 @@ class PlayerCleanupService
     
     query = build_query
     
+    # Process players in batches
+    # Batch size is fixed at 100 for efficient memory usage during find_each iteration
+    # This is independent of the limit parameter which controls total players to check
     query.find_each(batch_size: 100) do |player|
       stats[:processed] += 1
       

@@ -132,5 +132,25 @@ RSpec.describe PlayerCleanupService do
         expect(results[:unavailable_players].first[:id]).to eq(player2.id)
       end
     end
+    
+    context 'with different account types' do
+      let!(:reg_player) { Player.create!(player_name: 'RegPlayer', player_acc_type: 'Reg', overall_lvl: 1000) }
+      let!(:iron_player) { Player.create!(player_name: 'IronPlayer', player_acc_type: 'IM', overall_lvl: 1000) }
+      let!(:hcim_player) { Player.create!(player_name: 'HCIMPlayer', player_acc_type: 'HCIM', overall_lvl: 1000) }
+      
+      before do
+        allow(Hiscores).to receive(:fetch_stats_by_acc).and_return(nil)
+        allow_any_instance_of(PlayerCleanupService).to receive(:sleep)
+      end
+      
+      it 'handles all account types correctly' do
+        service = PlayerCleanupService.new(limit: 3, dry_run: true)
+        results = service.execute
+        
+        expect(results[:processed]).to eq(3)
+        expect(results[:unavailable]).to eq(3)
+        expect(results[:unavailable_players].map { |p| p[:name] }).to contain_exactly('RegPlayer', 'IronPlayer', 'HCIMPlayer')
+      end
+    end
   end
 end

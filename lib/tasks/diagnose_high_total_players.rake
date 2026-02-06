@@ -256,10 +256,6 @@ namespace :players do
       dry_run: dry_run
     )
     
-    # Track progress with callbacks
-    processed_count = 0
-    unavailable_count = 0
-    
     # Run the service
     results = service.execute
     

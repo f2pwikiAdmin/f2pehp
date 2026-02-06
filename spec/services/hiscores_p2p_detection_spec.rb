@@ -207,6 +207,84 @@ RSpec.describe Hiscores, 'P2P detection with member skill evidence' do
         expect(result['potential_p2p']).to eq(0)
       end
     end
+
+    context 'when parsing player with total level exceeding F2P maximum' do
+      it 'flags as P2P when total level is 1495' do
+        csv_data = [
+          '1,1495,200100000',      # Overall: 1495 (exceeds F2P maximum of 1494)
+          '1,99,13034431',         # Attack
+          '1,99,13034431',         # Defence
+          '1,99,13034431',         # Strength
+          '1,99,13034431',         # Hitpoints
+          '1,99,13034431',         # Ranged
+          '1,99,13034431',         # Prayer
+          '1,99,13034431',         # Magic
+          '1,99,13034431',         # Cooking
+          '1,99,13034431',         # Woodcutting
+          '-1,2,83',               # Fletching (level 2, has xp - trained)
+          '1,99,13034431',         # Fishing
+          '1,99,13034431',         # Firemaking
+          '1,99,13034431',         # Crafting
+          '1,99,13034431',         # Smithing
+          '1,99,13034431',         # Mining
+          '-1,1,0',                # Herblore (base)
+          '-1,1,0',                # Agility (base)
+          '-1,1,0',                # Thieving (base)
+          '-1,1,0',                # Slayer (base)
+          '-1,1,0',                # Farming (base)
+          '1,99,13034431',         # Runecraft
+          '-1,1,0',                # Hunter (base)
+          '-1,1,0',                # Construction (base)
+          '-1,1,0',                # Sailing (base)
+        ].join("\n")
+
+        result = Hiscores.send(:parse_stats_csv, csv_data)
+
+        # Verify overall level exceeds F2P max
+        expect(result[:overall_lvl]).to eq(1495)
+
+        # Should be flagged as P2P due to total level check
+        expect(result['potential_p2p']).to eq(1)
+      end
+
+      it 'flags as P2P when total level is significantly higher (1600)' do
+        csv_data = [
+          '1,1600,250000000',      # Overall: 1600 (way above F2P maximum)
+          '1,99,13034431',         # Attack
+          '1,99,13034431',         # Defence
+          '1,99,13034431',         # Strength
+          '1,99,13034431',         # Hitpoints
+          '1,99,13034431',         # Ranged
+          '1,99,13034431',         # Prayer
+          '1,99,13034431',         # Magic
+          '1,99,13034431',         # Cooking
+          '1,99,13034431',         # Woodcutting
+          '100,50,101000',         # Fletching (trained)
+          '1,99,13034431',         # Fishing
+          '1,99,13034431',         # Firemaking
+          '1,99,13034431',         # Crafting
+          '1,99,13034431',         # Smithing
+          '1,99,13034431',         # Mining
+          '200,40,37500',          # Herblore (trained)
+          '300,30,13500',          # Agility (trained)
+          '-1,1,0',                # Thieving (base)
+          '-1,1,0',                # Slayer (base)
+          '-1,1,0',                # Farming (base)
+          '1,99,13034431',         # Runecraft
+          '-1,1,0',                # Hunter (base)
+          '-1,1,0',                # Construction (base)
+          '-1,1,0',                # Sailing (base)
+        ].join("\n")
+
+        result = Hiscores.send(:parse_stats_csv, csv_data)
+
+        # Verify overall level is high
+        expect(result[:overall_lvl]).to eq(1600)
+
+        # Should be flagged as P2P due to total level check (and also trained skills)
+        expect(result['potential_p2p']).to eq(1)
+      end
+    end
   end
 
   describe '.parse_stats (JSON parser)' do
@@ -296,6 +374,48 @@ RSpec.describe Hiscores, 'P2P detection with member skill evidence' do
         expect(result['herblore_xp']).to eq(1000)
 
         # Should be flagged as P2P
+        expect(result['potential_p2p']).to eq(1)
+      end
+    end
+
+    context 'when parsing player with total level exceeding F2P maximum from JSON' do
+      it 'flags as P2P when total level is 1495' do
+        json_data = {
+          'skills' => [
+            {'name' => 'Overall', 'rank' => 1, 'level' => 1495, 'xp' => 200100000},
+            {'name' => 'Attack', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Defence', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Strength', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Hitpoints', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Ranged', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Prayer', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Magic', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Cooking', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Woodcutting', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Fletching', 'rank' => -1, 'level' => 2, 'xp' => 83},
+            {'name' => 'Fishing', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Firemaking', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Crafting', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Smithing', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Mining', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Herblore', 'rank' => -1, 'level' => 1, 'xp' => 0},
+            {'name' => 'Agility', 'rank' => -1, 'level' => 1, 'xp' => 0},
+            {'name' => 'Thieving', 'rank' => -1, 'level' => 1, 'xp' => 0},
+            {'name' => 'Slayer', 'rank' => -1, 'level' => 1, 'xp' => 0},
+            {'name' => 'Farming', 'rank' => -1, 'level' => 1, 'xp' => 0},
+            {'name' => 'Runecraft', 'rank' => 1, 'level' => 99, 'xp' => 13034431},
+            {'name' => 'Hunter', 'rank' => -1, 'level' => 1, 'xp' => 0},
+            {'name' => 'Construction', 'rank' => -1, 'level' => 1, 'xp' => 0},
+            {'name' => 'Sailing', 'rank' => -1, 'level' => 1, 'xp' => 0},
+          ]
+        }
+
+        result = Hiscores.send(:parse_stats, json_data)
+
+        # Verify overall level exceeds F2P max
+        expect(result[:overall_lvl]).to eq(1495)
+
+        # Should be flagged as P2P due to total level check
         expect(result['potential_p2p']).to eq(1)
       end
     end

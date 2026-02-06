@@ -130,8 +130,10 @@ This suggests:
 
 To prevent this in the future:
 
-1. ✅ **Already implemented**: Total level check in verification (line 1206 in player.rb)
-2. ✅ **Already implemented**: Direct P2P skill evidence check (lines 1214-1222)
+1. ✅ **Already implemented**: Total level check in `detailed_p2p_verification()` method
+   - Check: `if overall > F2P_MAX_TOTAL` (1494)
+2. ✅ **Already implemented**: Direct P2P skill evidence check
+   - Iterates through `MEMBERS_ONLY_SKILLS` checking for XP > 0
 3. ✅ **Already implemented**: Parser sets `potential_p2p = 1` for trained P2P skills
 
 The system is working correctly for new/updated players. The issue is just with old/stale data in the database.
@@ -154,10 +156,12 @@ player.potential_p2p  # Should be 1 if total > 1494
 
 ### Verification Logic Location
 
-- **Total level check**: `app/models/player.rb:1206`
-- **P2P skill check**: `app/models/player.rb:1214-1222`
-- **Verification method**: `detailed_p2p_verification()`
-- **Called by**: `check_p2p_stats()` in recheck task
+- **Total level check**: `app/models/player.rb` in `detailed_p2p_verification()` method
+  - Check: `if overall > F2P_MAX_TOTAL`
+- **P2P skill check**: `app/models/player.rb` in `detailed_p2p_verification()` method
+  - Iterates through `MEMBERS_ONLY_SKILLS` checking for trained skills
+- **Verification method**: `detailed_p2p_verification()` in Player model
+- **Called by**: `check_p2p_stats()` method used by recheck task
 
 ## Questions?
 

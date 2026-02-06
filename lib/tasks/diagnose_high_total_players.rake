@@ -153,7 +153,7 @@ namespace :players do
     puts "=" * 80
     puts ""
     
-    limit = ENV['LIMIT']&.to_i || 20
+    limit = ENV['LIMIT']&.to_i || 50
     sleep_time = ENV['SLEEP']&.to_f || 0.3
     
     puts "Checking players (limit: #{limit})..."

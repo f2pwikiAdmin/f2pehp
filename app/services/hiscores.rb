@@ -477,15 +477,8 @@ class Hiscores
       overall_lvl = stats["overall_lvl"].to_i
       stats[:overall_lvl] = overall_lvl
 
-      # Check if total level exceeds F2P maximum (safety check in parser)
-      # F2P max: 15 skills × 99 + 9 P2P skills × 1 = 1494
-      # Any total level > 1494 means P2P skills have been trained beyond base level
-      if overall_lvl > Player::F2P_MAX_TOTAL
-        stats["potential_p2p"] = 1
-      end
-
       # potential_p2p is now set as a boolean flag (0 or 1) in the case statements above
-      # when any P2P skill or minigame is detected, or when total level exceeds F2P maximum
+      # when any P2P skill or minigame is detected
       
       stats
     end
@@ -650,15 +643,8 @@ class Hiscores
       overall_lvl = stats["overall_lvl"].to_i
       stats[:overall_lvl] = overall_lvl
 
-      # Check if total level exceeds F2P maximum (safety check in parser)
-      # F2P max: 15 skills × 99 + 9 P2P skills × 1 = 1494
-      # Any total level > 1494 means P2P skills have been trained beyond base level
-      if overall_lvl > Player::F2P_MAX_TOTAL
-        stats["potential_p2p"] = 1
-      end
-
       # potential_p2p is now set as a boolean flag (0 or 1) in the case statements above
-      # when any P2P skill or minigame is detected, or when total level exceeds F2P maximum
+      # when any P2P skill or minigame is detected
 
       stats
     end

@@ -66,12 +66,25 @@ rake players:fix_high_total_unflagged
 If you want to clean up players whose OSRS accounts no longer exist:
 
 ```bash
-# First, list some unavailable players to see what you're dealing with
-LIMIT=50 rake players:list_unavailable
+# First, preview what would be deleted (DRY RUN mode)
+DRY_RUN=1 LIMIT=50 rake players:cleanup_unavailable
 
-# Then manually delete them if needed
-# (You would need to create a cleanup task for bulk deletion)
+# Review the output, then run the actual cleanup
+rake players:cleanup_unavailable
+
+# Process more players with custom settings
+LIMIT=500 SLEEP=0.5 rake players:cleanup_unavailable
+
+# Resume from a specific player ID
+START_ID=1000 rake players:cleanup_unavailable
 ```
+
+**Features:**
+- **Safe by default**: Requires explicit 'yes' confirmation before deletion
+- **DRY_RUN mode**: Preview what would be deleted without making changes
+- **Configurable**: Use environment variables (LIMIT, SLEEP, START_ID)
+- **Batch processing**: Efficiently handles large datasets
+- **Clear output**: Shows progress and summary statistics
 
 **Considerations:**
 - Historical data would be lost

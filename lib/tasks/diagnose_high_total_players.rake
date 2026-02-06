@@ -91,8 +91,10 @@ namespace :players do
     end
 
     puts "2. Clean Up Unavailable Players (optional):"
-    puts "   Run: rake players:cleanup_unavailable"
+    puts "   Preview first: DRY_RUN=1 rake players:cleanup_unavailable"
+    puts "   Then run: rake players:cleanup_unavailable"
     puts "   This will remove players whose hiscores data is no longer available"
+    puts "   Options: LIMIT=500 SLEEP=0.5 DRY_RUN=1"
     puts ""
 
     puts "3. Re-run Full P2P Recheck:"
@@ -202,6 +204,97 @@ namespace :players do
     
     puts ""
     puts "To check more players, run: LIMIT=100 rake players:list_unavailable"
+    puts "=" * 80
+  end
+
+  desc "Clean up players whose hiscores data is unavailable (safe with confirmation)"
+  task cleanup_unavailable: :environment do
+    puts "=" * 80
+    puts "Cleanup Players with Unavailable Hiscores Data"
+    puts "=" * 80
+    puts ""
+    
+    # Parse environment variables
+    limit = ENV['LIMIT']&.to_i || 100
+    sleep_time = ENV['SLEEP']&.to_f || 0.3
+    start_id = ENV['START_ID']&.to_i
+    dry_run = ENV['DRY_RUN'] == '1'
+    
+    puts "Configuration:"
+    puts "  - Limit: #{limit} players"
+    puts "  - Sleep between API calls: #{sleep_time}s"
+    puts "  - Start ID: #{start_id || 'beginning'}"
+    puts "  - Mode: #{dry_run ? 'DRY RUN (no deletions)' : 'LIVE (will delete)'}"
+    puts ""
+    
+    if dry_run
+      puts "ℹ️  DRY RUN MODE: No players will be deleted. This is a preview."
+      puts ""
+    else
+      puts "⚠️  WARNING: This will permanently delete players from the database!"
+      puts ""
+      print "Are you sure you want to proceed? Type 'yes' to confirm: "
+      response = STDIN.gets.chomp
+      
+      unless response == 'yes'
+        puts "Aborted. No changes made."
+        puts "=" * 80
+        return
+      end
+      puts ""
+    end
+    
+    puts "Checking players for unavailable hiscores data..."
+    puts "This may take a while..."
+    puts ""
+    
+    # Use service to perform cleanup
+    service = PlayerCleanupService.new(
+      limit: limit,
+      sleep_time: sleep_time,
+      start_id: start_id,
+      dry_run: dry_run
+    )
+    
+    # Run the service
+    results = service.execute
+    
+    # Summary
+    puts ""
+    puts "=" * 80
+    puts "Summary:"
+    puts "=" * 80
+    puts "  - Total processed: #{results[:processed]}"
+    puts "  - Unavailable players found: #{results[:unavailable]}"
+    if dry_run
+      puts "  - Would be deleted: #{results[:unavailable]}"
+      puts "  - Actually deleted: 0 (DRY RUN)"
+    else
+      puts "  - Successfully deleted: #{results[:deleted]}"
+    end
+    puts "  - Errors: #{results[:errors]}"
+    puts ""
+    
+    if dry_run && results[:unavailable] > 0
+      puts "To actually delete these players, run without DRY_RUN:"
+      puts "  rake players:cleanup_unavailable"
+      puts ""
+    end
+    
+    if results[:unavailable] > 0 && results[:unavailable] < 20
+      puts "Unavailable players:"
+      results[:unavailable_players].each do |p|
+        puts "  - #{p[:name]} (ID: #{p[:id]}, Total: #{p[:total]})"
+      end
+      puts ""
+    end
+    
+    puts "To check more players, adjust LIMIT:"
+    puts "  LIMIT=500 rake players:cleanup_unavailable"
+    puts ""
+    puts "To resume from a specific ID:"
+    puts "  START_ID=1000 rake players:cleanup_unavailable"
+    puts ""
     puts "=" * 80
   end
 end

@@ -219,12 +219,14 @@ namespace :players do
     sleep_time = ENV['SLEEP']&.to_f || 0.3
     start_id = ENV['START_ID']&.to_i
     dry_run = ENV['DRY_RUN'] == '1'
+    progress_every = ENV['PROGRESS_EVERY']&.to_i || 50
     
     puts "Configuration:"
     puts "  - Limit: #{limit} players"
     puts "  - Sleep between API calls: #{sleep_time}s"
     puts "  - Start ID: #{start_id || 'beginning'}"
     puts "  - Mode: #{dry_run ? 'DRY RUN (no deletions)' : 'LIVE (will delete)'}"
+    puts "  - Progress logging: every #{progress_every} players"
     puts ""
     
     if dry_run
@@ -248,12 +250,17 @@ namespace :players do
     puts "This may take a while..."
     puts ""
     
+    # Define progress logger that outputs to stdout
+    progress_logger = ->(message) { puts message }
+    
     # Use service to perform cleanup
     service = PlayerCleanupService.new(
       limit: limit,
       sleep_time: sleep_time,
       start_id: start_id,
-      dry_run: dry_run
+      dry_run: dry_run,
+      progress_every: progress_every,
+      progress_logger: progress_logger
     )
     
     # Run the service

@@ -1,12 +1,14 @@
 # Service for cleaning up players with unavailable hiscores data
 class PlayerCleanupService
-  attr_reader :limit, :sleep_time, :start_id, :dry_run
+  attr_reader :limit, :sleep_time, :start_id, :dry_run, :progress_every
   
-  def initialize(limit: 100, sleep_time: 0.3, start_id: nil, dry_run: false)
+  def initialize(limit: 100, sleep_time: 0.3, start_id: nil, dry_run: false, progress_every: 50, progress_logger: nil)
     @limit = limit
     @sleep_time = sleep_time
     @start_id = start_id
     @dry_run = dry_run
+    @progress_every = progress_every
+    @progress_logger = progress_logger
   end
   
   def execute
@@ -42,6 +44,9 @@ class PlayerCleanupService
         stats[:errors] += 1
         Rails.logger.error "Error checking player #{player.player_name}: #{e.message}"
       end
+      
+      # Log progress at specified intervals
+      log_progress(player, stats) if should_log_progress?(stats[:processed])
       
       sleep sleep_time
     end
@@ -81,5 +86,22 @@ class PlayerCleanupService
       
       { unavailable: true, deleted: deleted, player_info: player_info }
     end
+  end
+  
+  def should_log_progress?(processed_count)
+    progress_every > 0 && (processed_count % progress_every == 0)
+  end
+  
+  def log_progress(player, stats)
+    return unless @progress_logger
+    
+    timestamp = Time.now.strftime('%Y-%m-%d %H:%M:%S')
+    message = "[#{timestamp}] Progress: #{stats[:processed]} processed, " \
+              "player_id=#{player.id}, " \
+              "unavailable=#{stats[:unavailable]}, " \
+              "deleted=#{stats[:deleted]}, " \
+              "errors=#{stats[:errors]}"
+    
+    @progress_logger.call(message)
   end
 end

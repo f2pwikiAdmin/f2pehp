@@ -61,12 +61,12 @@ rake players:fix_high_total_unflagged
 - Ensures database consistency (high total = P2P)
 - Safe operation - only updates the flag
 
-### Option 2: Remove Unavailable Players (Optional)
+### Option 2: Flag/Hide Unavailable Players (Optional)
 
-If you want to clean up players whose OSRS accounts no longer exist:
+If you want to flag/hide players whose OSRS accounts no longer exist (reversible):
 
 ```bash
-# First, preview what would be deleted (DRY RUN mode)
+# First, preview what would be flagged (DRY RUN mode)
 DRY_RUN=1 LIMIT=50 rake players:cleanup_unavailable
 
 # Review the output, then run the actual cleanup
@@ -80,16 +80,22 @@ START_ID=1000 rake players:cleanup_unavailable
 ```
 
 **Features:**
-- **Safe by default**: Requires explicit 'yes' confirmation before deletion
-- **DRY_RUN mode**: Preview what would be deleted without making changes
+- **Safe by default**: Requires explicit 'yes' confirmation before flagging
+- **DRY_RUN mode**: Preview what would be flagged without making changes
 - **Configurable**: Use environment variables (LIMIT, SLEEP, START_ID)
 - **Batch processing**: Efficiently handles large datasets
 - **Clear output**: Shows progress and summary statistics
+- **Reversible**: Players are flagged, not deleted - can be reviewed and unflagged later
+
+**What it does:**
+- Sets `potential_p2p = 1` (hides from F2P rankings)
+- Sets `p2p_flag_reason = 'unavailable_hiscores'` (distinct from confirmed P2P players)
+- Allows querying affected players: `Player.unavailable_hiscores_hidden`
 
 **Considerations:**
-- Historical data would be lost
-- If these are legitimate players who just haven't logged in, you'd lose them
-- More aggressive approach - use with caution
+- Players are hidden but not deleted - preserves historical data
+- Can distinguish between confirmed P2P players and players with unavailable hiscores
+- More conservative approach than hard deletion
 
 ### Option 3: Update All Players (Comprehensive)
 

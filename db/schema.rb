@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_01_29_165315) do
+ActiveRecord::Schema[7.0].define(version: 2026_02_10_201021) do
   create_table "clans", force: :cascade do |t|
     t.string "name"
     t.string "symbol_link"
@@ -384,6 +384,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_01_29_165315) do
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
     t.text "hiscores_extras"
+    t.string "p2p_flag_reason"
   end
 
   create_table "users", force: :cascade do |t|

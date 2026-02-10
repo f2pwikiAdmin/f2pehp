@@ -10,6 +10,19 @@ class Player < ActiveRecord::Base
 
   has_many :player_clan_links
   has_many :clans, through: :player_clan_links
+  
+  # P2P flag reasons
+  # These distinguish why a player was flagged as P2P
+  P2P_FLAG_REASONS = {
+    p2p: 'p2p',                             # Confirmed P2P (has trained members skills)
+    unavailable_hiscores: 'unavailable_hiscores'  # Hiscores data unavailable (account may not exist)
+  }.freeze
+  
+  # Scopes for querying players by P2P flag reason
+  scope :unavailable_hiscores_hidden, -> { where(potential_p2p: 1, p2p_flag_reason: P2P_FLAG_REASONS[:unavailable_hiscores]) }
+  scope :p2p_flagged, -> { where(potential_p2p: 1, p2p_flag_reason: P2P_FLAG_REASONS[:p2p]) }
+  scope :all_hidden, -> { where(potential_p2p: 1) }  # All players hidden from F2P rankings
+  
   SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft overall]
 
   TIMES = %w[day week month year]

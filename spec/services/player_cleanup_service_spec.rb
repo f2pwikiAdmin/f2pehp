@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe PlayerCleanupService do
-  let(:player) { Player.create!(player_name: 'TestPlayer', player_acc_type: 'Reg', overall_lvl: 1000) }
+  let(:player) { Player.create!(player_name: 'TestPlayer', player_acc_type: 'Reg', overall_lvl: 1000, potential_p2p: 0) }
   
   describe '#initialize' do
     it 'sets default values' do
@@ -37,7 +37,7 @@ RSpec.describe PlayerCleanupService do
         
         expect(results[:processed]).to eq(1)
         expect(results[:unavailable]).to eq(0)
-        expect(results[:deleted]).to eq(0)
+        expect(results[:flagged]).to eq(0)
       end
     end
     
@@ -54,20 +54,32 @@ RSpec.describe PlayerCleanupService do
         
         expect(results[:processed]).to eq(1)
         expect(results[:unavailable]).to eq(1)
-        expect(results[:deleted]).to eq(0)
+        expect(results[:flagged]).to eq(0)
         expect(results[:unavailable_players].length).to eq(1)
         expect(Player.exists?(player.id)).to be true
+        
+        # Player should not be flagged in dry run
+        player.reload
+        expect(player.potential_p2p).to eq(0)
+        expect(player.p2p_flag_reason).to be_nil
       end
       
-      it 'deletes player when not in dry run mode' do
+      it 'flags/hides player when not in dry run mode' do
         player_id = player.id
         service = PlayerCleanupService.new(limit: 1, dry_run: false)
         results = service.execute
         
         expect(results[:processed]).to eq(1)
         expect(results[:unavailable]).to eq(1)
-        expect(results[:deleted]).to eq(1)
-        expect(Player.exists?(player_id)).to be false
+        expect(results[:flagged]).to eq(1)
+        
+        # Player should still exist but be flagged
+        expect(Player.exists?(player_id)).to be true
+        
+        # Check flagging details
+        player.reload
+        expect(player.potential_p2p).to eq(1)
+        expect(player.p2p_flag_reason).to eq(Player::P2P_FLAG_REASONS[:unavailable_hiscores])
       end
     end
     
@@ -90,9 +102,9 @@ RSpec.describe PlayerCleanupService do
     end
     
     context 'with multiple players' do
-      let!(:player1) { Player.create!(player_name: 'Player1', player_acc_type: 'Reg', overall_lvl: 1000) }
-      let!(:player2) { Player.create!(player_name: 'Player2', player_acc_type: 'Reg', overall_lvl: 1200) }
-      let!(:player3) { Player.create!(player_name: 'Player3', player_acc_type: 'Reg', overall_lvl: 800) }
+      let!(:player1) { Player.create!(player_name: 'Player1', player_acc_type: 'Reg', overall_lvl: 1000, potential_p2p: 0) }
+      let!(:player2) { Player.create!(player_name: 'Player2', player_acc_type: 'Reg', overall_lvl: 1200, potential_p2p: 0) }
+      let!(:player3) { Player.create!(player_name: 'Player3', player_acc_type: 'Reg', overall_lvl: 800, potential_p2p: 0) }
       
       before do
         allow_any_instance_of(PlayerCleanupService).to receive(:sleep)
@@ -109,16 +121,29 @@ RSpec.describe PlayerCleanupService do
         
         expect(results[:processed]).to eq(3)
         expect(results[:unavailable]).to eq(2)
-        expect(results[:deleted]).to eq(2)
+        expect(results[:flagged]).to eq(2)
+        
+        # All players should still exist
         expect(Player.exists?(player1.id)).to be true
-        expect(Player.exists?(player2.id)).to be false
-        expect(Player.exists?(player3.id)).to be false
+        expect(Player.exists?(player2.id)).to be true
+        expect(Player.exists?(player3.id)).to be true
+        
+        # Check flagging status
+        player1.reload
+        player2.reload
+        player3.reload
+        
+        expect(player1.potential_p2p).to eq(0)
+        expect(player2.potential_p2p).to eq(1)
+        expect(player2.p2p_flag_reason).to eq(Player::P2P_FLAG_REASONS[:unavailable_hiscores])
+        expect(player3.potential_p2p).to eq(1)
+        expect(player3.p2p_flag_reason).to eq(Player::P2P_FLAG_REASONS[:unavailable_hiscores])
       end
     end
     
     context 'with start_id parameter' do
-      let!(:player1) { Player.create!(player_name: 'Player1', player_acc_type: 'Reg', overall_lvl: 1000) }
-      let!(:player2) { Player.create!(player_name: 'Player2', player_acc_type: 'Reg', overall_lvl: 1200) }
+      let!(:player1) { Player.create!(player_name: 'Player1', player_acc_type: 'Reg', overall_lvl: 1000, potential_p2p: 0) }
+      let!(:player2) { Player.create!(player_name: 'Player2', player_acc_type: 'Reg', overall_lvl: 1200, potential_p2p: 0) }
       
       before do
         allow(Hiscores).to receive(:fetch_stats_by_acc).and_return(nil)
@@ -136,9 +161,9 @@ RSpec.describe PlayerCleanupService do
     end
     
     context 'with different account types' do
-      let!(:reg_player) { Player.create!(player_name: 'RegPlayer', player_acc_type: 'Reg', overall_lvl: 1000) }
-      let!(:iron_player) { Player.create!(player_name: 'IronPlayer', player_acc_type: 'IM', overall_lvl: 1000) }
-      let!(:hcim_player) { Player.create!(player_name: 'HCIMPlayer', player_acc_type: 'HCIM', overall_lvl: 1000) }
+      let!(:reg_player) { Player.create!(player_name: 'RegPlayer', player_acc_type: 'Reg', overall_lvl: 1000, potential_p2p: 0) }
+      let!(:iron_player) { Player.create!(player_name: 'IronPlayer', player_acc_type: 'IM', overall_lvl: 1000, potential_p2p: 0) }
+      let!(:hcim_player) { Player.create!(player_name: 'HCIMPlayer', player_acc_type: 'HCIM', overall_lvl: 1000, potential_p2p: 0) }
       
       before do
         allow(Hiscores).to receive(:fetch_stats_by_acc).and_return(nil)
@@ -156,7 +181,7 @@ RSpec.describe PlayerCleanupService do
     end
     
     context 'with progress logging' do
-      let!(:players) { (1..5).map { |i| Player.create!(player_name: "Player#{i}", player_acc_type: 'Reg', overall_lvl: 1000) } }
+      let!(:players) { (1..5).map { |i| Player.create!(player_name: "Player#{i}", player_acc_type: 'Reg', overall_lvl: 1000, potential_p2p: 0) } }
       
       before do
         allow(Hiscores).to receive(:fetch_stats_by_acc).and_return(nil)
@@ -177,7 +202,7 @@ RSpec.describe PlayerCleanupService do
         expect(progress_messages[0]).to match(/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] Progress: 2 processed/)
         expect(progress_messages[0]).to include('player_id=')
         expect(progress_messages[0]).to include('unavailable=')
-        expect(progress_messages[0]).to include('deleted=')
+        expect(progress_messages[0]).to include('flagged=')
         expect(progress_messages[0]).to include('errors=')
       end
       
@@ -197,7 +222,7 @@ RSpec.describe PlayerCleanupService do
         expect(progress_messages.length).to eq(1)
         expect(progress_messages[0]).to include('3 processed')
         expect(progress_messages[0]).to include('unavailable=1')  # Only player3 unavailable at this point
-        expect(progress_messages[0]).to include('deleted=0')  # Dry run
+        expect(progress_messages[0]).to include('flagged=0')  # Dry run
         expect(progress_messages[0]).to include('errors=0')
       end
       
@@ -216,6 +241,82 @@ RSpec.describe PlayerCleanupService do
         
         # Should not raise error
         expect { service.execute }.not_to raise_error
+      end
+    end
+    
+    context 'with unavailable_hiscores flag reason' do
+      before do
+        allow(Hiscores).to receive(:fetch_stats_by_acc).and_return(nil)
+        allow_any_instance_of(PlayerCleanupService).to receive(:sleep)
+      end
+      
+      it 'sets the correct reason when flagging player' do
+        player # Create player before running service
+        service = PlayerCleanupService.new(limit: 1, dry_run: false)
+        service.execute
+        
+        player.reload
+        expect(player.potential_p2p).to eq(1)
+        expect(player.p2p_flag_reason).to eq(Player::P2P_FLAG_REASONS[:unavailable_hiscores])
+      end
+      
+      it 'allows querying flagged players with unavailable_hiscores scope' do
+        player # Create player first to ensure it has a lower ID
+        
+        # Create another player with p2p flag (different reason)
+        p2p_player = Player.create!(
+          player_name: 'P2PPlayer',
+          player_acc_type: 'Reg',
+          overall_lvl: 1500,
+          potential_p2p: 1,
+          p2p_flag_reason: Player::P2P_FLAG_REASONS[:p2p]
+        )
+        
+        # Flag the test player as unavailable_hiscores
+        service = PlayerCleanupService.new(limit: 1, dry_run: false)
+        service.execute
+        
+        # Query players with unavailable_hiscores reason
+        unavailable_players = Player.unavailable_hiscores_hidden
+        
+        expect(unavailable_players).to include(player)
+        expect(unavailable_players).not_to include(p2p_player)
+        expect(unavailable_players.count).to eq(1)
+      end
+      
+      it 'distinguishes between p2p and unavailable_hiscores reasons' do
+        player # Create player first
+        
+        # Create a player flagged as P2P
+        p2p_player = Player.create!(
+          player_name: 'P2PPlayer',
+          player_acc_type: 'Reg',
+          overall_lvl: 1500,
+          potential_p2p: 1,
+          p2p_flag_reason: Player::P2P_FLAG_REASONS[:p2p]
+        )
+        
+        # Flag test player as unavailable_hiscores
+        service = PlayerCleanupService.new(limit: 1, dry_run: false)
+        service.execute
+        
+        player.reload
+        
+        # Verify both are hidden but with different reasons
+        expect(player.potential_p2p).to eq(1)
+        expect(p2p_player.potential_p2p).to eq(1)
+        
+        expect(player.p2p_flag_reason).to eq(Player::P2P_FLAG_REASONS[:unavailable_hiscores])
+        expect(p2p_player.p2p_flag_reason).to eq(Player::P2P_FLAG_REASONS[:p2p])
+        
+        # Verify scopes work correctly
+        expect(Player.unavailable_hiscores_hidden).to include(player)
+        expect(Player.unavailable_hiscores_hidden).not_to include(p2p_player)
+        
+        expect(Player.p2p_flagged).to include(p2p_player)
+        expect(Player.p2p_flagged).not_to include(player)
+        
+        expect(Player.all_hidden.count).to eq(2)
       end
     end
   end

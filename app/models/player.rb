@@ -10,6 +10,12 @@ class Player < ActiveRecord::Base
 
   has_many :player_clan_links
   has_many :clans, through: :player_clan_links
+  
+  # Scopes for querying players by P2P flag reason
+  scope :unavailable_hiscores_hidden, -> { where(potential_p2p: 1, p2p_flag_reason: P2P_FLAG_REASONS[:unavailable_hiscores]) }
+  scope :p2p_flagged, -> { where(potential_p2p: 1, p2p_flag_reason: P2P_FLAG_REASONS[:p2p]) }
+  scope :all_hidden, -> { where("potential_p2p >= 1") }
+  
   SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft overall]
 
   TIMES = %w[day week month year]
@@ -66,6 +72,13 @@ class Player < ActiveRecord::Base
     'Clue Scrolls (elite)',
     'Clue Scrolls (master)'
   ].freeze
+
+  # P2P flag reasons
+  # These distinguish why a player was flagged as P2P
+  P2P_FLAG_REASONS = {
+    p2p: 'p2p',                             # Confirmed P2P (has trained members skills)
+    unavailable_hiscores: 'unavailable_hiscores'  # Hiscores data unavailable (account may not exist)
+  }.freeze
 
   # This is the canonical list of supporter. It is used to generate the list
   # of supporters on both the home page and the about us page. It also contains

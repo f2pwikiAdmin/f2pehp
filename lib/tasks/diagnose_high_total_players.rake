@@ -90,10 +90,10 @@ namespace :players do
       puts ""
     end
 
-    puts "2. Clean Up Unavailable Players (optional):"
+    puts "2. Flag/Hide Unavailable Players (optional):"
     puts "   Preview first: DRY_RUN=1 rake players:cleanup_unavailable"
     puts "   Then run: rake players:cleanup_unavailable"
-    puts "   This will remove players whose hiscores data is no longer available"
+    puts "   This will flag/hide players whose hiscores data is no longer available"
     puts "   Options: LIMIT=500 SLEEP=0.5 DRY_RUN=1"
     puts ""
 
@@ -207,10 +207,10 @@ namespace :players do
     puts "=" * 80
   end
 
-  desc "Clean up players whose hiscores data is unavailable (safe with confirmation)"
+  desc "Flag/hide players whose hiscores data is unavailable (safe with confirmation)"
   task cleanup_unavailable: :environment do
     puts "=" * 80
-    puts "Cleanup Players with Unavailable Hiscores Data"
+    puts "Flag/Hide Players with Unavailable Hiscores Data"
     puts "=" * 80
     puts ""
     
@@ -225,15 +225,16 @@ namespace :players do
     puts "  - Limit: #{limit} players"
     puts "  - Sleep between API calls: #{sleep_time}s"
     puts "  - Start ID: #{start_id || 'beginning'}"
-    puts "  - Mode: #{dry_run ? 'DRY RUN (no deletions)' : 'LIVE (will delete)'}"
+    puts "  - Mode: #{dry_run ? 'DRY RUN (no flagging)' : 'LIVE (will flag/hide)'}"
     puts "  - Progress logging: every #{progress_every} players"
     puts ""
     
     if dry_run
-      puts "ℹ️  DRY RUN MODE: No players will be deleted. This is a preview."
+      puts "ℹ️  DRY RUN MODE: No players will be flagged. This is a preview."
       puts ""
     else
-      puts "⚠️  WARNING: This will permanently delete players from the database!"
+      puts "⚠️  WARNING: This will flag/hide players with unavailable hiscores!"
+      puts "   Players will be marked with reason 'unavailable_hiscores' and hidden from rankings."
       puts ""
       print "Are you sure you want to proceed? Type 'yes' to confirm: "
       response = STDIN.gets.chomp
@@ -274,16 +275,16 @@ namespace :players do
     puts "  - Total processed: #{results[:processed]}"
     puts "  - Unavailable players found: #{results[:unavailable]}"
     if dry_run
-      puts "  - Would be deleted: #{results[:unavailable]}"
-      puts "  - Actually deleted: 0 (DRY RUN)"
+      puts "  - Would be flagged/hidden: #{results[:unavailable]}"
+      puts "  - Actually flagged: 0 (DRY RUN)"
     else
-      puts "  - Successfully deleted: #{results[:deleted]}"
+      puts "  - Successfully flagged/hidden: #{results[:flagged]}"
     end
     puts "  - Errors: #{results[:errors]}"
     puts ""
     
     if dry_run && results[:unavailable] > 0
-      puts "To actually delete these players, run without DRY_RUN:"
+      puts "To actually flag/hide these players, run without DRY_RUN:"
       puts "  rake players:cleanup_unavailable"
       puts ""
     end

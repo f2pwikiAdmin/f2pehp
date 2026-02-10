@@ -15,7 +15,7 @@ class PlayerCleanupService
     stats = {
       processed: 0,
       unavailable: 0,
-      deleted: 0,
+      flagged: 0,
       errors: 0,
       unavailable_players: []
     }
@@ -35,8 +35,8 @@ class PlayerCleanupService
           stats[:unavailable] += 1
           stats[:unavailable_players] << result[:player_info]
           
-          if result[:deleted]
-            stats[:deleted] += 1
+          if result[:flagged]
+            stats[:flagged] += 1
           end
         end
         
@@ -68,7 +68,7 @@ class PlayerCleanupService
     
     if stats
       # Player is available
-      { unavailable: false, deleted: false }
+      { unavailable: false, flagged: false }
     else
       # Player is unavailable
       player_info = {
@@ -78,13 +78,18 @@ class PlayerCleanupService
         updated: player.updated_at
       }
       
-      deleted = false
+      flagged = false
       unless dry_run
-        player.destroy
-        deleted = true
+        # Flag/hide player instead of deleting
+        player.update_columns(
+          potential_p2p: 1,
+          p2p_flag_reason: Player::P2P_FLAG_REASONS[:unavailable_hiscores]
+        )
+        flagged = true
+        Rails.logger.info "Player #{player.player_name} (ID: #{player.id}) flagged as unavailable_hiscores"
       end
       
-      { unavailable: true, deleted: deleted, player_info: player_info }
+      { unavailable: true, flagged: flagged, player_info: player_info }
     end
   end
   
@@ -99,7 +104,7 @@ class PlayerCleanupService
     message = "[#{timestamp}] Progress: #{stats[:processed]} processed, " \
               "player_id=#{player.id}, " \
               "unavailable=#{stats[:unavailable]}, " \
-              "deleted=#{stats[:deleted]}, " \
+              "flagged=#{stats[:flagged]}, " \
               "errors=#{stats[:errors]}"
     
     @progress_logger.call(message)

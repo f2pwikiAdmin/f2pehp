@@ -173,7 +173,7 @@ class PlayersController < ApplicationController
 
     # clan filter breaks page for some reason
     #@players = @players.left_joins(:clans).merge(Clan.where(name: clan_filter_clause)).distinct.where(Player.sql_f2p_filter).where("overall_ehp > 1").paginate(:page => params[:page], :per_page => @show_limit.to_i)
-    @players = @players.where(Player.sql_f2p_filter).where("overall_ehp > 1").paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    @players = @players.where(Player.sql_f2p_filter).where("overall_lvl <= ?", Player::F2P_MAX_TOTAL).where("overall_ehp > 1").paginate(:page => params[:page], :per_page => @show_limit.to_i)
   end
 
   def records
@@ -293,7 +293,7 @@ class PlayersController < ApplicationController
       @players = @players.where(cooking_lvl: 1).where(woodcutting_lvl: 1).where(fishing_lvl: 1).where(firemaking_lvl: 1).where(crafting_lvl: 1).where(smithing_lvl: 1).where(mining_lvl: 1).where(runecraft_lvl: 1).where("combat_lvl > 10")
     end
 
-    @players = @players.where("overall_ehp > 1").where(Player.sql_f2p_filter).paginate(:page => params[:page], :per_page => @show_limit.to_i)
+    @players = @players.where("overall_ehp > 1").where(Player.sql_f2p_filter).where("overall_lvl <= ?", Player::F2P_MAX_TOTAL).paginate(:page => params[:page], :per_page => @show_limit.to_i)
   end
 
   def ranks
@@ -442,6 +442,8 @@ class PlayersController < ApplicationController
     end
 
     @players = @players.where(Player.sql_f2p_filter)
+    # Additional safety: exclude anyone with total > F2P max (should be caught by potential_p2p, but belt-and-suspenders)
+    @players = @players.where("overall_lvl <= ?", Player::F2P_MAX_TOTAL)
 
     if @skill.include?("99_count")
       @players = @players.sort_by {|player| [player.count_99, player.overall_ehp] }.reverse.paginate(:page => params[:page], :per_page => @show_limit.to_i)

@@ -537,8 +537,9 @@ class Player < ActiveRecord::Base
 
   def self.sql_f2p_filter
     # Returns SQL fragment that filters for F2P players
-    # Only includes players with potential_p2p <= 0
-    "(potential_p2p <= 0)"
+    # Excludes players flagged as P2P (potential_p2p >= 1)
+    # Includes players with potential_p2p = 0 or NULL (treat NULL as F2P by default)
+    "(potential_p2p IS NULL OR potential_p2p = 0)"
   end
 
   def is_f2p?
@@ -551,8 +552,9 @@ class Player < ActiveRecord::Base
       return false if fakes_names.include?(player_name.downcase)
     end
     
-    # Returns true if potential_p2p <= 0
-    potential_p2p.to_i <= 0
+    # Returns true if potential_p2p is 0 or NULL (F2P player)
+    # Excludes players flagged as P2P (potential_p2p >= 1)
+    potential_p2p.to_i == 0
   end
 
   # The characters +, _, \s, -, %20 count as the same when doing a lookup on hiscores.

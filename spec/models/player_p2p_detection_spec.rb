@@ -669,6 +669,94 @@ RSpec.describe Player, type: :model do
     end
   end
 
+  describe 'F2P hiscores filtering with high total levels' do
+    before do
+      # Create test players with various scenarios
+      @f2p_maxed = Player.create!(
+        player_name: "F2PMaxed",
+        player_acc_type: "Reg",
+        potential_p2p: 0,
+        overall_lvl: 1494,  # F2P maximum
+        overall_ehp: 150
+      )
+
+      @p2p_high_total = Player.create!(
+        player_name: "DevilzDogz",
+        player_acc_type: "Reg",
+        potential_p2p: 1,
+        overall_lvl: 2126,  # P2P player with high total
+        overall_ehp: 200
+      )
+
+      @p2p_just_above_max = Player.create!(
+        player_name: "P2PJustAbove",
+        player_acc_type: "Reg",
+        potential_p2p: 1,
+        overall_lvl: 1495,  # Just above F2P max
+        overall_ehp: 180
+      )
+
+      @f2p_null_potential = Player.create!(
+        player_name: "F2PNullPotential",
+        player_acc_type: "Reg",
+        potential_p2p: nil,  # NULL value (should be treated as F2P)
+        overall_lvl: 1200,
+        overall_ehp: 100
+      )
+    end
+
+    after do
+      # Clean up test data
+      Player.where(player_name: ["F2PMaxed", "DevilzDogz", "P2PJustAbove", "F2PNullPotential"]).destroy_all
+    end
+
+    it 'sql_f2p_filter excludes players with potential_p2p >= 1' do
+      f2p_players = Player.where(Player.sql_f2p_filter)
+
+      expect(f2p_players).to include(@f2p_maxed)
+      expect(f2p_players).to include(@f2p_null_potential)
+      expect(f2p_players).not_to include(@p2p_high_total)
+      expect(f2p_players).not_to include(@p2p_just_above_max)
+    end
+
+    it 'sql_f2p_filter handles NULL potential_p2p as F2P' do
+      f2p_players = Player.where(Player.sql_f2p_filter)
+      expect(f2p_players).to include(@f2p_null_potential)
+    end
+
+    it 'defensive overall_lvl filter excludes players above F2P_MAX_TOTAL' do
+      # Simulate the belt-and-suspenders filter used in controllers
+      filtered_players = Player.where(Player.sql_f2p_filter).where("overall_lvl <= ?", Player::F2P_MAX_TOTAL)
+
+      expect(filtered_players).to include(@f2p_maxed)
+      expect(filtered_players).not_to include(@p2p_high_total)
+      expect(filtered_players).not_to include(@p2p_just_above_max)
+    end
+
+    it 'defensive overall_lvl filter works even if potential_p2p is incorrectly set' do
+      # Edge case: player with high total but potential_p2p incorrectly set to 0
+      # The belt-and-suspenders filter should still exclude them
+      edge_case_player = Player.create!(
+        player_name: "EdgeCasePlayer",
+        player_acc_type: "Reg",
+        potential_p2p: 0,  # Incorrectly set
+        overall_lvl: 2000,  # Obviously P2P
+        overall_ehp: 190
+      )
+
+      # The sql_f2p_filter would include this player (bug scenario)
+      f2p_by_flag = Player.where(Player.sql_f2p_filter)
+      expect(f2p_by_flag).to include(edge_case_player)
+
+      # But the belt-and-suspenders filter catches it
+      f2p_with_safety = Player.where(Player.sql_f2p_filter).where("overall_lvl <= ?", Player::F2P_MAX_TOTAL)
+      expect(f2p_with_safety).not_to include(edge_case_player)
+
+      # Clean up
+      edge_case_player.destroy
+    end
+  end
+
   describe '#check_p2p_stats with missing helper fields' do
     let(:player) { Player.new(player_name: "TestPlayerNoHelpers", player_acc_type: "Reg") }
     

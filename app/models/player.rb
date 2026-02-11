@@ -552,8 +552,9 @@ class Player < ActiveRecord::Base
       return false if fakes_names.include?(player_name.downcase)
     end
     
-    # Returns true if potential_p2p <= 0
-    potential_p2p.to_i <= 0
+    # Returns true if potential_p2p is 0 or NULL (F2P player)
+    # Excludes players flagged as P2P (potential_p2p >= 1)
+    potential_p2p.to_i == 0
   end
 
   # The characters +, _, \s, -, %20 count as the same when doing a lookup on hiscores.

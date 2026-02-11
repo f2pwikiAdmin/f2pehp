@@ -1,4 +1,4 @@
-# Service for cleaning up players with unavailable hiscores data
+# Service for enforcing P2P rules and cleaning up players
 class PlayerCleanupService
   attr_reader :limit, :sleep_time, :start_id, :dry_run, :progress_every
   
@@ -14,8 +14,8 @@ class PlayerCleanupService
   def execute
     stats = {
       processed: 0,
-      unavailable: 0,
-      flagged: 0,
+      flagged_total_level: 0,
+      flagged_verified: 0,
       errors: 0,
       unavailable_players: []
     }
@@ -29,15 +29,20 @@ class PlayerCleanupService
       stats[:processed] += 1
       
       begin
-        result = check_and_cleanup_player(player)
+        result = check_and_enforce_player(player)
         
-        if result[:unavailable]
-          stats[:unavailable] += 1
-          stats[:unavailable_players] << result[:player_info]
-          
-          if result[:flagged]
-            stats[:flagged] += 1
-          end
+        if result[:flagged_total_level]
+          stats[:flagged_total_level] += 1
+        end
+        
+        if result[:flagged_verified]
+          stats[:flagged_verified] += 1
+        end
+        
+        # Track errors that occurred during hiscores fetch
+        # But don't count them as something to act on
+        if result[:fetch_error]
+          stats[:errors] += 1
         end
         
       rescue => e
@@ -63,34 +68,79 @@ class PlayerCleanupService
     query
   end
   
-  def check_and_cleanup_player(player)
-    stats = Hiscores.fetch_stats_by_acc(player.player_name, player.player_acc_type)
+  def check_and_enforce_player(player)
+    result = {
+      flagged_total_level: false,
+      flagged_verified: false,
+      fetch_error: false
+    }
     
-    if stats
-      # Player is available
-      { unavailable: false, flagged: false }
-    else
-      # Player is unavailable
-      player_info = {
-        id: player.id,
-        name: player.player_name,
-        total: player.overall_lvl,
-        updated: player.updated_at
-      }
-      
-      flagged = false
+    # PRIORITY 1: Check if player's stored total level exceeds F2P max
+    # This is the primary enforcement mechanism and works even if hiscores are down
+    if player.overall_lvl > Player::F2P_MAX_TOTAL
       unless dry_run
-        # Flag/hide player instead of deleting
-        player.update_columns(
-          potential_p2p: 1,
-          p2p_flag_reason: Player::P2P_FLAG_REASONS[:unavailable_hiscores]
-        )
-        flagged = true
-        Rails.logger.info "Player #{player.player_name} (ID: #{player.id}) flagged as unavailable_hiscores"
+        # Only update if not already flagged with the correct reason
+        unless player.potential_p2p == 1 && player.p2p_flag_reason == Player::P2P_FLAG_REASONS[:total_level_exceeds_f2p_max]
+          player.update_columns(
+            potential_p2p: 1,
+            p2p_flag_reason: Player::P2P_FLAG_REASONS[:total_level_exceeds_f2p_max]
+          )
+          Rails.logger.info "Player #{player.player_name} (ID: #{player.id}) flagged: total level #{player.overall_lvl} exceeds F2P max (#{Player::F2P_MAX_TOTAL})"
+        end
       end
-      
-      { unavailable: true, flagged: flagged, player_info: player_info }
+      result[:flagged_total_level] = true
+      return result
     end
+    
+    # PRIORITY 2: If hiscores fetch succeeds, use detailed P2P verification
+    begin
+      stats = Hiscores.fetch_stats_by_acc(player.player_name, player.player_acc_type)
+      
+      if stats
+        # Hiscores data is available - verify if player is P2P
+        is_p2p = player.detailed_p2p_verification(stats)
+        
+        unless dry_run
+          if is_p2p
+            # Only update if not already flagged as P2P
+            unless player.potential_p2p == 1 && player.p2p_flag_reason == Player::P2P_FLAG_REASONS[:p2p]
+              player.update_columns(
+                potential_p2p: 1,
+                p2p_flag_reason: Player::P2P_FLAG_REASONS[:p2p]
+              )
+              Rails.logger.info "Player #{player.player_name} (ID: #{player.id}) flagged: verified P2P via detailed verification"
+            end
+            result[:flagged_verified] = true
+          else
+            # Player is verified F2P - unflag if previously flagged
+            if player.potential_p2p == 1
+              player.update_columns(
+                potential_p2p: 0,
+                p2p_flag_reason: nil
+              )
+              Rails.logger.info "Player #{player.player_name} (ID: #{player.id}) unflagged: verified as F2P"
+            end
+          end
+        else
+          # In dry run mode, just report what would happen
+          if is_p2p
+            result[:flagged_verified] = true
+          end
+        end
+      else
+        # Hiscores fetch returned nil (player not found)
+        # DO NOT flag based on this - it may be a transient error
+        # Just log it for awareness
+        Rails.logger.debug "Player #{player.player_name} (ID: #{player.id}): hiscores returned nil (not flagging)"
+      end
+    rescue => e
+      # Hiscores fetch failed with an error
+      # DO NOT flag based on this - treat as unknown/retry later
+      result[:fetch_error] = true
+      Rails.logger.debug "Player #{player.player_name} (ID: #{player.id}): hiscores fetch error (#{e.message})"
+    end
+    
+    result
   end
   
   def should_log_progress?(processed_count)
@@ -103,8 +153,8 @@ class PlayerCleanupService
     timestamp = Time.now.strftime('%Y-%m-%d %H:%M:%S')
     message = "[#{timestamp}] Progress: #{stats[:processed]} processed, " \
               "player_id=#{player.id}, " \
-              "unavailable=#{stats[:unavailable]}, " \
-              "flagged=#{stats[:flagged]}, " \
+              "flagged_total_level=#{stats[:flagged_total_level]}, " \
+              "flagged_verified=#{stats[:flagged_verified]}, " \
               "errors=#{stats[:errors]}"
     
     @progress_logger.call(message)

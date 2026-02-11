@@ -15,12 +15,14 @@ class Player < ActiveRecord::Base
   # These distinguish why a player was flagged as P2P
   P2P_FLAG_REASONS = {
     p2p: 'p2p',                             # Confirmed P2P (has trained members skills)
-    unavailable_hiscores: 'unavailable_hiscores'  # Hiscores data unavailable (account may not exist)
+    unavailable_hiscores: 'unavailable_hiscores',  # Hiscores data unavailable (account may not exist)
+    total_level_exceeds_f2p_max: 'total_level_exceeds_f2p_max'  # Total level exceeds F2P maximum (1494)
   }.freeze
   
   # Scopes for querying players by P2P flag reason
   scope :unavailable_hiscores_hidden, -> { where(potential_p2p: 1, p2p_flag_reason: P2P_FLAG_REASONS[:unavailable_hiscores]) }
   scope :p2p_flagged, -> { where(potential_p2p: 1, p2p_flag_reason: P2P_FLAG_REASONS[:p2p]) }
+  scope :total_level_flagged, -> { where(potential_p2p: 1, p2p_flag_reason: P2P_FLAG_REASONS[:total_level_exceeds_f2p_max]) }
   scope :all_hidden, -> { where(potential_p2p: 1) }  # All players hidden from F2P rankings
   
   SKILLS = %w[attack strength defence hitpoints ranged prayer magic cooking woodcutting fishing firemaking crafting smithing mining runecraft overall]

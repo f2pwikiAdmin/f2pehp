@@ -207,10 +207,10 @@ namespace :players do
     puts "=" * 80
   end
 
-  desc "Flag/hide players whose hiscores data is unavailable (safe with confirmation)"
+  desc "Enforce P2P rules: flag players with total > 1494, verify P2P via hiscores when available"
   task cleanup_unavailable: :environment do
     puts "=" * 80
-    puts "Flag/Hide Players with Unavailable Hiscores Data"
+    puts "P2P Enforcement: Total Level Check & Verification"
     puts "=" * 80
     puts ""
     
@@ -225,16 +225,24 @@ namespace :players do
     puts "  - Limit: #{limit} players"
     puts "  - Sleep between API calls: #{sleep_time}s"
     puts "  - Start ID: #{start_id || 'beginning'}"
-    puts "  - Mode: #{dry_run ? 'DRY RUN (no flagging)' : 'LIVE (will flag/hide)'}"
+    puts "  - Mode: #{dry_run ? 'DRY RUN (no changes)' : 'LIVE (will flag/unflag)'}"
     puts "  - Progress logging: every #{progress_every} players"
+    puts ""
+    
+    puts "Enforcement Rules:"
+    puts "  1. Any player with overall_lvl > 1494 is flagged as P2P"
+    puts "  2. When hiscores are available, detailed P2P verification is performed"
+    puts "  3. Hiscores fetch failures are logged but do NOT cause flagging"
     puts ""
     
     if dry_run
       puts "ℹ️  DRY RUN MODE: No players will be flagged. This is a preview."
       puts ""
     else
-      puts "⚠️  WARNING: This will flag/hide players with unavailable hiscores!"
-      puts "   Players will be marked with reason 'unavailable_hiscores' and hidden from rankings."
+      puts "⚠️  WARNING: This will flag/unflag players based on P2P rules!"
+      puts "   - Players with total > 1494 will be flagged with reason 'total_level_exceeds_f2p_max'"
+      puts "   - Players with P2P evidence will be flagged with reason 'p2p'"
+      puts "   - Players verified as F2P will be unflagged"
       puts ""
       print "Are you sure you want to proceed? Type 'yes' to confirm: "
       response = STDIN.gets.chomp
@@ -247,14 +255,14 @@ namespace :players do
       puts ""
     end
     
-    puts "Checking players for unavailable hiscores data..."
+    puts "Processing players..."
     puts "This may take a while..."
     puts ""
     
     # Define progress logger that outputs to stdout
     progress_logger = ->(message) { puts message }
     
-    # Use service to perform cleanup
+    # Use service to perform enforcement
     service = PlayerCleanupService.new(
       limit: limit,
       sleep_time: sleep_time,
@@ -273,29 +281,32 @@ namespace :players do
     puts "Summary:"
     puts "=" * 80
     puts "  - Total processed: #{results[:processed]}"
-    puts "  - Unavailable players found: #{results[:unavailable]}"
-    if dry_run
-      puts "  - Would be flagged/hidden: #{results[:unavailable]}"
-      puts "  - Actually flagged: 0 (DRY RUN)"
-    else
-      puts "  - Successfully flagged/hidden: #{results[:flagged]}"
-    end
-    puts "  - Errors: #{results[:errors]}"
+    puts "  - Flagged (total level > 1494): #{results[:flagged_total_level]}"
+    puts "  - Flagged (verified P2P): #{results[:flagged_verified]}"
+    puts "  - Hiscores fetch errors: #{results[:errors]}"
     puts ""
     
-    if dry_run && results[:unavailable] > 0
-      puts "To actually flag/hide these players, run without DRY_RUN:"
+    if dry_run
+      total_would_flag = results[:flagged_total_level] + results[:flagged_verified]
+      puts "  - Would be flagged/changed: #{total_would_flag}"
+      puts "  - Actually flagged: 0 (DRY RUN)"
+    else
+      total_flagged = results[:flagged_total_level] + results[:flagged_verified]
+      puts "  - Total flagged/changed: #{total_flagged}"
+    end
+    puts ""
+    
+    if dry_run && (results[:flagged_total_level] > 0 || results[:flagged_verified] > 0)
+      puts "To actually apply these changes, run without DRY_RUN:"
       puts "  rake players:cleanup_unavailable"
       puts ""
     end
     
-    if results[:unavailable] > 0 && results[:unavailable] < 20
-      puts "Unavailable players:"
-      results[:unavailable_players].each do |p|
-        puts "  - #{p[:name]} (ID: #{p[:id]}, Total: #{p[:total]})"
-      end
-      puts ""
-    end
+    puts "Note: Hiscores fetch errors (#{results[:errors]}) are logged but do NOT cause flagging."
+    puts "Players are only flagged based on:"
+    puts "  1. Stored total level > 1494"
+    puts "  2. Verified P2P evidence when hiscores data is available"
+    puts ""
     
     puts "To check more players, adjust LIMIT:"
     puts "  LIMIT=500 rake players:cleanup_unavailable"

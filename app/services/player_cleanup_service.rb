@@ -80,7 +80,7 @@ class PlayerCleanupService
     if player.overall_lvl > Player::F2P_MAX_TOTAL
       unless dry_run
         # Only update if not already flagged with the correct reason
-        unless player.potential_p2p == 1 && player.p2p_flag_reason == Player::P2P_FLAG_REASONS[:total_level_exceeds_f2p_max]
+        unless already_flagged_as?(player, Player::P2P_FLAG_REASONS[:total_level_exceeds_f2p_max])
           player.update_columns(
             potential_p2p: 1,
             p2p_flag_reason: Player::P2P_FLAG_REASONS[:total_level_exceeds_f2p_max]
@@ -103,7 +103,7 @@ class PlayerCleanupService
         unless dry_run
           if is_p2p
             # Only update if not already flagged as P2P
-            unless player.potential_p2p == 1 && player.p2p_flag_reason == Player::P2P_FLAG_REASONS[:p2p]
+            unless already_flagged_as?(player, Player::P2P_FLAG_REASONS[:p2p])
               player.update_columns(
                 potential_p2p: 1,
                 p2p_flag_reason: Player::P2P_FLAG_REASONS[:p2p]
@@ -141,6 +141,11 @@ class PlayerCleanupService
     end
     
     result
+  end
+  
+  # Helper method to check if a player is already flagged with a specific reason
+  def already_flagged_as?(player, reason)
+    player.potential_p2p == 1 && player.p2p_flag_reason == reason
   end
   
   def should_log_progress?(processed_count)

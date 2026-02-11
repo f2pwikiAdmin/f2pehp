@@ -131,13 +131,13 @@ class PlayerCleanupService
         # Hiscores fetch returned nil (player not found)
         # DO NOT flag based on this - it may be a transient error
         # Just log it for awareness
-        Rails.logger.debug "Player #{player.player_name} (ID: #{player.id}): hiscores returned nil (not flagging)"
+        Rails.logger.info "Player #{player.player_name} (ID: #{player.id}): hiscores returned nil (not flagging)"
       end
     rescue => e
       # Hiscores fetch failed with an error
       # DO NOT flag based on this - treat as unknown/retry later
       result[:fetch_error] = true
-      Rails.logger.debug "Player #{player.player_name} (ID: #{player.id}): hiscores fetch error (#{e.message})"
+      Rails.logger.warn "Player #{player.player_name} (ID: #{player.id}): hiscores fetch error (#{e.message})"
     end
     
     result

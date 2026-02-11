@@ -25,7 +25,7 @@ RSpec.describe PlayerCleanupService do
   
   describe '#execute' do
     context 'when player has total level > F2P_MAX_TOTAL' do
-      let!(:high_total_player) { Player.create!(player_name: 'HighTotal', player_acc_type: 'Reg', overall_lvl: 1600, potential_p2p: 0) }
+      let!(:high_total_player) { Player.create!(player_name: 'HighTotal', player_acc_type: 'Reg', overall_lvl: Player::F2P_MAX_TOTAL + 106, potential_p2p: 0) }
       
       before do
         allow_any_instance_of(PlayerCleanupService).to receive(:sleep)
@@ -169,7 +169,7 @@ RSpec.describe PlayerCleanupService do
     
     context 'with multiple players' do
       let!(:player1) { Player.create!(player_name: 'Player1', player_acc_type: 'Reg', overall_lvl: 1000, potential_p2p: 0) }
-      let!(:player2) { Player.create!(player_name: 'Player2', player_acc_type: 'Reg', overall_lvl: 1600, potential_p2p: 0) }  # High total
+      let!(:player2) { Player.create!(player_name: 'Player2', player_acc_type: 'Reg', overall_lvl: Player::F2P_MAX_TOTAL + 106, potential_p2p: 0) }  # High total
       let!(:player3) { Player.create!(player_name: 'Player3', player_acc_type: 'Reg', overall_lvl: 800, potential_p2p: 0) }
       
       before do
@@ -298,7 +298,7 @@ RSpec.describe PlayerCleanupService do
     end
     
     context 'with total_level_exceeds_f2p_max flag reason' do
-      let!(:high_total) { Player.create!(player_name: 'HighTotal', player_acc_type: 'Reg', overall_lvl: 1600, potential_p2p: 0) }
+      let!(:high_total) { Player.create!(player_name: 'HighTotal', player_acc_type: 'Reg', overall_lvl: Player::F2P_MAX_TOTAL + 106, potential_p2p: 0) }
       
       before do
         allow_any_instance_of(PlayerCleanupService).to receive(:sleep)

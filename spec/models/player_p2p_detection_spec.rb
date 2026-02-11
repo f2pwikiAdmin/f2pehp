@@ -681,10 +681,10 @@ RSpec.describe Player, type: :model do
       )
 
       @p2p_high_total = Player.create!(
-        player_name: "DevilzDogz",
+        player_name: "P2PHighTotal",
         player_acc_type: "Reg",
         potential_p2p: 1,
-        overall_lvl: 2126,  # P2P player with high total
+        overall_lvl: 2126,  # P2P player with high total (example: like "Devilz Dogz")
         overall_ehp: 200
       )
 
@@ -707,7 +707,7 @@ RSpec.describe Player, type: :model do
 
     after do
       # Clean up test data
-      Player.where(player_name: ["F2PMaxed", "DevilzDogz", "P2PJustAbove", "F2PNullPotential"]).destroy_all
+      Player.where(player_name: ["F2PMaxed", "P2PHighTotal", "P2PJustAbove", "F2PNullPotential"]).destroy_all
     end
 
     it 'sql_f2p_filter excludes players with potential_p2p >= 1' do

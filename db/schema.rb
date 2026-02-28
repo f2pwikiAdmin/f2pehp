@@ -376,8 +376,10 @@ ActiveRecord::Schema[7.0].define(version: 2026_02_10_201021) do
     t.datetime "hcim_has_died_registered_at", precision: nil
     t.integer "obor_kc"
     t.integer "bryo_kc"
+    t.integer "brutus_kc"
     t.integer "obor_kc_rank"
     t.integer "bryo_kc_rank"
+    t.integer "brutus_kc_rank"
     t.integer "lms_score"
     t.integer "lms_rank"
     t.integer "failed_updates", default: 0

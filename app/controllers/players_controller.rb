@@ -439,6 +439,8 @@ class PlayersController < ApplicationController
       @players = @players.where("obor_kc > 0")
     elsif @skill == "bryo_kc"
       @players = @players.where("bryo_kc > 0")
+    elsif @skill == "brutus_kc"
+      @players = @players.where("brutus_kc > 0")
     end
 
     @players = @players.where(Player.sql_f2p_filter)

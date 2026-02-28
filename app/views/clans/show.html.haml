@@ -34,6 +34,9 @@
 - elsif @skill == "bryo_kc"
   - title = "Bryophyta Kill Count"
   - skill_icon = "skills/bryo.png"
+- elsif @skill == "brutus_kc"
+  - title = "Brutus Kill Count"
+  - skill_icon = "skills/brutus.png"
 - elsif @skill == "lms"
   - title = "LMS Score"
   - skill_icon = "skills/lms.png"
@@ -92,6 +95,9 @@
               %tr
                 %td{:align => "center"}= image_tag "skills/bryo.png", style: "vertical-align: -6px;"
                 %td= link_to "Bryophyta Kills", :controller => "clans", :action => "show", :skill => "bryo_kc"
+              %tr
+                %td{:align => "center"}= image_tag "skills/brutus.png", style: "vertical-align: -6px;"
+                %td= link_to "Brutus Kills", :controller => "clans", :action => "show", :skill => "brutus_kc"
 
       - else
         = content_tag(:div, nil, class: ["container"], style: "margin-left: 43px; margin-bottom: 0px;") do

@@ -34,6 +34,9 @@
 - elsif @skill == "bryo_kc"
   - title = "F2P Bryophyta Kill Count"
   - skill_icon = "skills/bryo.png"
+- elsif @skill == "brutus_kc"
+  - title = "F2P Brutus Kill Count"
+  - skill_icon = "skills/brutus.png"
 - elsif @skill == "magic"
   - title = "F2P #{skill_name} Exp Hiscores"
   - skill_icon = "skills/#{@skill}.png"
@@ -87,6 +90,9 @@
             %tr
               %td{:align => "center"}= image_tag "skills/bryo.png", style: "vertical-align: -6px;"
               %td= link_to "Bryophyta Kills", :controller => "players", :action => "ranks", :skill => "bryo_kc"
+            %tr
+              %td{:align => "center"}= image_tag "skills/brutus.png", style: "vertical-align: -6px;"
+              %td= link_to "Brutus Kills", :controller => "players", :action => "ranks", :skill => "brutus_kc"
         
     = content_tag(:div, nil, class: "container", id: "footerSkills", style: "margin: auto; margin-top: 0px; width: 200px; height: 60px;") 
 

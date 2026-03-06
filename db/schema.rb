@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_02_10_201021) do
+ActiveRecord::Schema[7.0].define(version: 2026_02_28_000000) do
   create_table "clans", force: :cascade do |t|
     t.string "name"
     t.string "symbol_link"
@@ -376,8 +376,10 @@ ActiveRecord::Schema[7.0].define(version: 2026_02_10_201021) do
     t.datetime "hcim_has_died_registered_at", precision: nil
     t.integer "obor_kc"
     t.integer "bryo_kc"
+    t.integer "brutus_kc"
     t.integer "obor_kc_rank"
     t.integer "bryo_kc_rank"
+    t.integer "brutus_kc_rank"
     t.integer "lms_score"
     t.integer "lms_rank"
     t.integer "failed_updates", default: 0

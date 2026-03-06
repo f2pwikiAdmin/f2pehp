@@ -378,6 +378,11 @@
             %td= "Bryophyta"
             %td= @player["bryo_kc"]
             %td= display_rank(@player["bryo_kc_rank"])
+          %tr
+            %th= image_tag "skills/brutus.png"
+            %td= "Brutus"
+            %td= @player["brutus_kc"]
+            %td= display_rank(@player["brutus_kc_rank"])
       - elsif @player.overall_ehp < 250 and (@display == "gains" or @display == "records") and !Player.supporters.include?(@player.player_name)
         %head
           %th= "This player is not being tracked. This will require 250 EHP or F2P Supporter status."

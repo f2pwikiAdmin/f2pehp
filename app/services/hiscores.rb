@@ -70,6 +70,7 @@ class Hiscores
     'Araxxor' => 'p2p_minigame',
     'Artio' => 'p2p_minigame',
     'Barrows Chests' => 'p2p_minigame',
+    'Brutus' => 'brutus_kc',
     'Bryophyta' => 'bryophyta_kc',
     'Callisto' => 'p2p_minigame',
     'Calvar\'ion' => 'p2p_minigame',
@@ -334,7 +335,7 @@ class Hiscores
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
         'Clue Scrolls (master)', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
         'Colosseum Glory', 'Collections Logged', 'Abyssal Sire', 'Alchemical Hydra', 'Amoxliatl',
-        'Araxxor', 'Artio', 'Barrows Chests', 'Bryophyta', 'Callisto', 'Calvar\'ion', 'Cerberus',
+        'Araxxor', 'Artio', 'Barrows Chests', 'Brutus', 'Bryophyta', 'Callisto', 'Calvar\'ion', 'Cerberus',
         'Chambers of Xeric', 'Chambers of Xeric: Challenge Mode', 'Chaos Elemental', 'Chaos Fanatic',
         'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
         'Dagannoth Supreme', 'Deranged Archaeologist', 'Doom of Mokhaiotl', 'Duke Sucellus',
@@ -465,6 +466,10 @@ class Hiscores
           # F2P boss KC
           stats[:bryo_kc] = score
           stats[:bryo_kc_rank] = rank
+        when 'brutus_kc'
+          # F2P boss KC
+          stats[:brutus_kc] = score
+          stats[:brutus_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
           # F2P clue scrolls: treat as score-like
           stats[internal_activity_name] = score
@@ -612,6 +617,11 @@ class Hiscores
           score = [(skill_data['score'] || 0).to_i, 0].max
           stats[:bryo_kc] = score > 0 ? score : lvl
           stats[:bryo_kc_rank] = rank
+        when 'brutus_kc'
+          # F2P boss KC
+          score = [(skill_data['score'] || 0).to_i, 0].max
+          stats[:brutus_kc] = score > 0 ? score : lvl
+          stats[:brutus_kc_rank] = rank
         when 'clues_all', 'clues_beginner'
           # F2P clue scrolls: treat as score-like
           score = [(skill_data['score'] || 0).to_i, 0].max

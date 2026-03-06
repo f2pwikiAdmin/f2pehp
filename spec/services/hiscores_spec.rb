@@ -59,7 +59,8 @@ RSpec.describe Hiscores do
           '-1,0',                  # Callisto
           '-1,0',                  # Calvar'ion
           '-1,0',                  # Cerberus
-          '2001,8',                # Bryophyta (activity index 25 - F2P boss)
+          '204782,41',             # Brutus (activity index 26 - F2P boss)
+          '2001,8',                # Bryophyta (activity index 27 - F2P boss)
           '-1,0',                  # Chambers of Xeric
           '-1,0',                  # Chambers of Xeric: Challenge Mode
           '-1,0',                  # Chaos Elemental
@@ -136,6 +137,7 @@ RSpec.describe Hiscores do
         expect(result[:lms_score]).to eq(500)
         expect(result[:obor_kc]).to eq(10)
         expect(result[:bryo_kc]).to eq(8)
+        expect(result[:brutus_kc]).to eq(41)
         
         # Most importantly: potential_p2p should be 0 for unranked P2P skills
         expect(result["potential_p2p"]).to eq(0)
@@ -295,6 +297,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Araxxor
           '-1,0',                  # Artio
           '200,50',                # Barrows Chests - P2P boss (would have flagged before)
+          '-1,0',                  # Brutus (F2P boss)
           '2001,8',                # Bryophyta (F2P boss)
           '-1,0',                  # Callisto
           '-1,0',                  # Calvar'ion
@@ -369,6 +372,7 @@ RSpec.describe Hiscores do
         # Activities should still be parsed and stored (for future use)
         expect(result[:obor_kc]).to eq(10)
         expect(result[:bryo_kc]).to eq(8)
+        expect(result[:brutus_kc]).to eq(0)
         expect(result[:lms_score]).to eq(500)
       end
     end
@@ -428,7 +432,8 @@ RSpec.describe Hiscores do
             { 'name' => 'Clue Scrolls (beginner)', 'rank' => 5001, 'level' => 25, 'xp' => 0 },
             { 'name' => 'LMS - Rank', 'rank' => 3000, 'level' => 500, 'xp' => 0 },
             { 'name' => 'Obor', 'rank' => 2000, 'level' => 10, 'xp' => 0 },
-            { 'name' => 'Bryophyta', 'rank' => 2001, 'level' => 8, 'xp' => 0 }
+            { 'name' => 'Bryophyta', 'rank' => 2001, 'level' => 8, 'xp' => 0 },
+            { 'name' => 'Brutus', 'rank' => 204782, 'level' => 41, 'xp' => 0 }
           ]
         }
 
@@ -453,6 +458,7 @@ RSpec.describe Hiscores do
         expect(result[:lms_score]).to eq(500)
         expect(result[:obor_kc]).to eq(10)
         expect(result[:bryo_kc]).to eq(8)
+        expect(result[:brutus_kc]).to eq(41)
         
         # Most importantly: potential_p2p should be 0 for unranked P2P skills
         expect(result["potential_p2p"]).to eq(0)

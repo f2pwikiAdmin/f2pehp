@@ -12,7 +12,7 @@ class AdminController < ApplicationController
         if ENV['HTTP_AUTH_USER'] && ENV['HTTP_AUTH_PASS']
             self.class.http_basic_authenticate_with name: ENV['HTTP_AUTH_USER'], password: ENV['HTTP_AUTH_PASS']
         else
-            self.class.http_basic_authenticate_with :name => "admin", :password => "admin"
+            render plain: "Admin access is not configured. Set HTTP_AUTH_USER and HTTP_AUTH_PASS environment variables.", status: :service_unavailable
         end
     end
 

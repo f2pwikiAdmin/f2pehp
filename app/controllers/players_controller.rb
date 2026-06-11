@@ -304,6 +304,12 @@ class PlayersController < ApplicationController
     @filters = params[:filters_] || session[:filters_] || {}
     @restrictions = params[:restrictions] || {}
     @skill = params[:skill] || session[:skill] || {}
+    # Sanitize @skill to prevent SQL injection — allow only lowercase letters, digits, underscores
+    unless @skill.is_a?(String) && @skill.match?(/\A[a-z][a-z0-9_]*\z/)
+      @skill = "overall"
+      params[:skill] = "overall"
+      session[:skill] = "overall"
+    end
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @clear_filters = params[:clear_filters]

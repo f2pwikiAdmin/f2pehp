@@ -5,6 +5,9 @@ require 'nokogiri'
 require 'will_paginate/array'
 
 class PlayersController < ApplicationController
+  TRACKABLE_SKILLS = (["overall"] + F2POSRSRanks::Application.config.f2p_skills).freeze
+  VALID_SKILLS = (TRACKABLE_SKILLS + %w[combat ttm_lvl ttm_xp clues_beginner no_combats lms obor_kc bryo_kc brutus_kc 99_count 200m_count lowest_lvl]).freeze
+
   before_action :set_player, only: %i[show edit update destroy]
 
   def set_default_description
@@ -62,12 +65,9 @@ class PlayersController < ApplicationController
     @sort_by = params[:sort_by] || session[:sort_by] || {}
     @filters = params[:filters_] || session[:filters_] || {}
     @restrictions = params[:restrictions] || {}
-    @skill = params[:skill] || session[:skill] || {}
-    unless F2POSRSRanks::Application.config.f2p_skills.include?(@skill)
-      @skill = "overall"
-      params[:skill] = "overall"
-      session[:skill] = "overall"
-    end
+    @skill = sanitize_skill(params[:skill] || session[:skill] || {}, TRACKABLE_SKILLS)
+    params[:skill] = @skill
+    session[:skill] = @skill
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @time = params[:time] || session[:time] || "week"
@@ -184,12 +184,9 @@ class PlayersController < ApplicationController
     @sort_by = params[:sort_by] || session[:sort_by] || {}
     @filters = params[:filters_] || session[:filters_] || {}
     @restrictions = params[:restrictions] || {}
-    @skill = params[:skill] || session[:skill] || {}
-    unless F2POSRSRanks::Application.config.f2p_skills.include?(@skill)
-      @skill = "overall"
-      params[:skill] = "overall"
-      session[:skill] = "overall"
-    end
+    @skill = sanitize_skill(params[:skill] || session[:skill] || {}, TRACKABLE_SKILLS)
+    params[:skill] = @skill
+    session[:skill] = @skill
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @time = params[:time] || session[:time] || "week"
@@ -303,7 +300,8 @@ class PlayersController < ApplicationController
     @sort_by = params[:sort_by] || session[:sort_by] || {}
     @filters = params[:filters_] || session[:filters_] || {}
     @restrictions = params[:restrictions] || {}
-    @skill = params[:skill] || session[:skill] || {}
+    @skill = sanitize_skill(params[:skill] || session[:skill] || {})
+    params[:skill] = @skill
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @clear_filters = params[:clear_filters]
@@ -639,6 +637,11 @@ end
   # Use callbacks to share common setup or constraints between actions.
   def set_player
     show
+  end
+
+  def sanitize_skill(skill, allowed_skills = VALID_SKILLS)
+    skill = skill.to_s
+    allowed_skills.include?(skill) ? skill : "overall"
   end
 
   def player_params

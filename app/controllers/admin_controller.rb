@@ -9,10 +9,14 @@ class AdminController < ApplicationController
     before_action :http_basic_auth
 
     def http_basic_auth
-        if ENV['HTTP_AUTH_USER'] && ENV['HTTP_AUTH_PASS']
-            self.class.http_basic_authenticate_with name: ENV['HTTP_AUTH_USER'], password: ENV['HTTP_AUTH_PASS']
-        else
-            self.class.http_basic_authenticate_with :name => "admin", :password => "admin"
+        username = ENV['HTTP_AUTH_USER']
+        password = ENV['HTTP_AUTH_PASS']
+
+        return head :forbidden unless username.present? && password.present?
+
+        authenticate_or_request_with_http_basic do |name, pass|
+            ActiveSupport::SecurityUtils.secure_compare(name, username) &&
+              ActiveSupport::SecurityUtils.secure_compare(pass, password)
         end
     end
 

@@ -100,43 +100,43 @@ class ItemsController < ApplicationController
   end
   
   def update_prices
-    summary = URI.parse('https://rsbuddy.com/exchange/summary.json')
+    wiki_prices = {}
     begin
-      curr_prices = JSON.parse(summary.read.gsub('\"', '"'))
-    rescue
-      curr_prices = nil
+      uri = URI.parse('https://prices.runescape.wiki/api/v1/osrs/latest')
+      req = Net::HTTP::Get.new(uri)
+      req['User-Agent'] = 'f2p.wiki price updater - contact via github.com/f2pwikiAdmin/f2pehp'
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+      wiki_prices = JSON.parse(res.body)['data'] || {}
+    rescue => e
+      Rails.logger.warn "Failed to fetch wiki prices: #{e.message}"
     end
+
     @items = Item.all
-    if @items.nil?
+    if @items.empty?
       create_items
       @items = Item.all
     end
-    @alchs = Hash.new
-    @prices = Hash.new
+
+    @alchs = {}
+    @prices = {}
+
     Item.all.each do |item|
-      puts "item start"
-      puts item[:id]
-      puts item[:name]
-      puts item[:itemid]
-      puts "item end"
-      current_price = 0
-      if !curr_prices.nil?
-        current_price = curr_prices["#{item[:itemid]}"]["overall_average"].to_f
-      end
       icon_name = item[:name].gsub("_", " ")
       item.update_attribute(:icon, "items/#{icon_name}.gif")
-      
-      if current_price == 0
-        item_response = URI.parse("http://services.runescape.com/m=itemdb_oldschool/api/catalogue/detail.json?item=#{item[:itemid]}")
-        item_json = JSON.parse(item_response.read.gsub('\"', '"'))
-        ge_price = item_json["item"]["current"]["price"].to_s.gsub(',', ' ')
-        item.update_attribute(:current, ge_price)
-      else
-        item.update_attribute(:current, current_price)
-      end      
+
+      item_data = wiki_prices[item[:itemid].to_s]
+      current_price = 0
+      if item_data
+        high = item_data['high'].to_f
+        low  = item_data['low'].to_f
+        current_price = ((high + low) / 2).round if high > 0 && low > 0
+        current_price = high if current_price == 0 && high > 0
+        current_price = low  if current_price == 0 && low > 0
+      end
+
+      item.update_attribute(:current, current_price)
       @prices[item[:name]] = item[:current]
       @alchs[item[:name]] = item[:alch]
-
     end
   end
   

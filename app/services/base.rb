@@ -16,7 +16,7 @@ module Base
       return uri.read(openuri_params)
     rescue OpenURI::HTTPError => e
       # 404, no content.
-    rescue SocketError, Net::ReadTimeout => e
+    rescue SocketError, Net::ReadTimeout, Net::OpenTimeout, Timeout::Error => e
       Rails.logger.warn "[#{attempt}/#{max_attempts}] #{uri} could not be reached: #{e}"
       sleep 2
       retry if attempt < max_attempts

@@ -180,17 +180,17 @@ class Hiscores
 
       uri_per_mode.each_with_index do |uri, mode_idx|
         threads << Thread.new(uri, mode_idx, stats) do |uri, mode_idx, stats|
-          # Raise exceptions in main thread so they can be caught.
-          Thread.current.abort_on_exception = true
-
-          res = fetch(uri)
-
-          # No hiscores data for this mode, skip.
-          next unless res
-
           begin
+            res = fetch(uri)
+
+            # No hiscores data for this mode, skip.
+            next unless res
+
             parsed_data = parse_stats_csv(res)
             stats_mutex.synchronize { stats << [parsed_data, mode_idx] }
+          rescue SocketError, Net::ReadTimeout, Net::OpenTimeout, Timeout::Error, OpenURI::HTTPError => e
+            Rails.logger.warn "Failed to fetch hiscores data for #{player_name} mode #{modes[mode_idx]}: #{e.message}"
+            next
           rescue => e
             Rails.logger.warn "Failed to parse hiscores data for #{player_name} mode #{modes[mode_idx]}: #{e.message}"
             # Skip this mode on parse failure
@@ -216,7 +216,7 @@ class Hiscores
 
       begin
         content = fetch(uri)
-      rescue SocketError, Net::ReadTimeout
+      rescue SocketError, Net::ReadTimeout, Net::OpenTimeout, Timeout::Error
         Rails.logger.warn "#{player_name}'s HCIM hiscores retrieval failed"
         return false
       end
@@ -234,7 +234,7 @@ class Hiscores
 
       begin
         content = fetch(uri)
-      rescue SocketError, Net::ReadTimeout
+      rescue SocketError, Net::ReadTimeout, Net::OpenTimeout, Timeout::Error
         Rails.logger.warn "#{player_name}'s hiscores retrieval failed"
         return false
       end

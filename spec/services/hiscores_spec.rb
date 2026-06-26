@@ -1,6 +1,23 @@
 require 'rails_helper'
 
 RSpec.describe Hiscores do
+  describe 'Base.fetch timeout handling' do
+    let(:service_class) { Class.new { extend Base } }
+    let(:uri) { URI('https://example.com/hiscores') }
+
+    before do
+      allow(Rails.logger).to receive(:warn)
+      allow(service_class).to receive(:sleep)
+    end
+
+    it 'retries Net::OpenTimeout errors up to the max attempts' do
+      allow(uri).to receive(:read).and_raise(Net::OpenTimeout.new('execution expired'))
+
+      expect { service_class.fetch(uri) }.to raise_error(Net::OpenTimeout)
+      expect(uri).to have_received(:read).exactly(3).times
+    end
+  end
+
   describe '.parse_stats_csv' do
     context 'with valid CSV data' do
       it 'parses F2P player stats correctly' do
@@ -746,6 +763,53 @@ RSpec.describe Hiscores do
       
       expect(url.to_s).to include('index_lite.ws')
       expect(url.to_s).to include('_ultimate')
+    end
+  end
+
+  describe '.fetch_stats' do
+    let(:player_name) { 'TestPlayer' }
+    let(:uim_uri) { URI('https://example.com/uim') }
+    let(:im_uri) { URI('https://example.com/im') }
+    let(:reg_uri) { URI('https://example.com/reg') }
+    let(:im_stats) { { 'overall_xp' => 200 } }
+    let(:reg_stats) { { 'overall_xp' => 100 } }
+
+    before do
+      allow(Rails.logger).to receive(:warn)
+      allow(Hiscores).to receive(:api_url).with('UIM', player_name).and_return(uim_uri)
+      allow(Hiscores).to receive(:api_url).with('IM', player_name).and_return(im_uri)
+      allow(Hiscores).to receive(:api_url).with('Reg', player_name).and_return(reg_uri)
+      allow(Hiscores).to receive(:fetch).with(uim_uri).and_raise(Net::OpenTimeout.new('execution expired'))
+      allow(Hiscores).to receive(:fetch).with(im_uri).and_return('im-data')
+      allow(Hiscores).to receive(:fetch).with(reg_uri).and_return('reg-data')
+      allow(Hiscores).to receive(:parse_stats_csv).with('im-data').and_return(im_stats)
+      allow(Hiscores).to receive(:parse_stats_csv).with('reg-data').and_return(reg_stats)
+    end
+
+    it 'skips timed out modes without aborting the whole fetch' do
+      expect(Hiscores.fetch_stats(player_name, account_type: 'UIM')).to eq([im_stats, 'IM'])
+    end
+  end
+
+  describe '.hcim_dead?' do
+    before do
+      allow(Rails.logger).to receive(:warn)
+      allow(Hiscores).to receive(:fetch).and_raise(Net::OpenTimeout.new('execution expired'))
+    end
+
+    it 'returns false when the hiscores request times out while opening' do
+      expect(Hiscores.hcim_dead?('TestPlayer')).to be(false)
+    end
+  end
+
+  describe '.get_registered_player_name' do
+    before do
+      allow(Rails.logger).to receive(:warn)
+      allow(Hiscores).to receive(:fetch).and_raise(Net::OpenTimeout.new('execution expired'))
+    end
+
+    it 'returns false when the hiscores request times out while opening' do
+      expect(Hiscores.get_registered_player_name('Reg', 'TestPlayer')).to be(false)
     end
   end
 

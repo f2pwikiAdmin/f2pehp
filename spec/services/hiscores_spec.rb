@@ -84,6 +84,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # K'ril Tsutsaroth
           '-1,0',                  # Lunar Chests
           '-1,0',                  # Mimic
+          '-1,0',                  # Maggot King
           '-1,0',                  # Nex
           '-1,0',                  # Nightmare
           '-1,0',                  # Phosani's Nightmare
@@ -326,6 +327,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # K'ril Tsutsaroth
           '-1,0',                  # Lunar Chests
           '-1,0',                  # Mimic
+          '-1,0',                  # Maggot King
           '-1,0',                  # Nex
           '-1,0',                  # Nightmare
           '-1,0',                  # Phosani's Nightmare

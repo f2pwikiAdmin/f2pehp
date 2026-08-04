@@ -47,20 +47,23 @@ RSpec.describe Hiscores do
           '-1,0',                  # Clue Scrolls (hard) - P2P
           '-1,0',                  # Clue Scrolls (elite) - P2P
           '-1,0',                  # Clue Scrolls (master) - P2P
-          '3000,500',              # LMS - Rank (index 11)
+          '3000,500',              # LMS - Rank
           '-1,0',                  # PvP Arena - Rank
           '-1,0',                  # Soul Wars Zeal
           '-1,0',                  # Rifts closed
           '-1,0',                  # Colosseum Glory
+          '-1,0',                  # Collections Logged
           '-1,0',                  # Abyssal Sire
           '-1,0',                  # Alchemical Hydra
+          '-1,0',                  # Amoxliatl
+          '-1,0',                  # Araxxor
           '-1,0',                  # Artio
           '-1,0',                  # Barrows Chests
+          '204782,41',             # Brutus (F2P boss)
+          '2001,8',                # Bryophyta (F2P boss)
           '-1,0',                  # Callisto
           '-1,0',                  # Calvar'ion
           '-1,0',                  # Cerberus
-          '204782,41',             # Brutus (activity index 26 - F2P boss)
-          '2001,8',                # Bryophyta (activity index 27 - F2P boss)
           '-1,0',                  # Chambers of Xeric
           '-1,0',                  # Chambers of Xeric: Challenge Mode
           '-1,0',                  # Chaos Elemental
@@ -72,6 +75,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Dagannoth Rex
           '-1,0',                  # Dagannoth Supreme
           '-1,0',                  # Deranged Archaeologist
+          '-1,0',                  # Doom of Mokhaiotl
           '-1,0',                  # Duke Sucellus
           '-1,0',                  # General Graardor
           '-1,0',                  # Giant Mole
@@ -88,18 +92,21 @@ RSpec.describe Hiscores do
           '-1,0',                  # Nex
           '-1,0',                  # Nightmare
           '-1,0',                  # Phosani's Nightmare
+          '2000,10',               # Obor (F2P boss)
           '-1,0',                  # Phantom Muspah
           '-1,0',                  # Sarachnis
           '-1,0',                  # Scorpia
           '-1,0',                  # Scurrius
-          '2000,10',               # Obor (activity index 56 - F2P boss)
+          '-1,0',                  # Shellbane Gryphon
           '-1,0',                  # Skotizo
           '-1,0',                  # Sol Heredit
           '-1,0',                  # Spindel
           '-1,0',                  # Tempoross
           '-1,0',                  # The Gauntlet
           '-1,0',                  # The Corrupted Gauntlet
+          '-1,0',                  # The Hueycoatl
           '-1,0',                  # The Leviathan
+          '-1,0',                  # The Royal Titans
           '-1,0',                  # The Whisperer
           '-1,0',                  # Theatre of Blood
           '-1,0',                  # Theatre of Blood: Hard Mode
@@ -113,6 +120,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Vet'ion
           '-1,0',                  # Vorkath
           '-1,0',                  # Wintertodt
+          '-1,0',                  # Yama
           '-1,0',                  # Zalcano
           '-1,0',                  # Zulrah
           '-1,0',                  # Mad Angel

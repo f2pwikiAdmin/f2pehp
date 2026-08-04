@@ -42,7 +42,7 @@ namespace :players do
       'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
       'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk',
       'TzTok-Jad', 'Vardorvis', 'Venenatis', "Vet'ion", 'Vorkath',
-      'Wintertodt', 'Zalcano', 'Zulrah'
+      'Wintertodt', 'Zalcano', 'Zulrah', 'Mad Angel'
     ].freeze
 
     # Helper to extract boss KC from hiscores API response
@@ -71,7 +71,8 @@ namespace :players do
         'Skotizo', 'Sol Heredit', 'Obor', 'Tempoross', 'The Gauntlet', 'The Corrupted Gauntlet',
         'The Leviathan', 'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode',
         'Thermy', 'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad',
-        'Vardorvis', 'Venenatis', "Vet'ion", 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah'
+        'Vardorvis', 'Venenatis', "Vet'ion", 'Vorkath', 'Wintertodt', 'Zalcano', 'Zulrah',
+        'Mad Angel'
       ]
       
       boss_kc_found = {}

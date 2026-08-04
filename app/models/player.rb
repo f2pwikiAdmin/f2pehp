@@ -68,7 +68,7 @@ class Player < ActiveRecord::Base
     'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
     'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk',
     'TzTok-Jad', 'Vardorvis', 'Venenatis', "Vet'ion", 'Vorkath',
-    'Wintertodt', 'Zalcano', 'Zulrah'
+    'Wintertodt', 'Zalcano', 'Zulrah', 'Mad Angel'
   ].freeze
 
   # P2P clue scrolls (excluding beginner clues which are F2P)
@@ -1307,7 +1307,8 @@ class Player < ActiveRecord::Base
       'The Gauntlet', 'The Corrupted Gauntlet', 'The Hueycoatl', 'The Leviathan', 'The Royal Titans',
       'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
       'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad', 'Vardorvis',
-      'Venenatis', "Vet'ion", 'Vorkath', 'Wintertodt', 'Yama', 'Zalcano', 'Zulrah'
+      'Venenatis', "Vet'ion", 'Vorkath', 'Wintertodt', 'Yama', 'Zalcano', 'Zulrah',
+      'Mad Angel'
     ]
     
     activity_start_idx = 25  # Skills take lines 0-24

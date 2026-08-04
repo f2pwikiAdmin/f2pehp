@@ -133,7 +133,8 @@ class Hiscores
     'Wintertodt' => 'p2p_minigame',
     'Yama' => 'p2p_minigame',
     'Zalcano' => 'p2p_minigame',
-    'Zulrah' => 'p2p_minigame'
+    'Zulrah' => 'p2p_minigame',
+    'Mad Angel' => 'p2p_minigame'
   }.freeze
 
   class << self
@@ -347,7 +348,8 @@ class Hiscores
         'The Gauntlet', 'The Corrupted Gauntlet', 'The Hueycoatl', 'The Leviathan', 'The Royal Titans',
         'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',
         'Tombs of Amascut', 'Tombs of Amascut: Expert Mode', 'TzKal-Zuk', 'TzTok-Jad', 'Vardorvis',
-        'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Yama', 'Zalcano', 'Zulrah'
+        'Venenatis', 'Vet\'ion', 'Vorkath', 'Wintertodt', 'Yama', 'Zalcano', 'Zulrah',
+        'Mad Angel'
       ]
       
       # Parse skills (first 25 lines)

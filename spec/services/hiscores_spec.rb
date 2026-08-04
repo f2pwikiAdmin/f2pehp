@@ -115,6 +115,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Wintertodt
           '-1,0',                  # Zalcano
           '-1,0',                  # Zulrah
+          '-1,0',                  # Mad Angel
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)
@@ -362,6 +363,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Yama
           '-1,0',                  # Zalcano
           '300,100',               # Zulrah - P2P boss (would have flagged before)
+          '-1,0',                  # Mad Angel
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)

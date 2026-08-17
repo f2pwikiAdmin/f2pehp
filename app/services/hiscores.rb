@@ -98,6 +98,7 @@ class Hiscores
     'Kree\'Arra' => 'p2p_minigame',
     'K\'ril Tsutsaroth' => 'p2p_minigame',
     'Lunar Chests' => 'p2p_minigame',
+    'Mad Angel' => 'p2p_minigame',
     'Mimic' => 'p2p_minigame',
     'Maggot King' => 'p2p_minigame',
     'Nex' => 'p2p_minigame',
@@ -330,7 +331,6 @@ class Hiscores
       # Note: This structure may differ from config.skills which follows the CML API structure.
       # The SKILL_NAME_MAP links OSRS activity names to internal names used in config.skills.
       csv_activity_order = [
-        'Grid Points', 'League Points', 'Deadman Points',
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
         'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',
@@ -341,8 +341,8 @@ class Hiscores
         'Commander Zilyana', 'Corporeal Beast', 'Crazy Archaeologist', 'Dagannoth Prime', 'Dagannoth Rex',
         'Dagannoth Supreme', 'Deranged Archaeologist', 'Doom of Mokhaiotl', 'Duke Sucellus',
         'General Graardor', 'Giant Mole', 'Grotesque Guardians', 'Hespori', 'Kalphite Queen',
-        'King Black Dragon', 'Kraken', 'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mimic',
-        'Maggot King', 'Nex', 'Nightmare', 'Phosani\'s Nightmare', 'Obor', 'Phantom Muspah', 'Sarachnis', 'Scorpia',
+        'King Black Dragon', 'Kraken', 'Kree\'Arra', 'K\'ril Tsutsaroth', 'Lunar Chests', 'Mad Angel',
+        'Maggot King', 'Mimic', 'Nex', 'Nightmare', 'Phosani\'s Nightmare', 'Obor', 'Phantom Muspah', 'Sarachnis', 'Scorpia',
         'Scurrius', 'Shellbane Gryphon', 'Skotizo', 'Sol Heredit', 'Spindel', 'Tempoross',
         'The Gauntlet', 'The Corrupted Gauntlet', 'The Hueycoatl', 'The Leviathan', 'The Royal Titans',
         'The Whisperer', 'Theatre of Blood', 'Theatre of Blood: Hard Mode', 'Thermy',

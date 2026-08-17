@@ -190,3 +190,24 @@ If you have questions about:
 - How to implement a custom cleanup policy
 
 Please review the diagnostic output from `rake players:diagnose_high_total` first.
+
+## Re-fetching Hiscores After Boss KC Fixes (PR #117)
+
+After `parse_stats_csv` was corrected to fix Obor, Bryophyta, and Mimic/Maggot King KC misreads, all stored player records need to be refreshed. Use the `players:refetch_all` rake task:
+
+```bash
+# Re-fetch fresh hiscores data for ALL players (corrects boss KCs after PR #117)
+rake players:refetch_all
+
+# Resume an interrupted run from a given id, throttle, and progress cadence
+START_ID=4000 SLEEP=0.2 PROGRESS=50 rake players:refetch_all
+
+# Process a limited batch for testing
+LIMIT=3 SLEEP=0 rake players:refetch_all
+```
+
+The task supports the same env-var conventions as `rake players:full_recheck_p2p`:
+- `SLEEP` — seconds between players (default `0.2`)
+- `START_ID` — resume from this player id (ordered by id ascending)
+- `LIMIT` — cap number of players processed
+- `PROGRESS` — print a progress line every N players (default `50`)

@@ -99,8 +99,8 @@ class Hiscores
     'K\'ril Tsutsaroth' => 'p2p_minigame',
     'Lunar Chests' => 'p2p_minigame',
     'Mad Angel' => 'p2p_minigame',
-    'Mimic' => 'p2p_minigame',
     'Maggot King' => 'p2p_minigame',
+    'Mimic' => 'p2p_minigame',
     'Nex' => 'p2p_minigame',
     'Nightmare' => 'p2p_minigame',
     'Phosani\'s Nightmare' => 'p2p_minigame',
@@ -331,6 +331,7 @@ class Hiscores
       # Note: This structure may differ from config.skills which follows the CML API structure.
       # The SKILL_NAME_MAP links OSRS activity names to internal names used in config.skills.
       csv_activity_order = [
+        'Grid Points', 'League Points', 'Deadman Points',
         'Bounty Hunter - Hunter', 'Bounty Hunter - Rogue', 'Bounty Hunter (Legacy) - Hunter',
         'Bounty Hunter (Legacy) - Rogue', 'Clue Scrolls (all)', 'Clue Scrolls (beginner)',
         'Clue Scrolls (easy)', 'Clue Scrolls (medium)', 'Clue Scrolls (hard)', 'Clue Scrolls (elite)',

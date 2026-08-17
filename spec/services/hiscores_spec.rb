@@ -32,35 +32,38 @@ RSpec.describe Hiscores do
           '-1,1,0',                # Hunter (P2P, unranked)
           '-1,1,0',                # Construction (P2P, unranked)
           '-1,1,0',                # Sailing (unranked)
-          # Activities start here (line 35 in CSV, index 0 in activities)
-          '-1,0',                  # Grid Points
-          '-1,0',                  # League Points
-          '-1,0',                  # Deadman Points
+          # Activities start here (line 26 in CSV, index 0 in activities)
+          '-1,0',                  # Grid Points (index 0)
+          '-1,0',                  # League Points (index 1)
+          '-1,0',                  # Deadman Points (index 2)
           '-1,0',                  # Bounty Hunter - Hunter
           '-1,0',                  # Bounty Hunter - Rogue
           '-1,0',                  # Bounty Hunter (Legacy) - Hunter
           '-1,0',                  # Bounty Hunter (Legacy) - Rogue
-          '5000,50',               # Clue Scrolls (all)
-          '5001,25',               # Clue Scrolls (beginner)
+          '5000,50',               # Clue Scrolls (all) (index 7)
+          '5001,25',               # Clue Scrolls (beginner) (index 8)
           '-1,0',                  # Clue Scrolls (easy) - P2P
           '-1,0',                  # Clue Scrolls (medium) - P2P
           '-1,0',                  # Clue Scrolls (hard) - P2P
           '-1,0',                  # Clue Scrolls (elite) - P2P
           '-1,0',                  # Clue Scrolls (master) - P2P
-          '3000,500',              # LMS - Rank (index 11)
+          '3000,500',              # LMS - Rank (index 14)
           '-1,0',                  # PvP Arena - Rank
           '-1,0',                  # Soul Wars Zeal
           '-1,0',                  # Rifts closed
           '-1,0',                  # Colosseum Glory
+          '-1,0',                  # Collections Logged
           '-1,0',                  # Abyssal Sire
           '-1,0',                  # Alchemical Hydra
+          '-1,0',                  # Amoxliatl
+          '-1,0',                  # Araxxor
           '-1,0',                  # Artio
           '-1,0',                  # Barrows Chests
+          '204782,41',             # Brutus (index 26 - F2P boss)
+          '2001,8',                # Bryophyta (index 27 - F2P boss)
           '-1,0',                  # Callisto
           '-1,0',                  # Calvar'ion
           '-1,0',                  # Cerberus
-          '204782,41',             # Brutus (activity index 26 - F2P boss)
-          '2001,8',                # Bryophyta (activity index 27 - F2P boss)
           '-1,0',                  # Chambers of Xeric
           '-1,0',                  # Chambers of Xeric: Challenge Mode
           '-1,0',                  # Chaos Elemental
@@ -72,6 +75,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Dagannoth Rex
           '-1,0',                  # Dagannoth Supreme
           '-1,0',                  # Deranged Archaeologist
+          '-1,0',                  # Doom of Mokhaiotl
           '-1,0',                  # Duke Sucellus
           '-1,0',                  # General Graardor
           '-1,0',                  # Giant Mole
@@ -83,23 +87,27 @@ RSpec.describe Hiscores do
           '-1,0',                  # Kree'Arra
           '-1,0',                  # K'ril Tsutsaroth
           '-1,0',                  # Lunar Chests
-          '-1,0',                  # Mimic
+          '-1,0',                  # Mad Angel (index 54)
           '-1,0',                  # Maggot King
+          '-1,0',                  # Mimic
           '-1,0',                  # Nex
           '-1,0',                  # Nightmare
           '-1,0',                  # Phosani's Nightmare
+          '2000,10',               # Obor (index 60 - F2P boss)
           '-1,0',                  # Phantom Muspah
           '-1,0',                  # Sarachnis
           '-1,0',                  # Scorpia
           '-1,0',                  # Scurrius
-          '2000,10',               # Obor (activity index 56 - F2P boss)
+          '-1,0',                  # Shellbane Gryphon
           '-1,0',                  # Skotizo
           '-1,0',                  # Sol Heredit
           '-1,0',                  # Spindel
           '-1,0',                  # Tempoross
           '-1,0',                  # The Gauntlet
           '-1,0',                  # The Corrupted Gauntlet
+          '-1,0',                  # The Hueycoatl
           '-1,0',                  # The Leviathan
+          '-1,0',                  # The Royal Titans
           '-1,0',                  # The Whisperer
           '-1,0',                  # Theatre of Blood
           '-1,0',                  # Theatre of Blood: Hard Mode
@@ -113,6 +121,7 @@ RSpec.describe Hiscores do
           '-1,0',                  # Vet'ion
           '-1,0',                  # Vorkath
           '-1,0',                  # Wintertodt
+          '-1,0',                  # Yama
           '-1,0',                  # Zalcano
           '-1,0',                  # Zulrah
         ].join("\n")
@@ -272,21 +281,21 @@ RSpec.describe Hiscores do
           '-1,1,0',                # Construction (P2P, unranked)
           '-1,1,0',                # Sailing (unranked)
           # Activities - simulate misaligned/unstable data that could cause false positives
-          '-1,0',                  # Grid Points
-          '-1,0',                  # League Points
-          '-1,0',                  # Deadman Points
+          '-1,0',                  # Grid Points (index 0)
+          '-1,0',                  # League Points (index 1)
+          '-1,0',                  # Deadman Points (index 2)
           '-1,0',                  # Bounty Hunter - Hunter
           '-1,0',                  # Bounty Hunter - Rogue
           '-1,0',                  # Bounty Hunter (Legacy) - Hunter
           '-1,0',                  # Bounty Hunter (Legacy) - Rogue
-          '5000,50',               # Clue Scrolls (all)
-          '5001,25',               # Clue Scrolls (beginner)
+          '5000,50',               # Clue Scrolls (all) (index 7)
+          '5001,25',               # Clue Scrolls (beginner) (index 8)
           '100,10',                # Clue Scrolls (easy) - P2P clue (would have flagged before)
           '100,5',                 # Clue Scrolls (medium) - P2P clue
           '-1,0',                  # Clue Scrolls (hard)
           '-1,0',                  # Clue Scrolls (elite)
           '-1,0',                  # Clue Scrolls (master)
-          '3000,500',              # LMS - Rank
+          '3000,500',              # LMS - Rank (index 14)
           '-1,0',                  # PvP Arena - Rank
           '-1,0',                  # Soul Wars Zeal - P2P
           '-1,0',                  # Rifts closed
@@ -298,8 +307,8 @@ RSpec.describe Hiscores do
           '-1,0',                  # Araxxor
           '-1,0',                  # Artio
           '200,50',                # Barrows Chests - P2P boss (would have flagged before)
-          '-1,0',                  # Brutus (F2P boss)
-          '2001,8',                # Bryophyta (F2P boss)
+          '-1,0',                  # Brutus (F2P boss) (index 26)
+          '2001,8',                # Bryophyta (F2P boss) (index 27)
           '-1,0',                  # Callisto
           '-1,0',                  # Calvar'ion
           '-1,0',                  # Cerberus
@@ -326,12 +335,13 @@ RSpec.describe Hiscores do
           '-1,0',                  # Kree'Arra
           '-1,0',                  # K'ril Tsutsaroth
           '-1,0',                  # Lunar Chests
-          '-1,0',                  # Mimic
+          '-1,0',                  # Mad Angel (index 54)
           '-1,0',                  # Maggot King
+          '-1,0',                  # Mimic
           '-1,0',                  # Nex
           '-1,0',                  # Nightmare
           '-1,0',                  # Phosani's Nightmare
-          '2000,10',               # Obor (F2P boss)
+          '2000,10',               # Obor (F2P boss) (index 60)
           '-1,0',                  # Phantom Muspah
           '-1,0',                  # Sarachnis
           '-1,0',                  # Scorpia
@@ -781,26 +791,26 @@ RSpec.describe Hiscores do
           '-1,1,0',                # Construction (P2P, unranked)
           '-1,1,0',                # Sailing (unranked)
           # Activities start here
-          '-1,0',                  # Grid Points
-          '-1,0',                  # League Points
-          '-1,0',                  # Deadman Points
+          '-1,0',                  # Grid Points (index 0)
+          '-1,0',                  # League Points (index 1)
+          '-1,0',                  # Deadman Points (index 2)
           '-1,0',                  # Bounty Hunter - Hunter
           '-1,0',                  # Bounty Hunter - Rogue
           '-1,0',                  # Bounty Hunter (Legacy) - Hunter
           '-1,0',                  # Bounty Hunter (Legacy) - Rogue
-          '5000,50',               # Clue Scrolls (all)
-          '5001,25',               # Clue Scrolls (beginner)
+          '5000,50',               # Clue Scrolls (all) (index 7)
+          '5001,25',               # Clue Scrolls (beginner) (index 8)
           '-1,0',                  # Clue Scrolls (easy) - P2P
           '-1,0',                  # Clue Scrolls (medium) - P2P
           '-1,0',                  # Clue Scrolls (hard) - P2P
           '-1,0',                  # Clue Scrolls (elite) - P2P
           '-1,0',                  # Clue Scrolls (master) - P2P
-          '3000,500',              # LMS - Rank (F2P)
-          '2500,150',              # PvP Arena - Rank (F2P, has rank 150!)
+          '3000,500',              # LMS - Rank (F2P) (index 14)
+          '2500,150',              # PvP Arena - Rank (F2P, has rank 150!) (index 15)
           '-1,0',                  # Soul Wars Zeal
           '-1,0',                  # Rifts closed
           '-1,0',                  # Colosseum Glory
-          '1000,250',              # Collections Logged (F2P, has 250 collection log!)
+          '1000,250',              # Collections Logged (F2P, has 250 collection log!) (index 19)
         ].join("\n")
 
         result = Hiscores.send(:parse_stats_csv, csv_data)

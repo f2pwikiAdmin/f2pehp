@@ -427,7 +427,7 @@ class Player < ActiveRecord::Base
                 {name: "Jmd992", amount: 5, date: "2022-04-03", flair_after: "flairs/Diamond.png"},
                 {name: "M enace", amount: 5, date: "2022-04-11"},
                 {name: "Fatmegazord", amount: 5, date: "2022-04-29"},
-                {name: "F2P Volto", amount: 5, date: "2022-07-01", flair_after: "flairs/Shrimps.png"},
+                {name: "F2P Volto", amount: 5, date: "2022-07-01", flair_after: "flairs/shrimps.png"},
                 {name: "UIM jam", amount: 5, date: "2022-07-08", flair_after: "flairs/run_orb.png"},
                 {name: "HCIM Cob", amount: 5, date: "2022-10-14", flair_after: "flairs/turnip.png"},
                 {name: "IAmMicrobe", amount: 5, date: "2022-09-01", flair_after: "flairs/american_samoa.png"},

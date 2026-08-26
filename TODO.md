@@ -40,8 +40,10 @@ List is in order of priority, with time estimates and the following tags.
 
 ## In Progress
 
-* [DVPS] Migrate deployment away from Heroku (40h)
-  * app is still Heroku-style (Procfile release/web process + Heroku steps in docs/UPDATING_EHP.md)
+* [DVPS] Finish/verify Rails 7 upgrade on Ruby 3.2.3 (4h)
+  * add and review `config.load_defaults 7.0` / `config/initializers/new_framework_defaults_7_0.rb`
+  * resolve Rails 7 `legacy_connection_handling` boot deprecation
+  * update the test schema for pending migration `20260228000000_add_brutus_kc_to_players` and rerun `bundle exec rspec`
 * [DVPS] Debug Windows dev environment setup (4h)
 * [TEST] Expand/backfill RSpec coverage across models/controllers/services/helpers/javascripts (24h)
   * fold loose one-off `test_*.rb`/diagnostic scripts into structured specs where worth keeping
@@ -64,7 +66,8 @@ List is in order of priority, with time estimates and the following tags.
 * [ALGO] Fix time-to-max to include bonus xp (4h)
   * Reg ttm should be <2400h
   * Sofacanlazy/Freckled Kid should have 0 ttm 99s
-* [DVPS] Upgrade to Rails 7.0.4.3 on Ruby 3.2.3 (4h)
+* [DVPS] Migrate off Heroku to Railway (PostgreSQL) (40h)
+* [DVPS] Bump dependencies to Rails 7.0.4.3 on Ruby 3.2.3 (4h)
 * [DATA] Remove deprecated columns from competitions (30m)
 * [ALGO] Update Reg EHP from no-alt EHP to alt EHP. (2h)
 * [ALGO] Update IM/HC/UIM EHP to use Ogress EHP. (40h)

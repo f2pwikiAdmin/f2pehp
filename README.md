@@ -97,7 +97,7 @@ bundler --version
 ### 3. Fork or clone the repository
 
 ```bash
-git clone https://github.com/vmeow/f2pehp.git
+git clone https://github.com/f2pwikiAdmin/f2pehp.git
 ```
 
 Setting push origin to forked repo

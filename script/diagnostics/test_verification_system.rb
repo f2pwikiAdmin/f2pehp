@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # Comprehensive test of the 4-point P2P verification system
 
-require_relative 'config/environment'
+require_relative '../../config/environment'
 
 def test_verification(test_name, stats_hash)
   puts ""
@@ -39,13 +39,13 @@ def test_verification(test_name, stats_hash)
   else
     puts "✅ RESULT: ACCEPTED AS F2P"
     puts ""
-    puts "This player passed all 4-point verification checks and can be added to"
-    puts "the F2P rankings. They are confirmed F2P based on:"
+    puts "This player passed creation-time verification checks and can be added to"
+    puts "the F2P rankings. They are confirmed F2P at creation based on:"
     puts ""
     puts "  • Check 0: Parser found no P2P content (potential_p2p = 0)"
     puts "  • Check 1: Total level <= F2P maximum (#{Player::F2P_MAX_TOTAL})"
     puts "  • Check 2: No additional P2P skill training detected"
-    puts "  • Check 3: (Validated on first update via full hiscores check)"
+    puts "  • Check 3: Runs on first full hiscores update"
   end
   
   puts ""

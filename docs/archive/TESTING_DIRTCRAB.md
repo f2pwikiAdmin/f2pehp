@@ -7,7 +7,7 @@ To test adding the player "Dirtcrab" before rolling out changes:
 ```bash
 # In production or development with network access:
 cd /home/runner/work/f2pehp/f2pehp
-ruby test_add_player.rb Dirtcrab
+ruby script/diagnostics/test_add_player.rb Dirtcrab
 ```
 
 ## What This Test Does
@@ -51,7 +51,7 @@ ruby test_add_player.rb Dirtcrab
 If you can't access the OSRS API, run the offline test:
 
 ```bash
-ruby test_verification_offline.rb
+ruby script/diagnostics/test_verification_offline.rb
 ```
 
 This tests the verification logic with synthetic data:
@@ -85,14 +85,14 @@ Any player with total level > 1494 has trained P2P skills.
 You can test any player name:
 
 ```bash
-ruby test_add_player.rb <username>
+ruby script/diagnostics/test_add_player.rb <username>
 ```
 
 Examples:
 ```bash
-ruby test_add_player.rb Dirtcrab
-ruby test_add_player.rb Lynx_Titan
-ruby test_add_player.rb YourUsername
+ruby script/diagnostics/test_add_player.rb Dirtcrab
+ruby script/diagnostics/test_add_player.rb Lynx_Titan
+ruby script/diagnostics/test_add_player.rb YourUsername
 ```
 
 ## Production Deployment Checklist
@@ -127,8 +127,8 @@ Possible causes:
 If you see "Your Ruby version is X, but Gemfile specified Y":
 ```bash
 # Use mise to install correct Ruby version
-mise install ruby@3.1.4
-mise use ruby@3.1.4
+mise install ruby@3.2.3
+mise use ruby@3.2.3
 ```
 
 Or update Gemfile to match your Ruby version (temporary for testing).

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # Test that League Points don't incorrectly flag F2P players
 
-require_relative 'config/environment'
+require_relative '../../config/environment'
 
 puts "=" * 80
 puts "LEAGUE POINTS F2P FIX VERIFICATION"

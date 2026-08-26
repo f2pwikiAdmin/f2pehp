@@ -24,7 +24,6 @@ List is in order of priority, with time estimates and the following tags.
 * [FRNT] Create new pages to compare gains and records (2h)
 * [FRNT] CSS color outlines for different account types (2h)
   * grey - irons, red - hc, white - uim
-* [TEST] Create unit test suite (24h)
 * [DVPS] Allow upload of content (flairs, news, etc) (24h)
   * Create admin user(s)?
 * [CALC] Fix GP/XP calculator to update GE prices once per hour (2h)
@@ -41,15 +40,16 @@ List is in order of priority, with time estimates and the following tags.
 
 ## In Progress
 
-* [DVPS] Explore migrating away from Heroku (40h)
+* [DVPS] Migrate deployment away from Heroku (40h)
+  * app is still Heroku-style (Procfile release/web process + Heroku steps in docs/UPDATING_EHP.md)
 * [DVPS] Debug Windows dev environment setup (4h)
-* [DVPS] Complete open sourcing (8h)
-  * refactoring to improve readability
-    * move stuff out of config/initializers/assets.rb
-    * separate out API/parsing from Player
-    * separate out algorithms from Player
-    * ~~remove deprecrated code from players_controller.rb~~
-    * ~~do not allow player creation unless F2P~~
+* [TEST] Expand/backfill RSpec coverage across models/controllers/services/helpers/javascripts (24h)
+  * fold loose one-off `test_*.rb`/diagnostic scripts into structured specs where worth keeping
+* [DVPS] Refactor oversized config/initializers/assets.rb into smaller config sources (8h)
+* [ALGO] Separate parsing + algorithm responsibilities out of Player model into services/modules (16h)
+* [ALGO] Continue tuning P2P/F2P verification to reduce false positives (12h)
+  * activity-based P2P checks are temporarily disabled due to unstable hiscores activity parsing
+* [DATA] Continue periodic player cleanup/recheck workflows for potential_p2p flags (8h)
 
 ## Done
 
@@ -64,10 +64,13 @@ List is in order of priority, with time estimates and the following tags.
 * [ALGO] Fix time-to-max to include bonus xp (4h)
   * Reg ttm should be <2400h
   * Sofacanlazy/Freckled Kid should have 0 ttm 99s
-* [DVPS] Upgrade to Rails 5.2 (4h)
-  * remove unused gems
+* [DVPS] Upgrade to Rails 7.0.4.3 on Ruby 3.2.3 (4h)
 * [DATA] Remove deprecated columns from competitions (30m)
 * [ALGO] Update Reg EHP from no-alt EHP to alt EHP. (2h)
 * [ALGO] Update IM/HC/UIM EHP to use Ogress EHP. (40h)
 * [ALGO] Implement Bonus XP algorithms (40h)
 * [FRNT] Base level rankings (1h)
+* [DVPS] Complete open sourcing (repo public + LICENSE) (8h)
+* [ALGO] Ship universal 4-point P2P/F2P verification flow for new + existing players (16h)
+* [DATA] Remove false_p2p_flagged override list from active ranking logic (8h)
+* [DVPS] Reorganize root-level working docs/scripts into docs and archives (2h)

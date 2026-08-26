@@ -2,7 +2,7 @@
 # Offline test to verify the 4-point verification system works correctly
 # This tests the verification logic without needing to fetch real player data
 
-require_relative 'config/environment'
+require_relative '../../config/environment'
 
 puts "=" * 80
 puts "4-Point Verification System - Offline Tests"

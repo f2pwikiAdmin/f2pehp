@@ -13,7 +13,7 @@ Verify that the new 4-point verification system works correctly and that players
 ### 1. System Testing (Offline)
 Created comprehensive offline tests to verify the 4-point verification logic without requiring network access or real player data.
 
-**Test Script:** `test_verification_offline.rb`
+**Test Script:** `script/verification/test_verification_offline.rb`
 
 ### 2. Integration Testing
 Created integration test to verify the complete player addition workflow including:
@@ -23,7 +23,7 @@ Created integration test to verify the complete player addition workflow includi
 - Verification system execution
 - Player creation
 
-**Test Script:** `test_add_player.rb`
+**Test Script:** `script/verification/test_add_player.rb`
 
 ## Test Results
 
@@ -144,12 +144,12 @@ The system is ready to handle this correctly.
 
 ### Run Offline Verification Tests
 ```bash
-ruby test_verification_offline.rb
+ruby script/verification/test_verification_offline.rb
 ```
 
 ### Test Adding a Specific Player
 ```bash
-ruby test_add_player.rb Dirtcrab
+ruby script/verification/test_add_player.rb Dirtcrab
 ```
 
 ### Run Full Test Suite

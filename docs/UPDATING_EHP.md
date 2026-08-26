@@ -19,13 +19,13 @@ config.bonus_xp_reg[[ratio, bonus_for, bonus_from, start_xp, end_xp]]
 
 # Deployment
 
-Create a pull request to Master from a fork. If needed, can deploy branch to f2pehp2 https://f2pehp2.herokuapp.com/ currently not in service.
+Create a pull request to `master` from a fork. If needed, deploy the branch to a temporary review environment before merging.
 
-When the code looks ready to deploy, merge into master, log into Heroku and perform the queries listed below.
+When the code looks ready to deploy, merge into `master`, open a Rails console against the Railway production environment backed by PostgreSQL, and perform the queries listed below.
 
 ## Queries
 
-Run this query in the heroku console. (Heroku run `console`)
+Run this query in the production console for the Railway app.
 
 ```ruby
 Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch| batch.each do |player| begin player.recalculate_ehp player.recalculate_current_ehp rescue next end end end

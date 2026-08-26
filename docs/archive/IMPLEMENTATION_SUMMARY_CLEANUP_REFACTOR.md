@@ -99,7 +99,7 @@ Rails.logger.info "Player #{player.player_name} (ID: #{player.id}) flagged as un
 
 **Updated Files**:
 1. `HIGH_TOTAL_LEVEL_ISSUE.md` - Updated Option 2 to reflect new behavior
-2. Created `PLAYER_CLEANUP_GUIDE.md` - Comprehensive admin guide
+2. Created `docs/PLAYER_CLEANUP_GUIDE.md` - Comprehensive admin guide
 
 **Guide Contents**:
 - Usage examples with all configuration options
@@ -205,7 +205,7 @@ player.update(potential_p2p: 0, p2p_flag_reason: nil)
 5. `lib/tasks/diagnose_high_total_players.rake` - Updated messaging
 6. `spec/services/player_cleanup_service_spec.rb` - Updated and added tests
 7. `HIGH_TOTAL_LEVEL_ISSUE.md` - Updated documentation
-8. `PLAYER_CLEANUP_GUIDE.md` - New comprehensive guide (created)
+8. `docs/PLAYER_CLEANUP_GUIDE.md` - New comprehensive guide (created)
 
 ## Code Review Feedback Addressed
 

@@ -116,10 +116,10 @@ All tests passing:
 ### Test Coverage
 
 Created comprehensive tests:
-1. `test_league_fix.rb` - Verifies League Points don't flag F2P
-2. `test_brutus_fix.rb` - Verifies Brutus removal
-3. `test_realistic_f2p.rb` - Tests realistic F2P scenarios
-4. `diagnostic_verification.rb` - Diagnostic tool for debugging
+1. `script/verification/test_league_fix.rb` - Verifies League Points don't flag F2P
+2. `script/verification/test_brutus_fix.rb` - Verifies Brutus removal
+3. `script/verification/test_realistic_f2p.rb` - Tests realistic F2P scenarios
+4. `script/verification/diagnostic_verification.rb` - Diagnostic tool for debugging
 
 ## Impact
 
@@ -156,11 +156,11 @@ Created comprehensive tests:
 ## Files Changed
 
 1. `app/services/hiscores.rb` - Core fix
-2. `test_league_fix.rb` - Verification test
-3. `test_brutus_fix.rb` - Brutus removal verification
-4. `test_realistic_f2p.rb` - Realistic scenarios
-5. `diagnostic_verification.rb` - Diagnostic tool
-6. `check_api_format.rb` - API analysis tool
+2. `script/verification/test_league_fix.rb` - Verification test
+3. `script/verification/test_brutus_fix.rb` - Brutus removal verification
+4. `script/verification/test_realistic_f2p.rb` - Realistic scenarios
+5. `script/verification/diagnostic_verification.rb` - Diagnostic tool
+6. `script/verification/check_api_format.rb` - API analysis tool
 7. `BRUTUS_FIX_ANALYSIS.md` - Documentation
 
 ## Lessons Learned
@@ -203,7 +203,7 @@ Monitor for:
 1. Check logs for verification failures
 2. Look for other activities that might need temp_gamemode mapping
 3. Verify OSRS hasn't added new content we don't handle
-4. Use diagnostic_verification.rb to analyze specific cases
+4. Use script/verification/diagnostic_verification.rb to analyze specific cases
 
 ## Future Considerations
 

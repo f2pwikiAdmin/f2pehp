@@ -17,7 +17,7 @@ With the comprehensive 4-point verification system in place, the manual override
 ## Changes Made
 
 ### 1. List Archived for Reference
-**File:** `ARCHIVED_false_p2p_flagged_list.rb`
+**File:** `docs/archive/ARCHIVED_false_p2p_flagged_list.rb`
 - Created backup file with all 500+ player names
 - Includes context about why the list existed
 - Can be referenced if needed in the future
@@ -161,7 +161,7 @@ After deployment to Railway (PostgreSQL production):
 
 ## Files Changed
 
-1. ✅ `ARCHIVED_false_p2p_flagged_list.rb` - NEW (backup)
+1. ✅ `docs/archive/ARCHIVED_false_p2p_flagged_list.rb` - NEW (backup)
 2. ✅ `config/initializers/assets.rb` - Modified (4 lines removed, 3 added)
 3. ✅ `app/models/player.rb` - Modified (55 lines removed, 10 added)
 4. ✅ `spec/models/player_p2p_detection_spec.rb` - Modified (tests updated)

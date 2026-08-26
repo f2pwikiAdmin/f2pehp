@@ -149,8 +149,8 @@ player.check_p2p_stats(stats)
 
 ## Related Documentation
 
-- `FALSE_P2P_FLAGGED_ANALYSIS.md` - Historical analysis of false P2P flagging
-- `VERIFICATION_LOGIC_UPDATE_SUMMARY.md` - Overview of 4-point verification system
+- `archive/FALSE_P2P_FLAGGED_ANALYSIS.md` - Historical analysis of false P2P flagging
+- `archive/VERIFICATION_LOGIC_UPDATE_SUMMARY.md` - Overview of 4-point verification system
 - `P2P_VERIFICATION_UPDATE.md` - Detailed P2P verification documentation
 - `ADMIN_GUIDE_P2P_VERIFICATION.md` - Admin guide for P2P verification
 

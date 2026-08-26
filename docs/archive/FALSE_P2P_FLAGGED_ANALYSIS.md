@@ -4,7 +4,7 @@
 
 **The false_p2p_flagged list has been removed from the codebase.**
 
-See `ARCHIVED_false_p2p_flagged_list.rb` for the archived list (500+ player names).
+See `docs/archive/ARCHIVED_false_p2p_flagged_list.rb` for the archived list (500+ player names).
 
 ## Rationale for Removal
 

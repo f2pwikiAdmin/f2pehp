@@ -79,7 +79,7 @@ overall = (stats[:overall_lvl] || stats["overall_lvl"]).to_i
 - ✅ More robust and defensive code
 
 ### 3. Updated Documentation
-**File:** `P2P_VERIFICATION_UPDATE.md`
+**File:** `docs/P2P_VERIFICATION_UPDATE.md`
 
 Added explicit mention that:
 - Old fallback verification logic has been removed entirely
@@ -142,7 +142,7 @@ The failing test checks how P2P players are ranked in F2P rankings. This is unre
 ## Files Changed
 
 1. `app/models/player.rb` - Removed old logic, fixed hash access
-2. `P2P_VERIFICATION_UPDATE.md` - Updated documentation
+2. `docs/P2P_VERIFICATION_UPDATE.md` - Updated documentation
 3. `Gemfile` & `Gemfile.lock` - Dependencies updated by test environment
 4. `config/application.rb` - Configuration changes from test environment
 5. `db/schema.rb` - Schema changes from test environment

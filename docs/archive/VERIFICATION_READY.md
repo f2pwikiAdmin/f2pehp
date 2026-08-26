@@ -12,7 +12,7 @@
 
 ```bash
 cd /home/runner/work/f2pehp/f2pehp
-ruby test_add_player.rb Dirtcrab
+ruby script/verification/test_add_player.rb Dirtcrab
 ```
 
 This will:

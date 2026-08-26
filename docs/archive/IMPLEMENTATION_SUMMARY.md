@@ -143,8 +143,8 @@ Result:
 |------|---------|
 | `app/models/player.rb` | Universal verification implementation |
 | `spec/models/player_p2p_detection_spec.rb` | Comprehensive test coverage for all player types |
-| `P2P_VERIFICATION_UPDATE.md` | Technical documentation (fully rewritten) |
-| `ADMIN_GUIDE_P2P_VERIFICATION.md` | Admin guide (fully rewritten) |
+| `docs/P2P_VERIFICATION_UPDATE.md` | Technical documentation (fully rewritten) |
+| `docs/ADMIN_GUIDE_P2P_VERIFICATION.md` | Admin guide (fully rewritten) |
 | `IMPLEMENTATION_SUMMARY.md` | This summary |
 
 ## Testing Coverage

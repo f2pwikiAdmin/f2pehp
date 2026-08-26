@@ -85,7 +85,7 @@ Status: READY FOR PRODUCTION ✅
 
 Command to test:
   $ cd /home/runner/work/f2pehp/f2pehp
-  $ ruby test_add_player.rb Dirtcrab
+  $ ruby script/verification/test_add_player.rb Dirtcrab
 
 Expected outcomes:
 
@@ -110,10 +110,10 @@ Expected outcomes:
 --------------------------------------------------------------------------------
 
 # Test adding Dirtcrab (requires network):
-ruby test_add_player.rb Dirtcrab
+ruby script/verification/test_add_player.rb Dirtcrab
 
 # Run offline verification tests (no network):
-ruby test_verification_offline.rb
+ruby script/verification/test_verification_offline.rb
 
 # Run full test suite:
 bundle exec rspec spec/models/player_p2p_detection_spec.rb
@@ -125,7 +125,7 @@ bundle exec rspec spec/models/player_p2p_detection_spec.rb
 📄 TESTING_DIRTCRAB.md - Quick testing guide
 📄 PLAYER_ADDITION_VERIFICATION.md - Full verification report
 📄 VERIFICATION_LOGIC_UPDATE_SUMMARY.md - Code changes details
-📄 P2P_VERIFICATION_UPDATE.md - System documentation
+📄 docs/P2P_VERIFICATION_UPDATE.md - System documentation
 
 ================================================================================
                          CONCLUSION: GO FOR LAUNCH! 🚀

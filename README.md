@@ -13,7 +13,7 @@ The application uses a robust P2P (members) detection system to ensure only F2P 
 - **Handles skill list changes** gracefully without requiring code updates
 - **Accurately identifies F2P players** at any total level up to the F2P maximum of 1494
 
-For detailed information about the P2P detection logic and recent improvements, see [P2P_DETECTION_FIX.md](P2P_DETECTION_FIX.md).
+For detailed information about the P2P detection logic and recent improvements, see [docs/P2P_DETECTION_FIX.md](docs/P2P_DETECTION_FIX.md).
 
 ## Contributing
 
@@ -24,7 +24,7 @@ We are happy to receive any and all help!
 * Project owners
 * Content managers (FAQs, links, etc.)
 
-Feel free to look at our [TODO](TODO.md) list for any ideas.
+Feel free to look at our [TODO](TODO.md) list for any ideas, and browse the supporting project docs in [`docs/`](docs/).
 
 To contribute a code change, please create a separate branch and submit a pull request.
 

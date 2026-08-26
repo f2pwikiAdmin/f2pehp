@@ -91,7 +91,7 @@ Removed ALL references to Brutus from the codebase:
 
 ### Verification
 
-Created `test_brutus_fix.rb` to verify:
+Created `script/verification/test_brutus_fix.rb` to verify:
 1. ✅ Brutus not in SKILL_NAME_MAP
 2. ✅ Activity order correct (no offset)
 3. ✅ Brutus not in P2P_BOSSES

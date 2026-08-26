@@ -24,7 +24,6 @@ List is in order of priority, with time estimates and the following tags.
 * [FRNT] Create new pages to compare gains and records (2h)
 * [FRNT] CSS color outlines for different account types (2h)
   * grey - irons, red - hc, white - uim
-* [TEST] Create unit test suite (24h)
 * [DVPS] Allow upload of content (flairs, news, etc) (24h)
   * Create admin user(s)?
 * [CALC] Fix GP/XP calculator to update GE prices once per hour (2h)
@@ -41,18 +40,26 @@ List is in order of priority, with time estimates and the following tags.
 
 ## In Progress
 
-* [DVPS] Explore migrating away from Heroku (40h)
+* [TEST] Expand RSpec coverage for calculators, rankings, and verification flows (24h)
 * [DVPS] Debug Windows dev environment setup (4h)
-* [DVPS] Complete open sourcing (8h)
-  * refactoring to improve readability
-    * move stuff out of config/initializers/assets.rb
-    * separate out API/parsing from Player
-    * separate out algorithms from Player
-    * ~~remove deprecrated code from players_controller.rb~~
-    * ~~do not allow player creation unless F2P~~
+* [DVPS] Continue refactoring large legacy files for readability (8h)
+  * move stuff out of config/initializers/assets.rb
+  * separate out API/parsing from Player
+  * separate out algorithms from Player
+* [ALGO] Continue hardening P2P/F2P verification and false-positive review workflows (16h)
+  * stabilize activity-based checks before re-enabling them
+  * keep validating edge cases from manual verification reports
 
 ## Done
 
+* [DVPS] Migrate off Heroku to Railway (PostgreSQL) (40h)
+* [DVPS] Open source the project (8h)
+* [DVPS] Upgrade to Rails 7 / Ruby 3.2.3 (4h)
+  * remove unused gems
+* [DVPS] Consolidate root-level working docs and ad-hoc verification scripts into docs/ and script/ (4h)
+* [TEST] Establish an RSpec test suite for models, services, helpers, and controllers (24h)
+* [ALGO] Use direct members-skill evidence for P2P detection (8h)
+* [ALGO] Disable unstable activity-based P2P detection until parsing is robust (4h)
 * [FRNT] FAQs page (8h)
 * [DATA] Display players' ranks on F2P.wiki only (8h)
 * [DATA] Add and display player created_at/updated_at timestamps (2h)
@@ -64,8 +71,6 @@ List is in order of priority, with time estimates and the following tags.
 * [ALGO] Fix time-to-max to include bonus xp (4h)
   * Reg ttm should be <2400h
   * Sofacanlazy/Freckled Kid should have 0 ttm 99s
-* [DVPS] Upgrade to Rails 5.2 (4h)
-  * remove unused gems
 * [DATA] Remove deprecated columns from competitions (30m)
 * [ALGO] Update Reg EHP from no-alt EHP to alt EHP. (2h)
 * [ALGO] Update IM/HC/UIM EHP to use Ogress EHP. (40h)

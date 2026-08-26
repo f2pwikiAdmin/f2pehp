@@ -13,7 +13,7 @@ F2POSRSRanks::Application.configure do
    config.banned = ["F2Prod", "Sharply Stab", "Wachbirne", "Nanitronic", "Hc Tppk", "iron s4v4gez", "Mr J Valeska", "atwilburn92"]
    config.downcase_banned = config.banned.map(&:downcase)
    
-   # REMOVED: false_p2p_flagged list (archived in ARCHIVED_false_p2p_flagged_list.rb)
+   # REMOVED: false_p2p_flagged list (archived in docs/archive/ARCHIVED_false_p2p_flagged_list.rb)
    # The comprehensive 4-point verification system correctly classifies players without manual overrides.
    # Players with potential_p2p <= 0 are automatically included in F2P rankings.
 

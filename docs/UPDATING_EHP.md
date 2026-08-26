@@ -11,7 +11,7 @@ config.ehp_reg['attack_tiers']
 config.ehp_reg['attack_xphrs']
 ```
 
-Then, if there is any bonus experience assosicated with the attack skill, you would set that also.
+Then, if there is any bonus experience associated with the attack skill, you would set that also.
 
 ```ruby
 config.bonus_xp_reg[[ratio, bonus_for, bonus_from, start_xp, end_xp]]

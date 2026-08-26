@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # Diagnostic script to add logging and test real player verification
 
-require_relative 'config/environment'
+require_relative '../../config/environment'
 require 'open-uri'
 
 # Test with a real F2P player if provided, or use mock data

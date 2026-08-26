@@ -1,202 +1,132 @@
-# P2P Verification Update - Universal Comprehensive Verification System
+# P2P Verification Update
 
 ## Overview
 
-This update implements a **comprehensive P2P verification system for ALL players**. Every player (new and existing) now undergoes detailed verification checks to ensure accurate F2P/P2P classification.
+The application now applies the same P2P/F2P verification flow to every normal player during add and update operations.
 
-## What Changed
+## Current Verification State
 
-### Before (Old System)
-- Basic checks: parser detection + simple level comparison
-- Inconsistent verification across different player types
-- false_p2p_flagged list was a workaround for false positives
-- No boss KC or clue scroll checks for regular players
+### Before
+- Verification behavior differed across player categories.
+- A `false_p2p_flagged` override list existed as a workaround for false positives.
+- Verification relied on older fallback logic that was harder to reason about.
 
-### After (New System)
-- **ALL players** undergo comprehensive verification
-- 4-check system: parser detection, total level, skill training, boss KC/clues
-- false_p2p_flagged list still exists but uses same verification as everyone else
-- Consistent, thorough verification for all players
+### Now
+- All normal players use the same verification flow.
+- The old `false_p2p_flagged` override list has been removed from application config.
+- Current automatic verification is based on parser output, total level, and direct members-skill evidence.
+- Activity-based boss/clue checks remain documented in the codebase, but they are temporarily disabled while hiscores activity parsing is hardened.
 
-## Technical Details
+## Verification Flow
 
-### Universal Verification Flow
-
-**For ALL Players (Update/Add):**
-```
-Player updates/adds → check_p2p_stats() or initial_p2p_check()
+```text
+Player add/update
     ↓
 Special cases checked first:
-  - Fakes list → Always P2P (skip verification)
-  - False-banned list → Always F2P (skip verification)
+  - fakes list        → always P2P
+  - false_banned list → always F2P
     ↓
-ALL other players (including false_p2p_flagged):
-  → detailed_p2p_verification()
+All other players
     ↓
-4 Comprehensive Checks:
-  1. Parser detection (potential_p2p from API)
-  2. Total level exceeds F2P max (1494)
-  3. P2P skills trained beyond base level
-  4. P2P boss KC or clue scrolls (from hiscores API)
+Automatic verification checks:
+  0. Parser detection (`potential_p2p > 0`)
+  1. Total level exceeds the F2P maximum (1494)
+  2. Members-only skills trained beyond base level
     ↓
-Any check fails → P2P (potential_p2p = 1)
-All checks pass → F2P (potential_p2p = 0)
+Any check fails → P2P (`potential_p2p = 1`)
+All checks pass → F2P (`potential_p2p = 0`)
 ```
 
-### New Methods in Player Model
+## Key Methods
 
-1. **`detailed_p2p_verification(stats)`** (instance method)
-   - **Now used for ALL players** (not just false_p2p_flagged)
-   - Returns `true` if player has P2P content
-   - Returns `false` if player is truly F2P
-   - Performs 4 comprehensive checks
+### `Player#check_p2p_stats(stats)`
+- Main verification entry point for existing players.
+- Handles special-case lists first.
+- Uses detailed verification for all other players.
 
-2. **`check_p2p_hiscores_content`** (instance method)
-   - Fetches raw CSV data from OSRS hiscores API
-   - Checks for P2P boss KC and clue scroll completions
-   - Returns `true` if any P2P content found
+### `Player.detailed_p2p_verification(stats)`
+- Evaluates parser output, total level, and trained members-only skills.
+- Returns `true` when P2P evidence is found.
 
-3. **`initial_detailed_p2p_check(stats, name)`** (class method)
-   - **Now used for ALL new players** (not just false_p2p_flagged)
-   - Checks parser detection, total level, and skill training
-   - Full hiscores check happens on first update
+### `Player.initial_detailed_p2p_check(stats, name)`
+- Applies the same core verification rules during player creation.
 
-### Modified Methods
+### `Player#check_p2p_hiscores_content`
+- Retained for future activity-based verification work.
+- Currently disabled in the automatic verification flow to avoid false positives from unstable activity parsing.
 
-1. **`check_p2p_stats(stats)`**
-   - Simplified logic: fakes → P2P, false_banned → F2P, everyone else → detailed verification
-   - **Removed old verification code** (superseded by detailed verification)
-   - Now calls `detailed_p2p_verification` for ALL players
+## Automatic Checks in Use
 
-2. **`initial_p2p_check(stats, name)`**
-   - Now calls `initial_detailed_p2p_check` for ALL new players (name parameter is required)
-   - **Removed conditional check** for false_p2p_flagged list
-   - **Removed old fallback verification logic entirely** (only new 4-point system is used)
+### Check 0: Parser Detection
+- Uses parser-provided `potential_p2p` evidence.
+- Catches obvious P2P accounts immediately.
 
-### Four Comprehensive Checks
+### Check 1: Total Level
+- F2P maximum total is 1494.
+- Any total above 1494 means members-only skills have been trained.
 
-#### Check 0: Parser Detection
-- If hiscores parser detected P2P content (potential_p2p > 0)
-- Catches most obvious P2P cases immediately
+### Check 2: Direct Members-Skill Evidence
+- Looks for members-only skills above level 1 or with XP above 0.
+- Avoids fragile arithmetic-only inference.
 
-#### Check 1: Total Level
-- F2P maximum: 15 skills at 99 = 1485 levels
-- Plus 9 P2P skills at base level 1 = 9 levels
-- **Total F2P max: 1494 levels**
-- Any total level > 1494 means P2P skills trained
+## Activity-Based Detection Status
 
-#### Check 2: P2P Skill Training
-- Compares overall level with expected level (F2P sum + members count)
-- If overall > expected, P2P skills have been trained beyond base level
+Boss KC and clue-scroll evidence are **not** currently used in the automatic verification path.
 
-#### Check 3: P2P Boss KC & Clue Scrolls
-- Checks for kill counts on P2P-only bosses
-- **Excludes F2P bosses**: Obor and Bryophyta
-- Checks for completions of P2P clue scrolls
-- **Excludes beginner clues** (F2P content)
-- Any P2P boss KC or clue completion means P2P access
+That code and the associated rake tasks are still useful for manual investigation, but the automatic flow leaves them disabled until the hiscores activity parser is robust against upstream activity reordering.
 
-## Impact on All Player Types
+## Impact
 
-### New Players (Not in Database)
-- **Before**: Basic checks only (parser + simple level comparison)
-- **After**: Comprehensive 4-check verification during creation
-- **Benefit**: More accurate P2P detection from the start
+### New Players
+- Verified during creation with the same core rules used for updates.
 
-### Existing Players (Regular Updates)
-- **Before**: Basic checks only
-- **After**: Comprehensive 4-check verification on every update
-- **Benefit**: Catches players who go P2P after being added
+### Existing Players
+- Re-verified on update using the same automatic checks.
 
-### Players in false_p2p_flagged List
-- **Before**: Automatically marked as F2P (bypass verification)
-- **After**: Same comprehensive verification as all other players
-- **Benefit**: List becomes self-correcting as players update
-
-### Players in fakes List
-- **Before & After**: Always marked as P2P (no change)
-- Priority: Highest (checked before any verification)
-
-### Players in false_banned List
-- **Before & After**: Always marked as F2P (no change)
-- Priority: High (checked after fakes, before verification)
-
-## Impact on Rankings
-
-- **No changes** to ranking display logic
-- `is_f2p?` and `sql_f2p_filter` methods unchanged
-- false_p2p_flagged players continue to appear in rankings
-- Rankings accurately reflect verification results
+### Special Lists
+- `fakes` still force P2P.
+- `false_banned` still force F2P.
+- There is no longer a `false_p2p_flagged` override list to maintain.
 
 ## Benefits
 
-1. ✅ **Universal Coverage**: ALL players use the same comprehensive verification
-2. ✅ **Consistent Detection**: No more different rules for different player types
-3. ✅ **More Accurate**: 4-check system catches edge cases old system missed
-4. ✅ **Self-Correcting**: false_p2p_flagged list automatically cleans itself
-5. ✅ **Future-Proof**: New players immediately benefit from best verification
-6. ✅ **Maintains Compatibility**: Existing ranking logic unchanged
+1. Consistent verification rules for normal players.
+2. Fewer manual overrides in application config.
+3. Better resilience to skill-list changes such as Sailing.
+4. Reduced false positives while activity parsing remains under review.
 
-## Migration
+## Example Outcomes
 
-**No migration required!** The system works seamlessly:
+### Legitimate F2P Player
+- Base members-only skills only.
+- Total level at or below 1494.
+- Result: remains F2P.
 
-1. **Deploy**: Changes take effect immediately for new adds/updates
-2. **Gradual**: As players update themselves, they get new verification
-3. **Non-Breaking**: Existing data remains valid until next update
-4. **Transparent**: Players see no difference in user experience
+### P2P Player With Trained Members Skill
+- Example: Fletching above level 1 or with XP above 0.
+- Result: marked as P2P.
 
-## Example Scenarios
+### P2P Player Over the F2P Total Cap
+- Total level above 1494.
+- Result: marked as P2P.
 
-### Scenario 1: Regular F2P Player Updates
-- Player "RegularF2P" updates their stats
-- Has total level 838 (all F2P, no P2P training)
-- No P2P boss KC or clue scrolls
-- **Result**: Passes all 4 checks, marked as F2P ✓
+## Testing Coverage
 
-### Scenario 2: Regular Player Who Went P2P Updates
-- Player "WentP2P" updates their stats
-- Has total level 1510 (exceeds F2P max of 1494)
-- **Result**: Fails Check 1 (total level), marked as P2P ✗
-
-### Scenario 3: New Player Tries to Add
-- Player "NewPlayer" tries to add themselves
-- Has Fletching at level 50 (P2P skill)
-- Parser detects potential_p2p = 49
-- **Result**: Fails Check 0 (parser), rejected as P2P ✗
-
-### Scenario 4: Player in false_p2p_flagged Updates
-- Player "FalseFlag" in false_p2p_flagged list updates
-- Has total level 838, no P2P content
-- **Result**: Passes all 4 checks, remains F2P ✓
-
-### Scenario 5: Player in false_p2p_flagged Who Went P2P
-- Player "WasF2P" in false_p2p_flagged list updates
-- Has completed Zulrah (P2P boss)
-- **Result**: Fails Check 3 (boss KC), marked as P2P ✗
-
-## Testing
-
-Comprehensive test coverage added:
-- Tests for regular players (not in any special list)
-- Tests for false_p2p_flagged players
-- Tests for all 4 verification checks
-- Tests for both player creation and updates
-- All tests mock external API calls for reliability
+Current specs cover:
+- Parser behavior for P2P evidence.
+- Player verification behavior for F2P and P2P cases.
+- False-positive mitigation around unstable activity-based parsing.
 
 ## Logging
 
-The system logs verification results for all players:
-- `Player #{name} marked as P2P: [reason]` - When any check fails
-- `Player #{name} passed detailed P2P verification - marked as F2P` - When all checks pass
-- `Could not verify P2P hiscores content for #{name}: [error]` - When API check fails
+The application logs verification outcomes such as:
+- `Player #{name} marked as P2P: [reason]`
+- `Player #{name} passed detailed P2P verification - marked as F2P`
+- `Could not verify P2P hiscores content for #{name}: [error]`
 
-## Future Improvements
+## Related Documentation
 
-Potential enhancements for future consideration:
-1. Add verification results to player records for audit trail
-2. Create admin dashboard to monitor verification across all players
-3. Add verification statistics and trends
-4. Implement verification caching to reduce API calls
-5. Add verification history tracking
-
+- `docs/P2P_DETECTION_FIX.md`
+- `docs/ACTIVITY_BASED_P2P_DETECTION_MITIGATION.md`
+- `docs/ADMIN_GUIDE_P2P_VERIFICATION.md`
+- `docs/archive/FALSE_P2P_LIST_REMOVAL_SUMMARY.md`

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # Test script to verify adding a player with the new verification system
 
-require_relative 'config/environment'
+require_relative '../../config/environment'
 
 def test_add_player(player_name)
   puts "=" * 80

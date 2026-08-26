@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # Test script to verify the verification system with mock data
 
-require_relative 'config/environment'
+require_relative '../../config/environment'
 
 def test_add_player_with_mock(player_name, mock_stats)
   puts "=" * 80

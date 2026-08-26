@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # Comprehensive test of the 4-point P2P verification system
 
-require_relative 'config/environment'
+require_relative '../../config/environment'
 
 def test_verification(test_name, stats_hash)
   puts ""

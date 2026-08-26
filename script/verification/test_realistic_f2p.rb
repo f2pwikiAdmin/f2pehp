@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # Realistic test to show F2P player can now be added successfully
 
-require_relative 'config/environment'
+require_relative '../../config/environment'
 
 puts "=" * 80
 puts "REALISTIC F2P PLAYER ADDITION TEST"

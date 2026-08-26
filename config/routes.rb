@@ -27,8 +27,11 @@ Rails.application.routes.draw do
   get 'compare' => 'players#compare'
   get 'test' => 'players#test'
   get 'competitions' => 'players#competitions'
+  post 'ranks' => 'players#ranks'
   get 'tracking' => 'players#tracking'
+  post 'tracking' => 'players#tracking'
   get 'records' => 'players#records'
+  post 'records' => 'players#records'
   get 'faqs' => 'players#faqs'
   get 'a_new_meta' => 'players#a_new_meta'
   get 'admin' => 'admin#index'
@@ -46,7 +49,7 @@ Rails.application.routes.draw do
   post 'clans/:id/update_clan_description' => 'clans#update_clan_description', as: :update_clan_description
   post 'clans/:id/update_clan_link1' => 'clans#update_clan_link1', as: :update_clan_link1
   post 'clans/:id/update_clan_link2' => 'clans#update_clan_link2', as: :update_clan_link2
-  post 'players#index' => 'players#refresh_250', as: :refresh_250
+  post 'players#refresh_250' => 'players#refresh_250', as: :refresh_250
   post 'players#index' => 'players#refresh_players', as: :refresh_players
   post 'players#secretpage' => 'players#export_players', as: :export_players
   post 'players#names' => 'players#find_new', as: :find_new

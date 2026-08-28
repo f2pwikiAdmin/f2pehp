@@ -261,6 +261,24 @@ class PlayersController < ApplicationController
       @sort_by = "ehp"
     end
 
+    unless %w[ehp xp].include?(@sort_by)
+      @sort_by = "ehp"
+      params[:sort_by] = "ehp"
+      session[:sort_by] = "ehp"
+    end
+
+    ehp_record_column = "#{@skill}_ehp_#{@time}_max"
+    xp_record_column = "#{@skill}_xp_#{@time}_max"
+    ehp_column = "#{@skill}_ehp"
+    xp_column = "#{@skill}_xp"
+    column_names = Player.column_names
+
+    unless column_names.include?(ehp_record_column)
+      @sort_by = "xp"
+      params[:sort_by] = "xp"
+      session[:sort_by] = "xp"
+    end
+
     if params[:filters_] != session[:filters_] || params[:sort_by] != session[:sort_by] || params[:skill] != session[:skill] || params[:show_limit] != session[:show_limit] || params[:restrictions] != session[:restrictions] || params[:time] != session[:time] || params[:clans_] != session[:clans_]
       session[:filters_] = @filters
       session[:restrictions] = @restrictions
@@ -271,13 +289,27 @@ class PlayersController < ApplicationController
       session[:clans_] = @clan_filters
     end
 
+    ordering = nil
+    ordering_columns = []
+
     case @sort_by
     when "ehp"
       @player_ehp_header = 'hilite'
-      ordering = "#{@skill}_ehp_#{@time}_max DESC, #{@skill}_xp_#{@time}_max DESC, #{@skill}_ehp DESC, #{@skill}_xp DESC, players.id ASC"
+      ordering = "#{ehp_record_column} DESC, #{xp_record_column} DESC, #{ehp_column} DESC, #{xp_column} DESC, players.id ASC"
+      ordering_columns = [ehp_record_column, xp_record_column, ehp_column, xp_column]
     when "xp"
       @player_xp_header = 'hilite'
-      ordering = "#{@skill}_xp_#{@time}_max DESC, #{@skill}_ehp_#{@time}_max DESC, #{@skill}_xp DESC"
+      if column_names.include?(ehp_record_column)
+        ordering = "#{xp_record_column} DESC, #{ehp_record_column} DESC, #{xp_column} DESC"
+        ordering_columns = [xp_record_column, ehp_record_column, xp_column]
+      else
+        ordering = "#{xp_record_column} DESC, #{xp_column} DESC, players.id ASC"
+        ordering_columns = [xp_record_column, xp_column]
+      end
+    end
+
+    unless ordering.present? && ordering_columns.all? { |column| column_names.include?(column) }
+      ordering = "overall_ehp DESC, players.id ASC"
     end
 
     clan_filter_clause = @clan_filters.keys

@@ -1,6 +1,6 @@
 %p#notice= notice
 
-= content_tag(:div, nil, class: "container", style: "width: 840px;") do
+= content_tag(:div, nil, class: ["container", "nav-bar"]) do
   = content_tag(:div, nil, class: ["bar", "ranks", "selected-link"]) do
     = link_to_unless_current "Hiscores", ranks_path
   = content_tag(:div, nil, class: ["bar", "fake", "selected-link"]) do

@@ -162,6 +162,8 @@ class ClansController < ApplicationController
 
     @display = params[:display] || session[:display] || "stats"
     @time = params[:time] || session[:time] || "week"
+    sanitize_skill
+    sanitize_time
 
     if params[:display] != session[:display] || params[:time] != session[:time] || params[:filter_inactive] != session[:filter_inactive]
       session[:display] = @display

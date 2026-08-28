@@ -26,6 +26,7 @@ class PlayersController < ApplicationController
   end
 
   def create_player_if_needed
+    return unless request.post?
     if !params[:player_to_add_name].nil? and params[:player_to_add_name] != ""
       if params[:player_to_add_name].length > 12
         redirect_to ranks_path, notice: 'Invalid player name.'
@@ -71,6 +72,8 @@ class PlayersController < ApplicationController
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @time = params[:time] || session[:time] || "week"
+    sanitize_skill
+    sanitize_time
     @clear_filters = params[:clear_filters]
     @clan_filters = params[:clans_] || session[:clans_] || {}
 
@@ -193,6 +196,8 @@ class PlayersController < ApplicationController
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @time = params[:time] || session[:time] || "week"
+    sanitize_skill
+    sanitize_time
 
     @clear_filters = params[:clear_filters]
     @clan_filters = params[:clans_] || session[:clans_] || {}

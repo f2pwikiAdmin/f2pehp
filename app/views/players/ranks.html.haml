@@ -197,7 +197,7 @@
         = submit_tag "Search"
         
     = content_tag(:div, nil, class: ["container", "left", "search"], style: "margin-left: 15px; width: 140px; height: 96px;") do 
-      = form_tag ranks_path, :method => "get", id: "add-player-form" do
+      = form_tag ranks_path, :method => "post", id: "add-player-form" do
         = "Add to Hiscores"
         %br
         = text_field_tag :player_to_add_name, params[:player_to_add_name], placeholder: "Player Name", :class => "add-player-field", style: "width: 100px;"

@@ -180,6 +180,15 @@ class PlayersController < ApplicationController
   end
 
   def records
+    # TODO: Records page is temporarily disabled while the /records 500 is being
+    # fixed on a separate branch. The 500 survives the ORDER BY hardening from
+    # PR #132, so it is likely in one of the untouched `.where(...)` clauses, the
+    # records.html.haml view, or the `compare` short-circuit path. Remove this
+    # guard (and restore the nav links noted below) to re-enable Records.
+    redirect_to ranks_path, notice: "Records are temporarily unavailable while we work on them. Check back soon!"
+    return
+
+    # --- existing implementation kept intentionally; unreachable until re-enabled ---
     search_player_if_needed
     create_player_if_needed
 

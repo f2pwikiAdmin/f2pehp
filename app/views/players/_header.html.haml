@@ -5,8 +5,8 @@
     = link_to_unless_current "Hiscores", ranks_path
   = content_tag(:div, nil, class: ["bar", "fake", "selected-link"]) do
     = link_to_unless_current "Current", tracking_path
-  = content_tag(:div, nil, class: ["bar", "ehp", "selected-link"]) do
-    = link_to_unless_current "Records", records_path
+  -# = content_tag(:div, nil, class: ["bar", "ehp", "selected-link"]) do
+  -#   = link_to_unless_current "Records", records_path
   = content_tag(:div, nil, class: ["bar", "ehp", "selected-link"]) do
     = link_to_unless_current "EHP", ehp_path
   = content_tag(:div, nil, class: ["bar", "links", "selected-link"]) do

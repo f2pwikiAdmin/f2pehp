@@ -245,6 +245,9 @@
     - elsif @player.player_name == "CheF2P"
       = image_tag "flairs/rato.png", style: "max-width: 100%;"
     - elsif @player.player_name.downcase == "euby"
+      = content_tag(:div, nil, style: "margin: auto; padding: 15px; width: 180px;") do 
+        %h5{:style => "color: gold;"} 
+          = "Contributing Developer"
       = image_tag "characters/euby_character.png", style: "max-width: 100%;"
 
   = content_tag(:div, nil, class: ["container", "left"], style: "margin: auto; width: 380px;") do 

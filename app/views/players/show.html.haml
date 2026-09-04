@@ -249,6 +249,14 @@
         %h5{:style => "color: gold;"} 
           = "Contributing Developer"
       = image_tag "characters/euby_character.png", style: "max-width: 100%;"
+    - elsif @player.player_name.downcase == "rickyhorizon"
+      = image_tag "characters/RickyHorizon_character.png", style: "max-width: 100%;"
+    - elsif @player.player_name.downcase == "sqweezy"
+      = image_tag "characters/sqweezy_character.png", style: "max-width: 100%;"
+    - elsif @player.player_name.downcase == "teace"
+      = image_tag "characters/Teace_character.png", style: "max-width: 100%;"
+    - elsif @player.player_name.downcase == "teaceandwar"
+      = image_tag "characters/Teace_character.png", style: "max-width: 100%;"
 
   = content_tag(:div, nil, class: ["container", "left"], style: "margin: auto; width: 380px;") do 
     = "Display:"

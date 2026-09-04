@@ -257,6 +257,12 @@
       = image_tag "characters/Teace_character.png", style: "max-width: 100%;"
     - elsif @player.player_name.downcase == "teaceandwar"
       = image_tag "characters/Teace_character.png", style: "max-width: 100%;"
+    - elsif @player.player_name.downcase == "fanfare 2"
+      = image_tag "characters/Fanfare_2_character.png", style: "max-width: 100%;"
+    - elsif @player.player_name.downcase == "30 99 30"
+      = image_tag "characters/30_99_30_character.png", style: "max-width: 100%;"
+    - elsif @player.player_name.downcase == "freckled dad"
+      = image_tag "characters/Freckled_Dad_character.png", style: "max-width: 100%;"
 
   = content_tag(:div, nil, class: ["container", "left"], style: "margin: auto; width: 380px;") do 
     = "Display:"

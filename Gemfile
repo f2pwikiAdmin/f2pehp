@@ -28,6 +28,7 @@ gem 'scout_apm'
 
 # Use ActiveModel has_secure_password
 gem 'bcrypt', '~> 3.1.7'
+gem 'rack-attack', '~> 6.8'
 
 # Use Unicorn as the app server
 # gem 'unicorn'

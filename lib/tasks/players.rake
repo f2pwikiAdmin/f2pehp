@@ -16,7 +16,7 @@ namespace :players do
 
   desc "Update stats for players with over 250 overall EHP"
   task :update_top => :environment do
-    Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch|
+    Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch|
       batch.each do |player|
         begin
           player.update_player
@@ -29,7 +29,7 @@ namespace :players do
 
   desc "Update day stats for players with over 250 overall EHP"
   task :start_day => :environment do
-    Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch|
+    Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch|
       batch.each do |player|
         begin
           stats_hash = player.update_player_start_stats("day", {})
@@ -43,7 +43,7 @@ namespace :players do
 
   desc "Update week stats for players with over 250 overall EHP"
   task :start_week => :environment do
-    Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch|
+    Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch|
       batch.each do |player|
         begin
           stats_hash = player.update_player_start_stats("week", {})
@@ -57,7 +57,7 @@ namespace :players do
 
   desc "Update month stats for players with over 250 overall EHP"
   task :start_month => :environment do
-    Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch|
+    Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch|
       batch.each do |player|
         begin
           stats_hash = player.update_player_start_stats("month", {})
@@ -71,7 +71,7 @@ namespace :players do
 
   desc "Update year stats for players with over 250 overall EHP"
   task :start_year => :environment do
-    Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch|
+    Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch|
       batch.each do |player|
         begin
           stats_hash = player.update_player_start_stats("year", {})
@@ -85,7 +85,7 @@ namespace :players do
 
   desc "Update correct day/week/month/year stats for players with over 250 overall EHP"
   task :start_stats => :environment do
-    Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch|
+    Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch|
       batch.each do |player|
         begin
           stats_hash = player.update_player_start_stats("day", {})
@@ -112,7 +112,7 @@ namespace :players do
 
   desc "Recalculate starting EHP from current EHP and bonus XP"
   task :recalc_ehp => :environment do
-    Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch|
+    Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch|
       batch.each do |player|
         begin
           player.recalculate_ehp
@@ -126,7 +126,7 @@ namespace :players do
 
   desc "Repair records from CML."
   task :repair_records => :environment do
-    Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch|
+    Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch|
       batch.each do |player|
         begin
           player.repair_records

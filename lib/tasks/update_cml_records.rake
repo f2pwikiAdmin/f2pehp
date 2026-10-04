@@ -1,7 +1,7 @@
 namespace :players do
   desc "Update CML records for all active players with sailing data"
   task update_cml_records: :environment do
-    players = Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}")
+    players = Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters)
     total = players.count
     updated_count = 0
     failed_count = 0

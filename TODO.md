@@ -43,7 +43,6 @@ List is in order of priority, with time estimates and the following tags.
 * [DVPS] Finish/verify Rails 7 upgrade on Ruby 3.2.3 (4h)
   * add and review `config.load_defaults 7.0` / `config/initializers/new_framework_defaults_7_0.rb`
   * resolve Rails 7 `legacy_connection_handling` boot deprecation
-  * update the test schema for pending migration `20260228000000_add_brutus_kc_to_players` and rerun `bundle exec rspec`
 * [DVPS] Debug Windows dev environment setup (4h)
 * [TEST] Expand/backfill RSpec coverage across models/controllers/services/helpers/javascripts (24h)
   * fold loose one-off `test_*.rb`/diagnostic scripts into structured specs where worth keeping

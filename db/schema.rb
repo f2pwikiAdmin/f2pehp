@@ -391,6 +391,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_10_04_193438) do
     t.datetime "updated_at", precision: nil, default: -> { "now()" }, null: false
     t.text "hiscores_extras"
     t.string "p2p_flag_reason"
+    t.integer "brutus_kc"
+    t.integer "brutus_kc_rank"
   end
 
   create_table "users", id: :serial, force: :cascade do |t|

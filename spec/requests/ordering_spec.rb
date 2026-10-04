@@ -10,7 +10,7 @@ RSpec.describe 'Player ordering', type: :request do
       attack_lvl: 50, attack_ehp: 10, attack_xp: 100,
       attack_ehp_month_start: 1, attack_xp_month_start: 10,
       attack_ehp_month_max: 5, attack_xp_month_max: 50,
-      magic_lvl: 50, magic_ehp: 0, magic_xp: 100, obor_kc: 10
+      magic_lvl: 50, magic_ehp: 0, magic_xp: 100, obor_kc: 10, brutus_kc: 10
     )
   end
   let!(:second_player) do
@@ -21,7 +21,7 @@ RSpec.describe 'Player ordering', type: :request do
       attack_lvl: 60, attack_ehp: 20, attack_xp: 200,
       attack_ehp_month_start: 1, attack_xp_month_start: 10,
       attack_ehp_month_max: 10, attack_xp_month_max: 100,
-      magic_lvl: 60, magic_ehp: 0, magic_xp: 200, obor_kc: 20
+      magic_lvl: 60, magic_ehp: 0, magic_xp: 200, obor_kc: 20, brutus_kc: 20
     )
   end
 
@@ -119,6 +119,14 @@ RSpec.describe 'Player ordering', type: :request do
   it 'preserves boss kill-count ordering' do
     expect(request_ordering('/clans/Ordering_Clan', skill: 'obor_kc', sort_by: 'ehp'))
       .to eq('obor_kc DESC, obor_kc_rank ASC')
+  end
+
+  it 'preserves Brutus kill-count ordering in ranks and clan stats' do
+    ['/ranks', '/clans/Ordering_Clan'].each do |path|
+      expect(request_ordering(path, skill: 'brutus_kc', sort_by: 'ehp'))
+        .to eq('brutus_kc DESC, brutus_kc_rank ASC')
+      expect(response.body.index('Order Beta')).to be < response.body.index('Order Alpha')
+    end
   end
 
   it 'validates defaults after clearing filters' do

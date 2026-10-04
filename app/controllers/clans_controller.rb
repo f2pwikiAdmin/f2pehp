@@ -18,7 +18,7 @@ class ClansController < ApplicationController
 
     player = Player.find_player(params[:player_name])
 
-    if clan.pass != Digest::MD5.hexdigest(params[:pass])
+    if !clan.authenticate_pass(params[:pass])
       redirect_to(clan_admin_path, notice: "Incorrect password. Please try again.")
     elsif player and clan.players.pluck(:player_id).include?(player.id)
       redirect_to clan_admin_path, notice: "#{player.player_name} is already in #{clan_name.gsub("_", " ")}."
@@ -40,7 +40,7 @@ class ClansController < ApplicationController
     redundant_players = []
 
     player_names = params[:player_names].split(",")
-    if clan.pass != Digest::MD5.hexdigest(params[:pass])
+    if !clan.authenticate_pass(params[:pass])
       redirect_to(clan_admin_path, notice: "Incorrect password. Please try again.")
       return
     elsif player_names.size > 100
@@ -74,7 +74,7 @@ class ClansController < ApplicationController
 
     player = Player.find_player(params[:player_name])
 
-    if clan.pass != Digest::MD5.hexdigest(params[:pass])
+    if !clan.authenticate_pass(params[:pass])
       redirect_to(clan_admin_path, notice: "Incorrect password. Please try again.")
     elsif player and clan.players.pluck(:player_id).include?(player.id)
       clan.remove_player(player)
@@ -93,7 +93,7 @@ class ClansController < ApplicationController
     failed_players = []
 
     player_names = params[:player_names].split(",")
-    if clan.pass != Digest::MD5.hexdigest(params[:pass])
+    if !clan.authenticate_pass(params[:pass])
       redirect_to(clan_admin_path, notice: "Incorrect password. Please try again.")
       return
     elsif player_names.size > 100
@@ -314,7 +314,7 @@ class ClansController < ApplicationController
     clan = Clan.find_clan(clan_name)
     clan_id = clan.id
 
-    if clan.pass != Digest::MD5.hexdigest(params[:pass])
+    if !clan.authenticate_pass(params[:pass])
       redirect_to(clan_admin_path, notice: "Incorrect password. Please try again.")
     elsif params[:clan_description].size > 1000
       redirect_to clan_admin_path, notice: "Description is too long. Please limit to 1000 characters."
@@ -329,7 +329,7 @@ class ClansController < ApplicationController
     clan = Clan.find_clan(clan_name)
     clan_id = clan.id
 
-    if clan.pass != Digest::MD5.hexdigest(params[:pass])
+    if !clan.authenticate_pass(params[:pass])
       redirect_to(clan_admin_path, notice: "Incorrect password. Please try again.")
     elsif params[:link1].empty? or params[:link1_name].empty?
       redirect_to clan_admin_path, notice: "Link URL and label must not be empty."
@@ -348,7 +348,7 @@ class ClansController < ApplicationController
     clan = Clan.find_clan(clan_name)
     clan_id = clan.id
 
-    if clan.pass != Digest::MD5.hexdigest(params[:pass])
+    if !clan.authenticate_pass(params[:pass])
       redirect_to(clan_admin_path, notice: "Incorrect password. Please try again.")
     elsif params[:link2].empty? or params[:link2_name].empty?
       redirect_to clan_admin_path, notice: "Link URL and label must not be empty."

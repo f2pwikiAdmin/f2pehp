@@ -158,7 +158,7 @@ class PlayersController < ApplicationController
     end
 
     ordering = validated_player_ordering(ordering)
-    @players = Player.limit(@show_limit.to_i).where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").where(player_acc_type: @filters.keys).where("overall_ehp_day_start > 0").order(Arel.sql(ordering))
+    @players = Player.limit(@show_limit.to_i).where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).where(player_acc_type: @filters.keys).where("overall_ehp_day_start > 0").order(Arel.sql(ordering))
 
     if @restrictions["10 hitpoints"]
       @players = @players.where(hitpoints_lvl: 10).where("combat_lvl >= 4")
@@ -328,7 +328,7 @@ class PlayersController < ApplicationController
     clan_filter_clause = @clan_filters.keys
     clan_filter_clause += [nil] if @clan_filters["None"]
 
-    @players = Player.limit(@show_limit.to_i).left_joins(:clans).merge(Clan.where(name: clan_filter_clause)).distinct.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").where(player_acc_type: @filters.keys).where("overall_ehp_day_max > 0").order(Arel.sql(ordering))
+    @players = Player.limit(@show_limit.to_i).left_joins(:clans).merge(Clan.where(name: clan_filter_clause)).distinct.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).where(player_acc_type: @filters.keys).where("overall_ehp_day_max > 0").order(Arel.sql(ordering))
 
     if @restrictions["10 hitpoints"]
       @players = @players.where(hitpoints_lvl: 10).where("combat_lvl >= 4")

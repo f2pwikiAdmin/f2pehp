@@ -463,7 +463,7 @@ class Player < ActiveRecord::Base
                 {name: "hi49302", amount: 5, date: "2025-02-24", flair_after: "flairs/veracs_helm.png"},
                 {name: "Free2Perish", amount: 5, date: "2025-03-13", flair_after: "flairs/Free2Perish.png"},
                 {name: "96puppyhunt", amount: 3, date: "2021-07-29", flair_after: "flairs/puppyhunt.png"},
-                {name: "Tohno1612", amount: ??, flair_after: "flairs/addy_helm.png"},
+                {name: "Tohno1612", amount: 0, flair_after: "flairs/addy_helm.png"}, # TODO: original donation amount unknown
                 {name: "H C Gilrix", amount: 2.5, date: "2018-03-04", flair_after: "flairs/HCIM.png"},
                 {name: "Anonymous", amount: 2.5, date: "2018-07-26", no_link: true},
                 {name: "Hratli", amount: 2.5, date: "2020-07-29"},
@@ -523,16 +523,6 @@ class Player < ActiveRecord::Base
 
   def self.account_type_ancestors
     ACCOUNT_TYPE_ANCESTORS
-  end
-
-  def self.sql_supporters
-    quoted_names = supporters.map{ |name| "'#{name}'" }
-    "(#{quoted_names.join(",")})"
-  end
-
-  def self.sql_contributors
-    quoted_names = contributors.map{ |name| "'#{name}'" }
-    "(#{quoted_names.join(",")})"
   end
 
   def self.sql_f2p_filter
@@ -1432,7 +1422,7 @@ class Player < ActiveRecord::Base
   #               are only used in the case of a tie.
   # filter: SQL clause used to restrict which accounts are included in the ranking
   #         curently used to exclude low ehp accounts in gains and record ranks.
-  def f2p_rank(rank_criteria, filter=nil)
+  def f2p_rank(rank_criteria, filter=nil, *filter_parameters)
     # P2P players are not eligible for F2P rankings
     unless is_f2p?
       # Return a rank worse than all F2P players
@@ -1469,6 +1459,7 @@ class Player < ActiveRecord::Base
         eval(col)
       end
     end.flatten
+    where_parameters.concat(filter_parameters)
 
     # Rank is the number of records that satisfy the where clause
     1 + Player.where(where_clause, *where_parameters).count
@@ -1496,7 +1487,8 @@ class Player < ActiveRecord::Base
               ["#{skill}_ehp", :DESC],
               ["#{skill}_xp", :DESC],
               ["id", :ASC]],
-              "overall_ehp_day_start > 0 AND (overall_ehp > 250 OR player_name IN #{Player.sql_supporters})"
+              "overall_ehp_day_start > 0 AND (overall_ehp > 250 OR player_name IN (?))",
+              Player.supporters
 
   end
 
@@ -1507,7 +1499,8 @@ class Player < ActiveRecord::Base
               ["#{skill}_ehp", :DESC],
               ["#{skill}_xp", :DESC],
               ["id", :ASC]],
-              "overall_ehp_day_max > 0 AND (overall_ehp > 250 OR player_name IN #{Player.sql_supporters})"
+              "overall_ehp_day_max > 0 AND (overall_ehp > 250 OR player_name IN (?))",
+              Player.supporters
   end
 
   def count_99

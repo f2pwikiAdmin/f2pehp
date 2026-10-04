@@ -30,6 +30,24 @@ RSpec.describe 'Player ordering', type: :request do
     clan.add_player(second_player)
   end
 
+  ['Tohno1612', "O'Brien", "x') OR 1=1 --"].each do |supporter_name|
+    it "includes low-EHP supporter #{supporter_name.inspect} literally in tracking" do
+      allow(Player).to receive(:supporters).and_return([supporter_name, 'Another Supporter'])
+      attributes = first_player.attributes.except('id', 'player_name')
+        .merge('overall_ehp' => 200)
+      Player.create!(attributes.merge('player_name' => supporter_name))
+      Player.create!(attributes.merge('player_name' => 'Untracked Outsider'))
+
+      get '/tracking', params: { skill: 'overall', time: 'week', sort_by: 'ehp' }
+
+      expect(response).to have_http_status(:ok)
+      text = Nokogiri::HTML(response.body).text
+      expect(text).to include(supporter_name, first_player.player_name, second_player.player_name)
+      expect(text).not_to include('Untracked Outsider')
+      expect(Player.count).to eq(4)
+    end
+  end
+
   def request_ordering(path, params)
     queries = []
     subscriber = lambda do |*args|

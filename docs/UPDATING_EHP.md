@@ -28,5 +28,5 @@ When the code looks ready to deploy, merge into master, then run the queries lis
 Run this query in the production Rails console connected to Railway/PostgreSQL.
 
 ```ruby
-Player.where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").find_in_batches(batch_size: 25) do |batch| batch.each do |player| begin player.recalculate_ehp player.recalculate_current_ehp rescue next end end end
+Player.where("overall_ehp > 250 OR player_name IN (?)", Player.supporters).find_in_batches(batch_size: 25) do |batch| batch.each do |player| begin player.recalculate_ehp player.recalculate_current_ehp rescue next end end end
 ```

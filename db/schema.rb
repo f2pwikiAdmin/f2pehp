@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_02_10_201021) do
+ActiveRecord::Schema[7.0].define(version: 2026_10_04_193438) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -26,6 +26,7 @@ ActiveRecord::Schema[7.0].define(version: 2026_02_10_201021) do
     t.string "link2"
     t.string "link1_name"
     t.string "link2_name"
+    t.string "password_digest"
   end
 
   create_table "items", id: :serial, force: :cascade do |t|

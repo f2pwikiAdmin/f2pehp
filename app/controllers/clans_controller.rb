@@ -194,6 +194,7 @@ class ClansController < ApplicationController
     elsif @sort_by == {}
       @sort_by = "ehp"
     end
+    sanitize_sort_by
 
     if @display == "stats"
       if @skill.include?("ttm")
@@ -274,6 +275,7 @@ class ClansController < ApplicationController
     if @sort_by == "player_name"
       ordering = "player_name ASC"
     end
+    ordering = validated_player_ordering(ordering)
 
     @players = @clan.players.where(Player.sql_f2p_filter)
 

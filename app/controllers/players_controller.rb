@@ -72,8 +72,6 @@ class PlayersController < ApplicationController
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @time = params[:time] || session[:time] || "week"
-    sanitize_skill
-    sanitize_time
     @clear_filters = params[:clear_filters]
     @clan_filters = params[:clans_] || session[:clans_] || {}
 
@@ -85,6 +83,10 @@ class PlayersController < ApplicationController
       @show_limit = 100
       @clan_filters = {}
     end
+
+    sanitize_skill
+    sanitize_time
+    sanitize_sort_by(%w[ehp xp])
 
     case @time
     when "day"
@@ -155,6 +157,7 @@ class PlayersController < ApplicationController
       ordering = "#{@skill}_xp - #{@skill}_xp_#{@time}_start DESC, #{@skill}_ehp - #{@skill}_ehp_#{@time}_start DESC, #{@skill}_xp DESC"
     end
 
+    ordering = validated_player_ordering(ordering)
     @players = Player.limit(@show_limit.to_i).where("overall_ehp > 250 OR player_name IN #{Player.sql_supporters}").where(player_acc_type: @filters.keys).where("overall_ehp_day_start > 0").order(Arel.sql(ordering))
 
     if @restrictions["10 hitpoints"]
@@ -205,9 +208,6 @@ class PlayersController < ApplicationController
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @time = params[:time] || session[:time] || "week"
-    sanitize_skill
-    sanitize_time
-
     @clear_filters = params[:clear_filters]
     @clan_filters = params[:clans_] || session[:clans_] || {}
 
@@ -219,6 +219,10 @@ class PlayersController < ApplicationController
       @show_limit = 100
       @clan_filters = {}
     end
+
+    sanitize_skill
+    sanitize_time
+    sanitize_sort_by(%w[ehp xp])
 
     case @time
     when "day"
@@ -350,12 +354,7 @@ class PlayersController < ApplicationController
     @filters = params[:filters_] || session[:filters_] || {}
     @restrictions = params[:restrictions] || {}
     @skill = params[:skill] || session[:skill] || {}
-    # Sanitize @skill to prevent SQL injection — allow only lowercase letters, digits, underscores
-    unless @skill.is_a?(String) && @skill.match?(/\A[a-z][a-z0-9_]*\z/)
-      @skill = "overall"
-      params[:skill] = "overall"
-      session[:skill] = "overall"
-    end
+    @time = params[:time] || session[:time] || "week"
     @show_limit = params[:show_limit] || session[:show_limit] || 100
     @show_limit = [@show_limit.to_i, 500].min
     @clear_filters = params[:clear_filters]
@@ -371,6 +370,9 @@ class PlayersController < ApplicationController
       @filter_inactive = "false"
       @clan_filters = {}
     end
+
+    sanitize_skill
+    sanitize_time
 
     if @filters == {}
       @filters = {"Reg": 1, "IM": 1, "UIM": 1, "HCIM": 1}
@@ -415,6 +417,7 @@ class PlayersController < ApplicationController
     elsif @sort_by == {}
       @sort_by = "ehp"
     end
+    sanitize_sort_by(%w[ehp xp lvl])
 
     if @skill.include?("ttm")
       case @skill
@@ -461,6 +464,7 @@ class PlayersController < ApplicationController
     clan_filter_clause = @clan_filters.keys
     clan_filter_clause += [nil] if @clan_filters["None"]
 
+    ordering = validated_player_ordering(ordering)
     @players = Player.left_joins(:clans).merge(Clan.where(name: clan_filter_clause)).distinct.where(player_acc_type: @filters.keys).order(Arel.sql(ordering))
 
     if @skill.include?("ttm")

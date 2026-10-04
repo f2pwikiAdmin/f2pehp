@@ -50,6 +50,24 @@ RSpec.describe Clan, type: :model do
         expect(clan.reload.password_digest).to be_nil
       end
 
+      it 'preserves exact legacy verification for passwords exceeding bcrypt byte limits' do
+        password = "\u00e9" * 37
+        clan.update!(pass: Digest::MD5.hexdigest(password))
+
+        expect(clan.authenticate_pass(password)).to eq(clan)
+        expect(clan.reload.password_digest).to be_nil
+        expect(clan.authenticate_pass("\u00e9" * 36 + 'wrong')).to be(false)
+        expect(clan.authenticate_pass("\u00e9" * 36)).to be(false)
+      end
+
+      it 'upgrades passwords at the bcrypt byte limit' do
+        password = 'a' * BCrypt::Engine::MAX_SECRET_BYTESIZE
+        clan.update!(pass: Digest::MD5.hexdigest(password))
+
+        expect(clan.authenticate_pass(password)).to eq(clan)
+        expect(clan.reload.authenticate(password)).to eq(clan)
+      end
+
       [nil, ''].each do |candidate|
         it "rejects #{candidate.inspect} without upgrading" do
           expect(clan.authenticate_pass(candidate)).to be(false)

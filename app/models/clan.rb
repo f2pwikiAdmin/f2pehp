@@ -13,7 +13,9 @@ class Clan < ActiveRecord::Base
   def authenticate_pass(candidate)
     return false if candidate.nil? || candidate.empty?
     return authenticate(candidate) if password_digest.present?
-    return false unless pass == Digest::MD5.hexdigest(candidate)
+    return false unless pass.present? && ActiveSupport::SecurityUtils.secure_compare(pass, Digest::MD5.hexdigest(candidate))
+    # Keep full-password verification when bcrypt would truncate a legacy password.
+    return self if candidate.bytesize > BCrypt::Engine::MAX_SECRET_BYTESIZE
 
     self.password = candidate
     update_column(:password_digest, password_digest)

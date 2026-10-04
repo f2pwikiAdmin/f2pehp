@@ -571,7 +571,12 @@ class Player < ActiveRecord::Base
     id = self.sanitize_name(id)
     splits = id.split(/[\s\_]|(%20)/)
     res = splits.join("_") # _ is a wildcard
-    player = Player.where("lower(player_name) like '%#{res.downcase}%' and length(player_name) = length('#{res.downcase}')").first
+    term = res.downcase
+    player = Player.where(
+      "lower(player_name) LIKE ? AND length(player_name) = ?",
+      "%#{term}%",
+      term.length
+    ).first
 
     if player.nil?
       begin
@@ -1460,6 +1465,7 @@ class Player < ActiveRecord::Base
       rank_criteria.take(i).map do |col,_|
         # Using eval is definitely a bit of a hack but, I need it to make this
         # method generalize to gains rank
+        # rank_criteria column expressions must NEVER be derived from user input: eval executes them.
         eval(col)
       end
     end.flatten

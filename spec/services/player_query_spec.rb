@@ -51,8 +51,8 @@ RSpec.describe PlayerQuery do
     end
 
     it "keeps boss-positive filtering specific to ranks" do
-      expect(query(filters(:ranks, skill: "obor_kc")).call.to_sql).to include('obor_kc > 0')
-      expect(query(filters(:clan, skill: "obor_kc")).call.to_sql).not_to include('obor_kc > 0')
+      expect(query(filters(:ranks, skill: "obor_kc")).call.to_sql).to include('"players"."obor_kc" > 0')
+      expect(query(filters(:clan, skill: "obor_kc")).call.to_sql).not_to include('"players"."obor_kc" > 0')
     end
 
     it "keeps inactive filtering monthly even when another period is selected" do

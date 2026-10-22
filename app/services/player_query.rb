@@ -51,7 +51,7 @@ class PlayerQuery
       players = players.where("(overall_xp - overall_xp_month_start) > 0")
     end
     if @policy[:bosses] && %w[obor_kc bryo_kc brutus_kc].include?(@filters.skill)
-      players = players.where("#{@filters.skill} > 0")
+      players = players.where(Player.arel_table[@filters.skill].gt(0))
     end
     players = players.where(Player.sql_f2p_filter)
     players = players.where("overall_lvl <= ?", Player::F2P_MAX_TOTAL) if @policy[:max_total]

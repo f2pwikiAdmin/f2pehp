@@ -118,6 +118,7 @@
   
     = content_tag(:div, nil, class: ["container", "left", "filter"], style: "margin-left: 15px; width: 140px; height: 126px;") do 
       = form_tag tracking_path, :method => :get, :id => 'filters_form' do
+        = hidden_field_tag :filters_present, "1"
         = "Filter Accounts"
         %br
         = content_tag(:div, nil, class: "container", style: "color: #d9c27e; text-align: left; width: 138px; margin-bottom: 0px;") do
@@ -152,7 +153,7 @@
 - if @players.respond_to?(:current_page)
   .pagination
     - if @players.previous_page
-      = link_to "Previous", tracking_path(page: @players.previous_page, skill: @skill, sort_by: @sort_by, time: @time, search: params[:search], filters_: params[:filters_], restrictions: params[:restrictions], show_limit: @show_limit)
+      = link_to "Previous", tracking_path(page: @players.previous_page, search: params[:search])
     %span= "Page #{@players.current_page} of #{@players.total_pages}"
     - if @players.next_page
-      = link_to "Next", tracking_path(page: @players.next_page, skill: @skill, sort_by: @sort_by, time: @time, search: params[:search], filters_: params[:filters_], restrictions: params[:restrictions], show_limit: @show_limit)
+      = link_to "Next", tracking_path(page: @players.next_page, search: params[:search])

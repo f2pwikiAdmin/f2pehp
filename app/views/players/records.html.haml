@@ -104,6 +104,7 @@
   
     = content_tag(:div, nil, class: ["container", "left", "filter"], style: "margin-left: 15px; width: 140px; height: 126px;") do 
       = form_tag records_path, :method => :get, :id => 'filters_form' do
+        = hidden_field_tag :filters_present, "1"
         = "Filter Accounts"
         %br
         = content_tag(:div, nil, class: "container", style: "color: #d9c27e; text-align: left; width: 138px; margin-bottom: 0px;") do
@@ -131,6 +132,7 @@
     - container_height = 126 + (18 * [Clan.all.count - 2, 0].max)
     = content_tag(:div, nil, class: ["container", "left", "filter"], style: "line-height: 18px; margin-left: 15px; width: 140px; height: #{container_height}px; background-size: 100% 100%;") do
       = form_tag records_path, :method => :get, :id => 'clans_form' do
+        = hidden_field_tag :clans_present, "1"
         = "Clans"
         %br
         = content_tag(:div, nil, class: "container", style: "color: #d9c27e; text-align: left; width: 126px; margin-bottom: 0px;") do

@@ -176,16 +176,21 @@ class Hiscores
         end
 
       stats = []
+      fetch_errors = []
       threads = []
       stats_mutex = Mutex.new
       uri_per_mode = modes.map { |mode| api_url(mode, player_name) }
 
       uri_per_mode.each_with_index do |uri, mode_idx|
         threads << Thread.new(uri, mode_idx, stats) do |uri, mode_idx, stats|
-          # Raise exceptions in main thread so they can be caught.
-          Thread.current.abort_on_exception = true
+          Thread.current.report_on_exception = false
 
-          res = fetch(uri)
+          begin
+            res = fetch(uri)
+          rescue SocketError, Net::ReadTimeout => e
+            stats_mutex.synchronize { fetch_errors << e }
+            next
+          end
 
           # No hiscores data for this mode, skip.
           next unless res
@@ -202,6 +207,10 @@ class Hiscores
       end
 
       threads.each(&:join)
+      threads.each(&:value)
+      # Partial results can incorrectly identify an account's mode.
+      raise fetch_errors.first unless fetch_errors.empty?
+
       return if stats.empty?
 
       # Find the mode with the highest amount of total exp.

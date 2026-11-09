@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '3.2.3'
+ruby '3.4.12'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '7.0.4.3'
@@ -62,6 +62,10 @@ end
 
 gem 'rspec'
 gem 'rspec-rails'
+# Ruby 3.4 ships these standard-library components as gems that Rails 7 loads.
+gem 'bigdecimal'
+gem 'mutex_m'
+gem 'drb'
 gem "json", ">= 2.3.0"
 gem 'puma', '~> 5.0'
 

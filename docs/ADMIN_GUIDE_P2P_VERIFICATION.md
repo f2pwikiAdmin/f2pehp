@@ -96,6 +96,14 @@ ALL players now undergo these 4 checks:
 
 ## Monitoring Verification
 
+### Hiscores Network Failures
+
+Hiscores requests use 5-second connection and read timeouts. Read timeouts and
+DNS failures are retried up to 3 times. Exhausted retries fail the lookup
+rather than returning partial account-mode data. All mode workers finish
+before the error is raised in the calling thread, where player operations log
+the retrieval failure instead of terminating Puma.
+
 ### Check Rails Logs
 
 The system logs ALL player verifications:

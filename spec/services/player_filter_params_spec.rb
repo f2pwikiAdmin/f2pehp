@@ -120,6 +120,16 @@ RSpec.describe PlayerFilterParams do
     expect(selected.clan_filters).to eq("Test Clan" => "1")
   end
 
+  it 'resets ranking filters for a profile leaderboard link without losing its skill, sort or page size' do
+    session.merge!(filters_: { "IM" => 1 }, clans_: {}, restrictions: "1 defence", filter_inactive: "true")
+    service = resolve(:ranks, skill: "magic", sort_by: "xp", show_limit: "25", reset_ranking_filters: "true")
+
+    expect(service.attributes).to include(skill: "magic", sort_by: "xp", show_limit: 25,
+      restrictions: {}, filter_inactive: "false")
+    expect(service.filters.keys).to match_array(%w[Reg IM UIM HCIM])
+    expect(service.clan_filters.keys).to match_array(["Test Clan", "Other Clan", "None"])
+  end
+
   it 'defaults clan selection to None when there are no clans' do
     allow(Clan).to receive(:all).and_return([])
     %i[ranks tracking records].each do |policy|

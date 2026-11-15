@@ -15,6 +15,7 @@ class PlayerFilterParams
   }.freeze
   PARAM_KEYS = { filters: :filters_, clan_filters: :clans_ }.freeze
   RESET_SETTINGS = %i[skill sort_by filters restrictions clan_filters show_limit filter_inactive].freeze
+  RANKING_FILTER_SETTINGS = %i[filters restrictions clan_filters filter_inactive].freeze
   ACCOUNT_TYPES = %w[Reg IM UIM HCIM].freeze
   RESTRICTIONS = ["3 combat", "1 defence", "10 hitpoints", "combat only"].freeze
 
@@ -65,6 +66,8 @@ class PlayerFilterParams
 
   def value(setting, marker = nil)
     return nil if @clear_filters && RESET_SETTINGS.include?(setting)
+    return nil if policy == :ranks && @params[:reset_ranking_filters] == "true" &&
+      RANKING_FILTER_SETTINGS.include?(setting)
 
     key = PARAM_KEYS.fetch(setting, setting)
     supplied = @params[key]

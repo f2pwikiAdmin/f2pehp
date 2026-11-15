@@ -91,6 +91,36 @@ RSpec.describe PlayerQuery do
     end
   end
 
+  describe ".magic_rank" do
+    it "matches the unfiltered Magic leaderboard across account types, ties and missing values" do
+      clan = Clan.create!(name: "Magic Rank Clan")
+      other_clan = Clan.create!(name: "Magic Rank Other")
+      attributes = { overall_lvl: 500, magic_lvl: 99, magic_ehp: 0 }
+      target = Player.create!(attributes.merge(player_name: "Magic Target", player_acc_type: "Reg", magic_xp: 20_063_673, magic_rank: 10))
+      lower = Player.create!(attributes.merge(player_name: "Lower XP", player_acc_type: "IM", magic_xp: 10_000_000, magic_ehp: 500))
+      higher = Player.create!(attributes.merge(player_name: "Higher XP", player_acc_type: "UIM", magic_xp: 30_000_000))
+      better_tie = Player.create!(attributes.merge(player_name: "Better Tie", player_acc_type: "HCIM", magic_xp: target.magic_xp, magic_rank: 5))
+      later_tie = Player.create!(attributes.merge(player_name: "Later Tie", player_acc_type: "Reg", magic_xp: target.magic_xp, magic_rank: 10))
+      missing_rank = Player.create!(attributes.merge(player_name: "Missing Rank", player_acc_type: "Reg", magic_xp: target.magic_xp))
+      missing_xp = Player.create!(attributes.merge(player_name: "Missing XP", player_acc_type: "Reg"))
+      missing_xp_ranked = Player.create!(attributes.merge(player_name: "Missing XP Ranked", player_acc_type: "Reg", magic_rank: 10))
+      excluded = Player.create!(attributes.merge(player_name: "Members", player_acc_type: "Reg", magic_xp: 200_000_000, potential_p2p: 1))
+      over_total = Player.create!(attributes.merge(player_name: "High Total", player_acc_type: "Reg", magic_xp: 200_000_000, overall_lvl: 1495))
+      clan.add_player(target)
+      other_clan.add_player(target)
+
+      expected = [higher, better_tie, target, later_tie, missing_rank, lower, missing_xp_ranked, missing_xp]
+      state = PlayerFilterParams.new(params: ActionController::Parameters.new(skill: "magic"),
+        session: {}, policy: :ranks)
+      expect(query(state).call.map(&:id)).to eq(expected.map(&:id))
+      expected.each_with_index do |player, index|
+        expect(player.f2p_skill_rank("magic")).to eq(index + 1)
+      end
+      expect(excluded.f2p_skill_rank("magic")).to be_nil
+      expect(over_total.f2p_skill_rank("magic")).to be_nil
+    end
+  end
+
   describe "virtual sorts" do
     def player(name, ehp:, level: 1, xp: 0)
       attributes = Player::SKILLS.reject { |skill| skill == "overall" }.each_with_object({}) do |skill, values|

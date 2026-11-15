@@ -95,6 +95,10 @@ class PlayerFilterParams
     end
     sort = implicit ? default : allowed_value(supplied, allowed, "ehp")
     sort = "ehp" if gains? && sort == "lvl"
+    if policy == :ranks && skill == "magic" &&
+        (sort == "ehp" || (@params[:skill] == "magic" && @session[:skill] != "magic" && @params[:sort_by].nil?))
+      sort = "xp"
+    end
     sort = "xp" if policy == :records && !Player.column_names.include?("#{skill}_ehp_#{time}_max")
     sort
   end

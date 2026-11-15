@@ -208,16 +208,32 @@ RSpec.describe PlayerFilterParams do
     end
   end
 
-  it 'uses implicit XP for magic and mining on ranks and clan but respects explicit EHP' do
+  it 'uses implicit XP for magic and mining on ranks and clan' do
     %i[ranks clan].each do |policy|
       %w[magic mining].each do |skill|
         expect(resolve(policy, { skill: skill }, {}).sort_by).to eq("xp")
         expect(resolve(policy, { skill: skill, sort_by: {} }, {}).sort_by).to eq("xp")
-        expect(resolve(policy, { skill: skill, sort_by: "ehp" }, {}).sort_by).to eq("ehp")
-        expect(resolve(policy, { skill: skill, sort_by: [] }, {}).sort_by).to eq("ehp")
-        expect(resolve(policy, { skill: skill, sort_by: "" }, {}).sort_by).to eq("ehp")
+        expected = policy == :ranks && skill == "magic" ? "xp" : "ehp"
+        expect(resolve(policy, { skill: skill, sort_by: "ehp" }, {}).sort_by).to eq(expected)
+        expect(resolve(policy, { skill: skill, sort_by: [] }, {}).sort_by).to eq(expected)
+        expect(resolve(policy, { skill: skill, sort_by: "" }, {}).sort_by).to eq(expected)
       end
     end
+  end
+
+  it 'does not inherit EHP sorting for magic ranks, but preserves an explicit level sort' do
+    session.merge!(skill: "overall", sort_by: "ehp")
+    expect(resolve(:ranks, skill: "magic").sort_by).to eq("xp")
+    expect(session[:sort_by]).to eq("xp")
+    expect(resolve(:ranks, skill: "magic", sort_by: "lvl").sort_by).to eq("lvl")
+    expect(resolve(:ranks).sort_by).to eq("lvl")
+  end
+
+  it 'defaults to XP when navigating to magic from a different skill sorted by level' do
+    session.merge!(skill: "overall", sort_by: "lvl")
+    expect(resolve(:ranks, skill: "magic").sort_by).to eq("xp")
+    session[:skill] = "overall"
+    expect(resolve(:ranks, skill: "magic", sort_by: "lvl").sort_by).to eq("lvl")
   end
 
   it 'defaults tracking and records to EHP and preserves the resolved sort on later requests' do
@@ -227,8 +243,8 @@ RSpec.describe PlayerFilterParams do
     end
     resolve(:ranks, skill: "mining")
     expect(resolve(:ranks, skill: "magic").sort_by).to eq("xp")
-    expect(resolve(:ranks, skill: "magic", sort_by: "ehp").sort_by).to eq("ehp")
-    expect(resolve(:ranks, skill: "mining").sort_by).to eq("ehp")
+    expect(resolve(:ranks, skill: "magic", sort_by: "ehp").sort_by).to eq("xp")
+    expect(resolve(:ranks, skill: "mining").sort_by).to eq("xp")
   end
 
   it 'shares skill and sort coercions across pages and persists the final canonical values' do

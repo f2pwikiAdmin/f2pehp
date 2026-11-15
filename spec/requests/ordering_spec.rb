@@ -129,6 +129,25 @@ RSpec.describe 'Player ordering', type: :request do
     end
   end
 
+  it 'ranks regular accounts by magic XP after navigating from EHP ranks' do
+    first_player.update!(player_name: 'iponderorbs', magic_lvl: 99, magic_xp: 20_000_000, magic_ehp: 0)
+    second_player.update!(player_acc_type: 'IM', magic_lvl: 98, magic_xp: 12_000_000, magic_ehp: 500)
+    excluded = Player.create!(
+      player_name: 'Members Account', player_acc_type: 'Reg', potential_p2p: 1,
+      overall_lvl: 500, magic_lvl: 99, magic_xp: 30_000_000
+    )
+    clan.add_player(excluded)
+
+    get '/ranks', params: { skill: 'overall', sort_by: 'ehp' }
+    expect(request_ordering('/ranks', skill: 'magic')).to eq('magic_xp DESC, magic_rank ASC')
+    text = Nokogiri::HTML(response.body).text
+    expect(text).to include('iponderorbs', 'Order Beta', '20,000,000')
+    expect(text.index('iponderorbs')).to be < text.index('Order Beta')
+    expect(text).not_to include('Members Account')
+
+    expect(request_ordering('/ranks', skill: 'magic', sort_by: 'lvl')).to eq('magic_lvl DESC, magic_xp DESC, magic_rank ASC')
+  end
+
   it 'preserves alphabetical clan ordering' do
     expect(request_ordering('/clans/Ordering_Clan', skill: 'overall', time: 'week', sort_by: 'player_name'))
       .to eq('player_name ASC')

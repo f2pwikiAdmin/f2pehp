@@ -1,0 +1,23 @@
+!!!
+%html{lang: "en"}
+  %head
+    %meta{charset: "utf-8"}
+    %meta{name: "viewport", content: "width=device-width, initial-scale=1"}
+    %title Reset clan password
+    = csrf_meta_tags
+  %body
+    %h1 Reset password for #{@clan.name}
+    %p Choose a new shared clan password with at least 12 characters and no more than 72 bytes.
+    - if @clan.errors.any?
+      %ul{role: "alert"}
+        - @clan.errors.full_messages.each do |message|
+          %li= message
+    = form_tag clan_password_reset_path(id: @clan.id), method: :patch do
+      = hidden_field_tag :reset_token, params[:reset_token]
+      %p
+        = label_tag :password, "New password"
+        = password_field_tag :password, nil, required: true, minlength: 12, autocomplete: "new-password"
+      %p
+        = label_tag :password_confirmation, "Confirm new password"
+        = password_field_tag :password_confirmation, nil, required: true, minlength: 12, autocomplete: "new-password"
+      = submit_tag "Reset password"

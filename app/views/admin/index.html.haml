@@ -3,6 +3,19 @@
 
 %p#notice= notice
 
+%section
+  %h2 Clan password recovery
+  %p Verify the requester's clan leadership through a trusted channel before issuing a reset link.
+  = form_tag admin_clan_password_resets_path, method: :post do
+    = label_tag :clan_id, "Clan"
+    = select_tag :clan_id, options_from_collection_for_select(Clan.order(:name), :id, :name), include_blank: "Select a clan", required: true
+    = submit_tag "Issue password reset link"
+  - if @reset_path
+    %p
+      = "Reset link for #{@reset_clan.name} (expires in 30 minutes):"
+      = link_to "Copy this link and send it privately to the verified leader", @reset_path, rel: "noreferrer"
+    %p This link is shown only in this response. Issuing another link invalidates this one. Do not post it publicly.
+
 = content_tag(:div, nil, class: "container", style: "width: 820px;") do 
   = content_tag(:div, nil, class: ["bar", "ranks"]) do
     = link_to "Hiscores", ranks_path

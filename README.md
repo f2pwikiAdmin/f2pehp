@@ -138,6 +138,30 @@ rails s
 
 The app should now be running at [http://localhost:3000](http://localhost:3000) or [127.0.0.1:3000](127.0.0.1:3000).
 
+## Clan password recovery
+
+Clans use a shared management password; there are no individual leader accounts
+or recovery email addresses. To help a leader who has lost their password:
+
+1. Verify their clan leadership through an established, trusted channel.
+2. Open `/admin` using the site's administrator credentials (`HTTP_AUTH_USER` and
+   `HTTP_AUTH_PASS` must be configured).
+3. Select the clan under **Clan password recovery** and issue a reset link.
+4. Copy the generated link address and send it privately to the verified leader.
+   Do not post it in issues, pull requests, or public chats.
+5. The leader opens the link and chooses a new password of at least 12 characters
+   and no more than 72 bytes. They can then use it on the clan's Admin Page.
+
+Links expire after 30 minutes and work once. Issuing another link immediately
+invalidates the previous one without changing the existing password. A completed
+reset replaces both modern and legacy credentials, but does not change members
+or clan information. Only a hash of the reset token is stored.
+
+Deployment must run `bundle exec rails db:migrate` before using this feature
+(the existing release command does this). Reset pages and issuance responses are
+not cacheable. Application logs filter reset tokens and passwords; configure any
+upstream request/access logging to redact `reset_token` query parameters too.
+
 ## Available Rake Tasks
 
 Magic is a zero-EHP skill for Reg, IM, HCIM, and UIM accounts. Its hiscores

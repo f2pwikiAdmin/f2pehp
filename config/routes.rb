@@ -35,6 +35,9 @@ Rails.application.routes.draw do
   get 'faqs' => 'players#faqs'
   get 'a_new_meta' => 'players#a_new_meta'
   get 'admin' => 'admin#index'
+  post 'admin/clan_password_resets' => 'admin#issue_clan_password_reset', as: :admin_clan_password_resets
+  get 'clan_password_resets/:id' => 'clan_password_resets#edit', as: :clan_password_reset
+  patch 'clan_password_resets/:id' => 'clan_password_resets#update'
   put 'players.:id' => 'players#update_player'
   put 'update' => 'players#update_player'
   get 'players/:id/update' => 'players#update', as: :update_player

@@ -100,6 +100,14 @@
     = content_tag(:div, nil, class: "container", id: "footerSkills", style: "margin: auto; margin-top: 0px; width: 200px; height: 60px;") 
 
   = content_tag(:div, nil, class: ["container", "left"], style: "width: 430px; max-width: 430px; overflow-x: auto; margin-top: 5px;") do 
+    - active_filters = ranking_filter_labels
+    - if active_filters.any?
+      .ranking-filters
+        %strong Filtered rankings:
+        = active_filters.join("; ")
+        %br
+        = "These positions may differ from profile F2P ranks."
+        = link_to "Show all eligible players", ranks_path(skill: @skill, sort_by: @sort_by, show_limit: @show_limit, reset_ranking_filters: "true")
     = content_tag(:div, nil, class: "container", id: "headerHiscores", style: "margin: auto; margin-bottom: 0px; width: 430px; height: 41px;") 
     = content_tag(:table, nil, style: "text-align: center; width: 430px; padding: 4px; margin-bottom: 0px;") do 
       %thead
@@ -282,7 +290,7 @@
 - if @players.respond_to?(:current_page)
   .pagination
     - if @players.previous_page
-      = link_to "Previous", ranks_path(page: @players.previous_page)
+      = link_to "Previous", ranks_path(ranking_page_params.merge(page: @players.previous_page))
     %span= "Page #{@players.current_page} of #{@players.total_pages}"
     - if @players.next_page
-      = link_to "Next", ranks_path(page: @players.next_page)
+      = link_to "Next", ranks_path(ranking_page_params.merge(page: @players.next_page))

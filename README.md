@@ -141,8 +141,12 @@ The app should now be running at [http://localhost:3000](http://localhost:3000) 
 ## Available Rake Tasks
 
 Magic is a zero-EHP skill for Reg, IM, HCIM, and UIM accounts. Its hiscores
-use a single combined Magic XP ordering, independent of account type. After
-deploying a Magic rate correction, refresh stored current EHP using the existing
+use a single combined Magic XP ordering, independent of account type.
+Profile Magic F2P ranks refer to the unfiltered eligible leaderboard. Ranking
+pages show active account, clan, restriction, and inactivity filters with a
+"Show all eligible players" link; filtered positions can differ from profile
+ranks. Pagination links preserve the displayed filters across browser tabs.
+After deploying a Magic rate correction, refresh stored current EHP using the existing
 `Player#recalculate_current_ehp` method; changing rates alone does not rewrite
 stored EHP or historical snapshots.
 

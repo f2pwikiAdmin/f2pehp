@@ -1,6 +1,26 @@
 require 'rails_helper'
 
 RSpec.describe Player, type: :model do
+  describe '#calc_ehp' do
+    %w[Reg IM HCIM UIM].each do |account_type|
+      it "awards no Magic EHP to #{account_type} accounts" do
+        player = Player.new(player_acc_type: account_type)
+        stats = { 'overall_lvl' => 500 }
+        F2POSRSRanks::Application.config.f2p_skills.each do |skill|
+          stats["#{skill}_lvl"] = 1
+          stats["#{skill}_xp"] = 0
+        end
+        stats['magic_lvl'] = 99
+        stats['magic_xp'] = 200_000_000
+
+        calculated = player.calc_ehp(stats)
+
+        expect(calculated['magic_ehp']).to eq(0)
+        expect(calculated['overall_ehp']).to eq(0)
+      end
+    end
+  end
+
   describe 'supporters' do
     it 'preserves Tohno1612 with a numeric placeholder amount and its flair' do
       expect(Player::SUPPORTERS.find { |supporter| supporter[:name] == 'Tohno1612' })

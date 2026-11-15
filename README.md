@@ -140,6 +140,12 @@ The app should now be running at [http://localhost:3000](http://localhost:3000) 
 
 ## Available Rake Tasks
 
+Magic is a zero-EHP skill for Reg, IM, HCIM, and UIM accounts. Its hiscores
+use a single combined Magic XP ordering, independent of account type. After
+deploying a Magic rate correction, refresh stored current EHP using the existing
+`Player#recalculate_current_ehp` method; changing rates alone does not rewrite
+stored EHP or historical snapshots.
+
 ### Full P2P Recheck
 
 Performs a comprehensive P2P verification for all players by fetching fresh hiscores data and updating the `potential_p2p` flag using the existing model logic.

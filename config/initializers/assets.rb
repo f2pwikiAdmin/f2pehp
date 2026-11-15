@@ -339,8 +339,8 @@ F2POSRSRanks::Application.configure do
     config.ehp_iron['prayer_tiers'] = [0]
     config.ehp_iron['prayer_xphrs'] = [17000]
   
-    config.ehp_iron['magic_tiers'] = [0, 3973, 33650]
-    config.ehp_iron['magic_xphrs'] = [15000, 33000, 43500]
+    config.ehp_iron['magic_tiers'] = [0]
+    config.ehp_iron['magic_xphrs'] = [0]
 
     config.ehp_iron['cooking_tiers'] = [0]
     config.ehp_iron['cooking_xphrs'] = [115000]
@@ -387,8 +387,8 @@ F2POSRSRanks::Application.configure do
     config.ehp_uim['prayer_tiers'] = [0]
     config.ehp_uim['prayer_xphrs'] = [17000]
   
-    config.ehp_uim['magic_tiers'] = [0, 3973, 33650]
-    config.ehp_uim['magic_xphrs'] = [15000, 33000, 43500]
+    config.ehp_uim['magic_tiers'] = [0]
+    config.ehp_uim['magic_xphrs'] = [0]
 
     config.ehp_uim['cooking_tiers'] = [0]
     config.ehp_uim['cooking_xphrs'] = [115000]

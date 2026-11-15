@@ -64,5 +64,19 @@ RSpec.describe 'Request throttling', type: :request do
       ENV['HTTP_AUTH_USER'] = original_user
       ENV['HTTP_AUTH_PASS'] = original_pass
     end
+
+    it 'throttles reset link attempts without consuming a valid token' do
+      token = clan.issue_password_reset!
+      10.times do
+        get clan_password_reset_path(id: clan.id, reset_token: 'invalid'),
+          headers: { 'REMOTE_ADDR' => '192.0.2.4' }
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      get clan_password_reset_path(id: clan.id, reset_token: token),
+        headers: { 'REMOTE_ADDR' => '192.0.2.4' }
+      expect(response).to have_http_status(:too_many_requests)
+      expect(clan.reload.valid_password_reset?(token)).to be(true)
+    end
   end
 end

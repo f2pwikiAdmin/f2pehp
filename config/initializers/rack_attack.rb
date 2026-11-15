@@ -13,6 +13,10 @@ Rack::Attack.throttle('admin requests per IP', limit: 5, period: 60) do |request
   request.ip if request.path.match?(%r{\A/admin(?:/|\z)})
 end
 
+Rack::Attack.throttle('clan password resets per IP', limit: 10, period: 60) do |request|
+  request.ip if request.path.match?(%r{\A/clan_password_resets/[^/]+\z})
+end
+
 Rack::Attack.throttled_responder = lambda do |request|
   match_data = request.env['rack.attack.match_data']
   retry_after = match_data[:period] - (match_data[:epoch_time] % match_data[:period])

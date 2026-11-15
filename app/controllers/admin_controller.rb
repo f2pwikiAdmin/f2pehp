@@ -9,8 +9,13 @@ class AdminController < ApplicationController
     before_action :http_basic_auth
 
     def http_basic_auth
-        if ENV['HTTP_AUTH_USER'] && ENV['HTTP_AUTH_PASS']
-            self.class.http_basic_authenticate_with name: ENV['HTTP_AUTH_USER'], password: ENV['HTTP_AUTH_PASS']
+        response.headers['Cache-Control'] = 'no-store'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        if ENV['HTTP_AUTH_USER'].present? && ENV['HTTP_AUTH_PASS'].present?
+            authenticate_or_request_with_http_basic do |user, password|
+                ActiveSupport::SecurityUtils.secure_compare(user, ENV['HTTP_AUTH_USER']) &
+                    ActiveSupport::SecurityUtils.secure_compare(password, ENV['HTTP_AUTH_PASS'])
+            end
         else
             render plain: "Admin access is not configured. Set HTTP_AUTH_USER and HTTP_AUTH_PASS environment variables.", status: :service_unavailable
         end
@@ -18,6 +23,20 @@ class AdminController < ApplicationController
 
     def index
         
+    end
+
+    def issue_clan_password_reset
+        clan = Clan.find_by(id: params[:clan_id])
+        unless clan
+            redirect_to admin_path, notice: "Clan not found."
+            return
+        end
+
+        token = clan.issue_password_reset!
+        @reset_path = clan_password_reset_path(id: clan.id, reset_token: token)
+        @reset_clan = clan
+        Rails.logger.info "Administrator issued password reset for clan ID #{clan.id}"
+        render :index
     end
 
     def add_supporter

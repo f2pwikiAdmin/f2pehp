@@ -10,6 +10,41 @@ class Clan < ActiveRecord::Base
   has_many :player_clan_links
   has_many :players, through: :player_clan_links
 
+  PASSWORD_RESET_LIFETIME = 30.minutes
+
+  def issue_password_reset!
+    token = SecureRandom.urlsafe_base64(32)
+    with_lock do
+      update!(password_reset_digest: Digest::SHA256.hexdigest(token), password_reset_sent_at: Time.current)
+    end
+    token
+  end
+
+  def valid_password_reset?(token)
+    token.is_a?(String) && token.match?(/\A[A-Za-z0-9_-]{43}\z/) &&
+      password_reset_digest.present? && password_reset_sent_at.present? &&
+      password_reset_sent_at > PASSWORD_RESET_LIFETIME.ago &&
+      ActiveSupport::SecurityUtils.secure_compare(password_reset_digest, Digest::SHA256.hexdigest(token))
+  end
+
+  def reset_password(token:, password:, password_confirmation:)
+    with_lock do
+      errors.clear
+      unless valid_password_reset?(token)
+        errors.add(:base, "This reset link is invalid or expired. Ask the site administrator for a new one.")
+        next false
+      end
+      if !password.is_a?(String) || password.length < 12 || password.bytesize > BCrypt::Engine::MAX_SECRET_BYTESIZE
+        errors.add(:password, "must be at least 12 characters and no more than 72 bytes")
+      end
+      errors.add(:password_confirmation, "does not match") unless password == password_confirmation
+      next false if errors.any?
+
+      update!(password: password, pass: nil, password_reset_digest: nil, password_reset_sent_at: nil)
+      true
+    end
+  end
+
   def authenticate_pass(candidate)
     return false if candidate.nil? || candidate.empty?
     return authenticate(candidate) if password_digest.present?

@@ -148,6 +148,24 @@ RSpec.describe 'Player ordering', type: :request do
     expect(request_ordering('/ranks', skill: 'magic', sort_by: 'lvl')).to eq('magic_lvl DESC, magic_xp DESC, magic_rank ASC')
   end
 
+  it 'interleaves all account types by Magic XP when Magic EHP is zero' do
+    first_player.update!(magic_lvl: 99, magic_xp: 20_000_000, magic_ehp: 0)
+    second_player.update!(player_acc_type: 'IM', magic_lvl: 99, magic_xp: 40_000_000, magic_ehp: 0)
+    { 'UIM' => 30_000_000, 'HCIM' => 10_000_000 }.each do |type, xp|
+      Player.create!(
+        player_name: "Magic #{type}", player_acc_type: type,
+        overall_lvl: 500, magic_lvl: 99, magic_xp: xp, magic_ehp: 0
+      )
+    end
+
+    get '/ranks', params: { skill: 'overall', sort_by: 'ehp' }
+    expect(request_ordering('/ranks', skill: 'magic')).to eq('magic_xp DESC, magic_rank ASC')
+    names = Nokogiri::HTML(response.body).css('tbody tr').filter_map do |row|
+      row.at_css('td:nth-child(2) a')&.text
+    end
+    expect(names).to eq(['Order Beta', 'Magic UIM', 'Order Alpha', 'Magic HCIM'])
+  end
+
   it 'preserves alphabetical clan ordering' do
     expect(request_ordering('/clans/Ordering_Clan', skill: 'overall', time: 'week', sort_by: 'player_name'))
       .to eq('player_name ASC')

@@ -125,7 +125,7 @@ RSpec.describe 'Player ordering', type: :request do
 
   it 'keeps the implicit XP default for magic in ranks and clan stats' do
     ['/ranks', '/clans/Ordering_Clan'].each do |path|
-      expect(request_ordering(path, skill: 'magic')).to eq('magic_xp DESC, magic_rank ASC')
+      expect(request_ordering(path, skill: 'magic')).to eq('magic_xp DESC NULLS LAST, magic_rank ASC NULLS LAST, players.id ASC')
     end
   end
 
@@ -139,7 +139,7 @@ RSpec.describe 'Player ordering', type: :request do
     clan.add_player(excluded)
 
     get '/ranks', params: { skill: 'overall', sort_by: 'ehp' }
-    expect(request_ordering('/ranks', skill: 'magic')).to eq('magic_xp DESC, magic_rank ASC')
+    expect(request_ordering('/ranks', skill: 'magic')).to eq('magic_xp DESC NULLS LAST, magic_rank ASC NULLS LAST, players.id ASC')
     text = Nokogiri::HTML(response.body).text
     expect(text).to include('iponderorbs', 'Order Beta', '20,000,000')
     expect(text.index('iponderorbs')).to be < text.index('Order Beta')
@@ -159,8 +159,9 @@ RSpec.describe 'Player ordering', type: :request do
     end
 
     get '/ranks', params: { skill: 'overall', sort_by: 'ehp' }
-    expect(request_ordering('/ranks', skill: 'magic')).to eq('magic_xp DESC, magic_rank ASC')
-    names = Nokogiri::HTML(response.body).css('tbody tr').filter_map do |row|
+    expect(request_ordering('/ranks', skill: 'magic')).to eq('magic_xp DESC NULLS LAST, magic_rank ASC NULLS LAST, players.id ASC')
+    table = Nokogiri::HTML(response.body).at_css('#player_xp_header').ancestors('table').first
+    names = table.css('tbody tr').filter_map do |row|
       row.at_css('td:nth-child(2) a')&.text
     end
     expect(names).to eq(['Order Beta', 'Magic UIM', 'Order Alpha', 'Magic HCIM'])

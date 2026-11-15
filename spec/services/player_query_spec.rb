@@ -76,6 +76,19 @@ RSpec.describe PlayerQuery do
       sql = query(filters(:tracking)).call.to_sql
       expect(sql).to include("O''Brien", "x'') OR 1=1 --")
     end
+
+    it "orders Magic XP before missing values and paginates ties deterministically" do
+      missing = Player.create!(player_name: "Missing XP", player_acc_type: "Reg", overall_lvl: 500)
+      zero = Player.create!(player_name: "Zero XP", player_acc_type: "Reg", overall_lvl: 500, magic_xp: 0)
+      first = Player.create!(player_name: "First Tie", player_acc_type: "Reg", overall_lvl: 500, magic_xp: 100)
+      second = Player.create!(player_name: "Second Tie", player_acc_type: "Reg", overall_lvl: 500, magic_xp: 100)
+      high = Player.create!(player_name: "Highest XP", player_acc_type: "Reg", overall_lvl: 500, magic_xp: 200)
+      state = filters(:ranks, skill: "magic", sort_by: "xp", show_limit: 2)
+
+      expect(query(state, page: 1).call.map(&:id)).to eq([high.id, first.id])
+      expect(query(state, page: 2).call.map(&:id)).to eq([second.id, zero.id])
+      expect(query(state, page: 3).call.map(&:id)).to eq([missing.id])
+    end
   end
 
   describe "virtual sorts" do

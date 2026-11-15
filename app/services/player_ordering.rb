@@ -60,7 +60,11 @@ class PlayerOrdering
           "#{skill}_lvl DESC, #{skill}_xp DESC, #{skill}_rank ASC"
         end
       when "xp"
-        "#{skill}_xp DESC, #{skill}_rank ASC"
+        if skill == "magic"
+          "magic_xp DESC NULLS LAST, magic_rank ASC NULLS LAST, players.id ASC"
+        else
+          "#{skill}_xp DESC, #{skill}_rank ASC"
+        end
       end
     end
   end

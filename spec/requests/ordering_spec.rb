@@ -167,6 +167,38 @@ RSpec.describe 'Player ordering', type: :request do
     expect(names).to eq(['Order Beta', 'Magic UIM', 'Order Alpha', 'Magic HCIM'])
   end
 
+  it 'links the profile Magic XP rank to the matching unfiltered leaderboard page' do
+    attributes = Player::SKILLS.each_with_object({}) do |skill, values|
+      values["#{skill}_lvl"] = 50
+      values["#{skill}_xp"] = 100
+      values["#{skill}_ehp"] = 0
+      values["#{skill}_rank"] = 10
+    end
+    first_player.update!(attributes.merge(
+      player_name: 'iponderorbs', overall_lvl: 500, magic_xp: 20_063_673, magic_lvl: 99
+    ))
+    second_player.update!(player_acc_type: 'IM', magic_xp: 30_000_000, magic_ehp: 500)
+    25.times do |index|
+      Player.create!(player_name: "Higher #{index}", player_acc_type: 'IM',
+        overall_lvl: 500, magic_xp: 30_000_000 + index, magic_lvl: 99, magic_ehp: 500)
+    end
+
+    get '/ranks', params: { filters_present: '1', filters_: { 'IM' => '1' },
+      clans_present: '1', restrictions: '1 defence', filter_inactive: 'true', sort_by: 'lvl' }
+    get '/players/iponderorbs'
+    expect(response).to have_http_status(:ok)
+    magic_row = Nokogiri::HTML(response.body).at_css('img[src*="/skills/magic"]').ancestors('tr').first
+    expect(magic_row.css('td').last.text.strip).to eq('27')
+    link = magic_row.at_css('a')['href']
+
+    get link
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('iponderorbs', '20,063,673')
+    expect(request.session[:sort_by]).to eq('xp')
+    expect(request.session[:restrictions]).to eq({})
+    expect(request.session[:filter_inactive]).to eq('false')
+  end
+
   it 'preserves alphabetical clan ordering' do
     expect(request_ordering('/clans/Ordering_Clan', skill: 'overall', time: 'week', sort_by: 'player_name'))
       .to eq('player_name ASC')

@@ -32,6 +32,27 @@ class PlayerQuery
     @ordering = PlayerOrdering.new(filters)
   end
 
+  def self.magic_rank(player)
+    filters = PlayerFilterParams.new(
+      params: ActionController::Parameters.new(skill: "magic", sort_by: "xp"),
+      session: {}, policy: :ranks
+    )
+    players = new(base: Player, filters: filters).call.except(:order, :limit, :offset)
+    return nil unless players.where(id: player.id).exists?
+
+    table = Player.arel_table
+    xp = table[:magic_xp]
+    rank = table[:magic_rank]
+    higher_xp = player.magic_xp.nil? ? xp.not_eq(nil) : xp.gt(player.magic_xp)
+    better_rank = player.magic_rank.nil? ? rank.not_eq(nil) : rank.lt(player.magic_rank)
+    ahead = higher_xp.or(
+      xp.eq(player.magic_xp).and(
+        better_rank.or(rank.eq(player.magic_rank).and(table[:id].lt(player.id)))
+      )
+    )
+    1 + players.where(ahead).count(:id)
+  end
+
   def call
     players = @base
     if @policy[:clans]

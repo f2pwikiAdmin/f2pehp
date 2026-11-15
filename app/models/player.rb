@@ -1467,6 +1467,8 @@ class Player < ActiveRecord::Base
 
   # Specializes f2p_rank for finding rank in a specific skill.
   def f2p_skill_rank(skill)
+    return PlayerQuery.magic_rank(self) if skill == "magic"
+
     f2p_rank [["#{skill}_ehp", :DESC],
               ["#{skill}_lvl", :DESC],
               ["#{skill}_xp", :DESC],

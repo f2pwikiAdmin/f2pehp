@@ -309,13 +309,18 @@
         %tbody{:class => "table-right-text"}
           - (["overall"] + F2POSRSRanks::Application.config.f2p_skills).each do |skill|
             %tr
-              - skill_f2p_rank = @player.f2p_skill_rank(skill).to_i
-              %th= link_to image_tag("skills/#{skill}.png"), ranks_path(skill: skill, show_limit: 25, page: (skill_f2p_rank.to_f / 25).ceil)
+              - skill_f2p_rank = @player.f2p_skill_rank(skill)
+              - if skill == "magic" && skill_f2p_rank.nil?
+                %th= image_tag("skills/#{skill}.png")
+              - elsif skill == "magic"
+                %th= link_to image_tag("skills/#{skill}.png"), ranks_path(skill: skill, sort_by: "xp", show_limit: 25, page: (skill_f2p_rank.to_f / 25).ceil, reset_ranking_filters: "true")
+              - else
+                %th= link_to image_tag("skills/#{skill}.png"), ranks_path(skill: skill, show_limit: 25, page: (skill_f2p_rank.to_f / 25).ceil)
               %td= @player["#{skill}_lvl"]
               %td= number_with_delimiter(@player["#{skill}_xp"].to_i, :delimiter => ",") 
               %td= number_with_delimiter(@player["#{skill}_ehp"].to_f, :delimiter => ",", :separator => ".") 
               %td= number_with_delimiter(display_rank(@player["#{skill}_rank"]), :delimiter => ",") 
-              %td= number_with_delimiter(skill_f2p_rank, :delimiter => ",")
+              %td= skill_f2p_rank.nil? ? "-" : number_with_delimiter(skill_f2p_rank, :delimiter => ",")
           %tr
             %th= image_tag "skills/combat.png"
             %td= @player["combat_lvl"]

@@ -116,6 +116,42 @@ RSpec.describe 'Player listing filter lifecycle', type: :request do
     expect(checked_values('clans_')).to match_array(['Filter Clan', 'Other Clan', 'None'])
   end
 
+  it 'shows hidden filters and clears them without leaving the selected skill' do
+    regular.update!(magic_xp: 20_063_673, magic_lvl: 99)
+    listing_get('/ranks', skill: 'magic', sort_by: 'xp',
+      restrictions: '1 defence', filter_inactive: 'true',
+      clans_present: '1', clans_: { clan.name => '1' })
+    notice = Nokogiri::HTML(response.body).at_css('.ranking-filters')
+    expect(notice.text).to include('Filtered rankings:', '1 defence', 'Inactive players hidden', 'Filter Clan')
+
+    listing_get(notice.at_css('a')['href'])
+    expect(Nokogiri::HTML(response.body).at_css('.ranking-filters')).to be_nil
+    expect(request.session[:skill]).to eq('magic')
+    expect(request.session[:sort_by]).to eq('xp')
+    expect_players(regular, ironman, outsider)
+  end
+
+  it 'keeps pagination results stable when another tab changes the shared session' do
+    regular.update!(magic_xp: 20_063_673, magic_lvl: 99)
+    ironman.update!(magic_xp: 30_000_000, magic_lvl: 99)
+    listing_get('/ranks', skill: 'magic', sort_by: 'xp', show_limit: '1')
+    next_link = Nokogiri::HTML(response.body).css('.pagination a').find { |a| a.text == 'Next' }['href']
+
+    listing_get('/ranks', skill: 'attack', sort_by: 'lvl', show_limit: '100',
+      filters_present: '1', filters_: { 'IM' => '1' }, clans_present: '1',
+      restrictions: '3 combat', filter_inactive: 'true')
+
+    listing_get(next_link)
+    expect_players(regular)
+    expect(request.session[:skill]).to eq('magic')
+    expect(request.session[:sort_by]).to eq('xp')
+    expect(request.session[:show_limit].to_i).to eq(1)
+    expect(request.session[:restrictions]).to eq({})
+    expect(request.session[:filter_inactive]).to eq('false')
+    expect(checked_values('filters_')).to match_array(%w[Reg IM UIM HCIM])
+    expect(checked_values('clans_')).to match_array(['Filter Clan', 'Other Clan', 'None'])
+  end
+
   it 'retains a clan subset when the next request omits the form' do
     listing_get('/ranks', clans_present: '1', clans_: { clan.name => '1' })
     expect_players(regular, ironman)
